@@ -6,83 +6,77 @@ use App\Http\Controllers\Tenant\ProductController;
 use App\Http\Controllers\Tenant\CategoryController;
 use App\Http\Controllers\Tenant\TransactionController;
 use App\Http\Controllers\Tenant\ProfileController;
+use App\Http\Controllers\Tenant\UserController;
 use App\Http\Controllers\SuperAdmin\SuperAdminController;
 use Illuminate\Support\Facades\Route;
 
-/*
-|--------------------------------------------------------------------------
-| Landing Page — tokaku.1017studios.id
-|--------------------------------------------------------------------------
-*/
-
+// Root
 Route::get('/', function () {
-    if (app()->has('currentTenant')) {
-        return redirect()->route('tenant.dashboard');
+    if (auth()->check()) {
+        return auth()->user()->role === 'superadmin'
+            ? redirect()->route('superadmin.dashboard')
+            : redirect()->route('tenant.dashboard');
     }
-    return redirect()->route('login'); // ← ganti ini
+    return redirect()->route('login');
 })->name('home');
 
-/*
-|--------------------------------------------------------------------------
-| Auth Routes — berlaku untuk tenant dan superadmin
-|--------------------------------------------------------------------------
-*/
+// Auth
 Route::middleware('guest')->group(function () {
     Route::get('/login',  [LoginController::class, 'showForm'])->name('login');
     Route::post('/login', [LoginController::class, 'login'])->name('login.post');
 });
+Route::post('/logout', [LoginController::class, 'logout'])->middleware('auth')->name('logout');
 
-Route::post('/logout', [LoginController::class, 'logout'])
-    ->middleware('auth')
-    ->name('logout');
+// ============================================================
+// TENANT ROUTES
+// ============================================================
+Route::middleware(['auth', 'tenant', 'subscription'])->group(function () {
 
-/*
-|--------------------------------------------------------------------------
-| Tenant Routes — hanya bisa diakses dari subdomain klien
-|--------------------------------------------------------------------------
-*/
-Route::middleware(['auth', 'subscription'])->prefix('')->group(function () {
+    // Dashboard
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('tenant.dashboard');
 
-    Route::get('/dashboard', [DashboardController::class, 'index'])
-        ->name('tenant.dashboard');
-
-    // Produk
-    Route::resource('products', ProductController::class)
-        ->names('tenant.products');
+    // Produk + detail/riwayat
+    Route::resource('products', ProductController::class)->names('tenant.products');
 
     // Kategori
-    Route::resource('categories', CategoryController::class)
-        ->names('tenant.categories');
+    Route::resource('categories', CategoryController::class)->names('tenant.categories');
 
-    // Transaksi / Kasir
+    // Kasir
     Route::prefix('kasir')->name('tenant.kasir.')->group(function () {
-        Route::get('/',         [TransactionController::class, 'index'])->name('index');
-        Route::post('/proses',  [TransactionController::class, 'proses'])->name('proses');
-        Route::get('/{id}/struk', [TransactionController::class, 'struk'])->name('struk');
+        Route::get('/',                [TransactionController::class, 'index'])->name('index');
+        Route::post('/proses',         [TransactionController::class, 'proses'])->name('proses');
+        Route::get('/{id}/struk',      [TransactionController::class, 'struk'])->name('struk');
+        Route::get('/{id}/struk-pdf',  [TransactionController::class, 'strukPdf'])->name('struk.pdf');
     });
 
     // Laporan
     Route::prefix('laporan')->name('tenant.laporan.')->group(function () {
-        Route::get('/',          [TransactionController::class, 'laporan'])->name('index');
-        Route::get('/export',    [TransactionController::class, 'export'])->name('export');
+        Route::get('/',       [TransactionController::class, 'laporan'])->name('index');
+        Route::get('/export', [TransactionController::class, 'export'])->name('export');
     });
 
-    // Profil & pengaturan toko (hanya owner)
+    // Manajemen User — hanya owner & admin
+    Route::middleware('role:owner,admin')->prefix('users')->name('tenant.users.')->group(function () {
+        Route::get('/',                     [UserController::class, 'index'])->name('index');
+        Route::post('/',                    [UserController::class, 'store'])->name('store');
+        Route::put('/{user}/toggle',        [UserController::class, 'toggleActive'])->name('toggle');
+        Route::put('/{user}/reset-password',[UserController::class, 'resetPassword'])->name('reset-password');
+        Route::delete('/{user}',            [UserController::class, 'destroy'])->name('destroy');
+    });
+
+    // Profil toko — hanya owner & admin
     Route::middleware('role:owner,admin')->group(function () {
-        Route::get('/profil',    [ProfileController::class, 'index'])->name('tenant.profil');
-        Route::put('/profil',    [ProfileController::class, 'update'])->name('tenant.profil.update');
+        Route::get('/profil', [ProfileController::class, 'index'])->name('tenant.profil');
+        Route::put('/profil', [ProfileController::class, 'update'])->name('tenant.profil.update');
     });
 
-    Route::get('/subscription/expired', function () {
-        return view('tenant.subscription.expired');
-    })->name('tenant.subscription.expired');
+    Route::get('/subscription/expired', fn() => view('tenant.subscription.expired'))
+        ->name('tenant.subscription.expired');
 });
 
-/*
-|--------------------------------------------------------------------------
-| Super Admin Routes — hanya bisa diakses dari domain utama
-|--------------------------------------------------------------------------
-*/
+// ============================================================
+// SUPER ADMIN ROUTES
+// ============================================================
 Route::middleware(['auth', 'role:superadmin'])
     ->prefix('superadmin')
     ->name('superadmin.')

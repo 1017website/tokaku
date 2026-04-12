@@ -24,29 +24,33 @@ class LoginController extends Controller
             'password.required' => 'Password wajib diisi.',
         ]);
 
-        $credentials = $request->only('email', 'password');
-        $remember    = $request->boolean('remember');
+        $remember = $request->boolean('remember');
 
-        // Jika login dari subdomain tenant, pastikan user milik tenant tersebut
-        if (app()->has('currentTenant')) {
-            $tenant = app('currentTenant');
-            $credentials['tenant_id'] = $tenant->id;
-            $credentials['is_active'] = true;
-        }
-
-        if (!Auth::attempt($credentials, $remember)) {
+        // Coba login — tidak filter tenant_id di sini
+        // Superadmin punya tenant_id null, tetap bisa login
+        if (!Auth::attempt([
+            'email'     => $request->email,
+            'password'  => $request->password,
+            'is_active' => true,
+        ], $remember)) {
             return back()
                 ->withInput($request->only('email'))
-                ->withErrors(['email' => 'Email atau password salah.']);
+                ->withErrors(['email' => 'Email atau password salah, atau akun tidak aktif.']);
         }
 
         $request->session()->regenerate();
 
         $user = Auth::user();
 
-        // Redirect berdasarkan role
+        // Superadmin → ke dashboard superadmin
         if ($user->role === 'superadmin') {
-            return redirect()->route('superadmin.dashboard');
+            return redirect()->intended(route('superadmin.dashboard'));
+        }
+
+        // Pastikan user punya tenant
+        if (!$user->tenant_id) {
+            Auth::logout();
+            return back()->withErrors(['email' => 'Akun Anda tidak terhubung ke toko manapun.']);
         }
 
         return redirect()->intended(route('tenant.dashboard'));

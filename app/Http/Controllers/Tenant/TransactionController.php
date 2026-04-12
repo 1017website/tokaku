@@ -2,12 +2,15 @@
 
 namespace App\Http\Controllers\Tenant;
 
+use App\Exports\TransactionsExport;
 use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\Transaction;
 use App\Models\TransactionItem;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Maatwebsite\Excel\Facades\Excel;
 
 class TransactionController extends Controller
 {
@@ -30,7 +33,9 @@ class TransactionController extends Controller
             'notes'          => 'nullable|string|max:255',
         ]);
 
-        DB::transaction(function () use ($request) {
+        $transactionId = null;
+
+        DB::transaction(function () use ($request, &$transactionId) {
             $tenant   = app('currentTenant');
             $subtotal = 0;
             $items    = [];
@@ -53,13 +58,11 @@ class TransactionController extends Controller
                     'subtotal'     => $itemSubtotal,
                 ];
 
-                // Kurangi stok
                 $product->decrement('stock', $item['qty']);
             }
 
             $discount = $request->discount ?? 0;
-            $tax      = 0;
-            $total    = $subtotal - $discount + $tax;
+            $total    = $subtotal - $discount;
 
             $transaction = Transaction::create([
                 'tenant_id'      => $tenant->id,
@@ -67,7 +70,7 @@ class TransactionController extends Controller
                 'invoice_no'     => Transaction::generateInvoiceNo($tenant->id),
                 'subtotal'       => $subtotal,
                 'discount'       => $discount,
-                'tax'            => $tax,
+                'tax'            => 0,
                 'total'          => $total,
                 'paid_amount'    => $request->paid_amount,
                 'change_amount'  => $request->paid_amount - $total,
@@ -76,45 +79,96 @@ class TransactionController extends Controller
             ]);
 
             foreach ($items as $item) {
-                TransactionItem::create(array_merge(
-                    $item,
-                    ['transaction_id' => $transaction->id]
-                ));
+                TransactionItem::create(array_merge($item, [
+                    'transaction_id' => $transaction->id,
+                ]));
             }
 
-            session(['last_transaction_id' => $transaction->id]);
+            $transactionId = $transaction->id;
         });
 
         return response()->json([
             'success'        => true,
-            'transaction_id' => session('last_transaction_id'),
+            'transaction_id' => $transactionId,
             'message'        => 'Transaksi berhasil disimpan.',
         ]);
     }
 
     public function struk(int $id)
     {
-        $transaction = Transaction::with(['items', 'user'])->findOrFail($id);
+        $transaction = Transaction::with(['items', 'user', 'user.tenant'])
+            ->where('tenant_id', app('currentTenant')->id)
+            ->findOrFail($id);
 
         return view('tenant.kasir.struk', compact('transaction'));
+    }
+
+    public function strukPdf(int $id)
+    {
+        $transaction = Transaction::with(['items', 'user', 'user.tenant'])
+            ->where('tenant_id', app('currentTenant')->id)
+            ->findOrFail($id);
+
+        $pdf = Pdf::loadView('tenant.kasir.struk_pdf', compact('transaction'))
+            ->setPaper([0, 0, 226.77, 500], 'portrait'); // 80mm thermal
+
+        return $pdf->download("struk-{$transaction->invoice_no}.pdf");
     }
 
     public function laporan(Request $request)
     {
         $startDate = $request->start_date ?? now()->startOfMonth()->toDateString();
         $endDate   = $request->end_date   ?? now()->toDateString();
+        $tenantId  = app('currentTenant')->id;
 
-        $transactions = Transaction::with(['items', 'user'])
-            ->whereBetween('created_at', [$startDate, $endDate . ' 23:59:59'])
-            ->orderByDesc('created_at')
-            ->paginate(20);
+        $query = Transaction::with(['items', 'user'])
+            ->where('tenant_id', $tenantId)
+            ->whereBetween('created_at', [
+                $startDate . ' 00:00:00',
+                $endDate   . ' 23:59:59',
+            ]);
 
-        $totalRevenue = Transaction::whereBetween('created_at', [$startDate, $endDate . ' 23:59:59'])
-            ->sum('total');
+        $transactions = (clone $query)->orderByDesc('created_at')->paginate(20);
+        $totalRevenue = (clone $query)->sum('total');
+        $totalDiscount = (clone $query)->sum('discount');
+        $totalTransactions = (clone $query)->count();
+
+        // Summary per metode bayar
+        $byPayment = (clone $query)
+            ->selectRaw('payment_method, COUNT(*) as count, SUM(total) as total')
+            ->groupBy('payment_method')
+            ->get();
+
+        // Produk terlaris
+        $topProducts = TransactionItem::query()
+            ->select('product_name', DB::raw('SUM(quantity) as total_qty'), DB::raw('SUM(subtotal) as total_revenue'))
+            ->whereHas('transaction', function ($q) use ($tenantId, $startDate, $endDate) {
+                $q->where('tenant_id', $tenantId)
+                  ->whereBetween('created_at', [
+                      $startDate . ' 00:00:00',
+                      $endDate   . ' 23:59:59',
+                  ]);
+            })
+            ->groupBy('product_name')
+            ->orderByDesc('total_qty')
+            ->limit(10)
+            ->get();
+
+        // Omzet per hari (untuk chart)
+        $dailyRevenue = (clone $query)
+            ->selectRaw('DATE(created_at) as date, SUM(total) as total, COUNT(*) as count')
+            ->groupBy('date')
+            ->orderBy('date')
+            ->get();
 
         return view('tenant.laporan.index', compact(
             'transactions',
             'totalRevenue',
+            'totalDiscount',
+            'totalTransactions',
+            'byPayment',
+            'topProducts',
+            'dailyRevenue',
             'startDate',
             'endDate',
         ));
@@ -122,7 +176,15 @@ class TransactionController extends Controller
 
     public function export(Request $request)
     {
-        // Placeholder — implementasi Laravel Excel di iterasi berikutnya
-        return back()->with('info', 'Fitur export segera hadir.');
+        $startDate = $request->start_date ?? now()->startOfMonth()->toDateString();
+        $endDate   = $request->end_date   ?? now()->toDateString();
+        $tenantId  = app('currentTenant')->id;
+
+        $filename = "laporan-{$startDate}-sd-{$endDate}.xlsx";
+
+        return Excel::download(
+            new TransactionsExport($startDate, $endDate, $tenantId),
+            $filename
+        );
     }
 }

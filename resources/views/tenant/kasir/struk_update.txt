@@ -1,0 +1,8 @@
+Di resources/views/tenant/kasir/struk.blade.php,
+tambahkan tombol ini setelah tombol "Cetak Struk":
+
+<a href="{{ route('tenant.kasir.struk.pdf', $transaction->id) }}" 
+   class="btn btn-outline no-print" 
+   style="display:block;text-align:center;margin-top:8px;padding:12px;border-radius:12px;font-family:Inter,sans-serif;font-size:14px;font-weight:600;cursor:pointer;background:#f0fdf6;color:#0F6E56;border:1.5px solid #bbf7d2;text-decoration:none;">
+    Download PDF
+</a>
