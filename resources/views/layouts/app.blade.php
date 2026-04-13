@@ -155,7 +155,8 @@
                     <div class="leading-tight">
                         <p style="font-size:15px;font-weight:700;color:#0F6E56;letter-spacing:-0.3px;">Tokaku</p>
                         <p style="font-size:11px;color:#9ca3af;margin-top:1px;" class="truncate max-w-[110px]">
-                            {{ $currentTenant->name ?? '' }}</p>
+                            {{ $currentTenant->name ?? '' }}
+                        </p>
                     </div>
                 </div>
                 <button onclick="closeSidebar()" class="lg:hidden text-gray-400 p-1">
@@ -218,6 +219,38 @@
                     </svg>
                     Stok
                 </a>
+                <a href="{{ route('tenant.pelanggan.index') }}"
+                    class="sidebar-link {{ request()->routeIs('tenant.pelanggan.*') ? 'active' : '' }}">
+                    <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                    Pelanggan
+                </a>
+                <a href="{{ route('tenant.promo.index') }}"
+                    class="sidebar-link {{ request()->routeIs('tenant.promo.*') ? 'active' : '' }}">
+                    <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                    </svg>
+                    Promo & Diskon
+                </a>
+                <a href="{{ route('tenant.hutang.index') }}"
+                    class="sidebar-link {{ request()->routeIs('tenant.hutang.*') ? 'active' : '' }}">
+                    <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Hutang Piutang
+                </a>
+                <a href="{{ route('tenant.shift.index') }}"
+                    class="sidebar-link {{ request()->routeIs('tenant.shift.*') ? 'active' : '' }}">
+                    <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Shift Kasir
+                </a>
 
                 @if(auth()->user()->isAdmin())
                     <a href="{{ route('tenant.users.index') }}"
@@ -255,7 +288,8 @@
                     </div>
                     <div class="flex-1 min-w-0">
                         <p style="font-size:13px;font-weight:500;color:#111827;" class="truncate">
-                            {{ auth()->user()->name }}</p>
+                            {{ auth()->user()->name }}
+                        </p>
                         <p style="font-size:11px;color:#9ca3af;text-transform:capitalize;">{{ auth()->user()->role }}
                         </p>
                     </div>

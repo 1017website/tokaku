@@ -19,11 +19,15 @@ class ProfileController extends Controller
         $tenant = app('currentTenant');
 
         $validated = $request->validate([
-            'name'    => 'required|string|max:255',
-            'phone'   => 'nullable|string|max:20',
+            'name' => 'required|string|max:255',
+            'phone' => 'nullable|string|max:20',
             'address' => 'nullable|string|max:500',
-            'logo'    => 'nullable|image|max:2048',
+            'logo' => 'nullable|image|max:2048',
         ]);
+
+        $validated['tax_enabled'] = $request->boolean('tax_enabled');
+        $validated['tax_rate'] = $request->tax_rate ?? 11;
+        $validated['tax_name'] = $request->tax_name ?? 'PPN';
 
         if ($request->hasFile('logo')) {
             $validated['logo_path'] = $request->file('logo')
