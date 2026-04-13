@@ -17,7 +17,7 @@ Route::get('/', function () {
             ? redirect()->route('superadmin.dashboard')
             : redirect()->route('tenant.dashboard');
     }
-    return redirect()->route('login');
+    return view('welcome');
 })->name('home');
 
 Route::middleware('guest')->group(function () {
