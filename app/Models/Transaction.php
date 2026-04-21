@@ -12,14 +12,19 @@ class Transaction extends Model
     protected $fillable = [
         'tenant_id',
         'user_id',
+        'customer_id',
+        'shift_id',
+        'promo_id',
         'invoice_no',
         'subtotal',
         'discount',
         'tax',
+        'tax_rate',
         'total',
         'paid_amount',
         'change_amount',
         'payment_method',
+        'payment_status',
         'notes',
     ];
 
@@ -27,6 +32,7 @@ class Transaction extends Model
         'subtotal'      => 'decimal:2',
         'discount'      => 'decimal:2',
         'tax'           => 'decimal:2',
+        'tax_rate'      => 'decimal:2',
         'total'         => 'decimal:2',
         'paid_amount'   => 'decimal:2',
         'change_amount' => 'decimal:2',
@@ -37,9 +43,29 @@ class Transaction extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function customer()
+    {
+        return $this->belongsTo(Customer::class);
+    }
+
+    public function shift()
+    {
+        return $this->belongsTo(Shift::class);
+    }
+
+    public function promo()
+    {
+        return $this->belongsTo(Promo::class);
+    }
+
     public function items()
     {
         return $this->hasMany(TransactionItem::class);
+    }
+
+    public function debt()
+    {
+        return $this->hasOne(Debt::class);
     }
 
     public function scopeToday($query)
@@ -53,7 +79,6 @@ class Transaction extends Model
             ->whereYear('created_at', now()->year);
     }
 
-    // Generate nomor invoice otomatis: INV-20240101-0001
     public static function generateInvoiceNo(int $tenantId): string
     {
         $prefix = 'INV-' . now()->format('Ymd') . '-';
