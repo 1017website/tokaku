@@ -13,6 +13,7 @@ use App\Http\Controllers\Tenant\DebtController;
 use App\Http\Controllers\Tenant\ShiftController;
 use App\Http\Controllers\Tenant\ExpenseController;
 use App\Http\Controllers\SuperAdmin\SuperAdminController;
+use App\Http\Controllers\SuperAdmin\PricingController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -21,7 +22,10 @@ Route::get('/', function () {
             ? redirect()->route('superadmin.dashboard')
             : redirect()->to(auth()->user()->homeRoute());
     }
-    return view('welcome');
+
+    $plans = \App\Models\PricingPlan::active()->ordered()->get();
+
+    return view('welcome', compact('plans'));
 })->name('home');
 
 Route::middleware('guest')->group(function () {
@@ -134,6 +138,13 @@ Route::middleware(['auth','role:superadmin'])->prefix('superadmin')->name('super
     Route::put('/tenants/{tenant}/suspend',  [SuperAdminController::class, 'suspend'])->name('tenants.suspend');
     Route::put('/tenants/{tenant}/status',   [SuperAdminController::class, 'updateStatus'])->name('tenants.status');
     Route::get('/laporan', [SuperAdminController::class, 'laporan'])->name('laporan');
+
+    // Master Harga
+    Route::get('/harga',                 [PricingController::class, 'index'])->name('pricing.index');
+    Route::post('/harga',                [PricingController::class, 'store'])->name('pricing.store');
+    Route::put('/harga/{plan}',          [PricingController::class, 'update'])->name('pricing.update');
+    Route::put('/harga/{plan}/toggle',   [PricingController::class, 'toggle'])->name('pricing.toggle');
+    Route::delete('/harga/{plan}',       [PricingController::class, 'destroy'])->name('pricing.destroy');
     Route::get('/settings', [SuperAdminController::class, 'settings'])->name('settings');
     Route::put('/settings', [SuperAdminController::class, 'updateSettings'])->name('settings.update');
     Route::get('/maintenance', [SuperAdminController::class, 'maintenance'])->name('maintenance');

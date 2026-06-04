@@ -580,33 +580,56 @@
     <div class="fade-in" style="text-align:center;margin-bottom:48px;">
         <div class="section-tag" style="justify-content:center;">Harga</div>
         <h2 class="section-title" style="margin:0 auto 16px;text-align:center;">Harga yang <em>transparan</em></h2>
-        <p class="section-sub" style="margin:0 auto;text-align:center;">Coba gratis 14 hari tanpa kartu kredit. Upgrade kapan saja.</p>
+        <p class="section-sub" style="margin:0 auto;text-align:center;">Semua paket dapat fitur lengkap. Pilih durasi, makin lama makin hemat. Coba gratis 14 hari tanpa kartu kredit.</p>
     </div>
+
+    @php
+        // Fitur real sesuai modul sistem — semua paket mendapatkan semuanya.
+        $allFeatures = [
+            'Kasir digital + multi metode bayar (cash, QRIS, transfer)',
+            'Struk digital: cetak thermal (ESC/POS), PDF & kirim WhatsApp',
+            'Manajemen produk, kategori & stok + riwayat stok',
+            'Laporan penjualan lengkap + export Excel',
+            'Manajemen pelanggan & promo/diskon',
+            'Hutang-piutang & shift kasir',
+            'Pencatatan pengeluaran & modal usaha',
+            'Multi-user & multi-role dengan hak akses',
+            'Pengaturan pajak fleksibel',
+        ];
+    @endphp
+
     <div class="pricing-grid fade-in" style="margin:0 auto;">
-        @foreach([
-            ['Starter','Untuk toko baru yang baru mulai','Rp 0','/bulan, gratis selamanya',['1 toko','1 user (owner)','Kasir digital','Laporan dasar','Stok sederhana'],false,'outline','Mulai Gratis'],
-            ['Pro','Paling populer untuk UMKM aktif','Rp XXX.000','/bulan',['1 toko','Unlimited user','Kasir + QRIS','Laporan lengkap + export','Manajemen stok penuh','Struk PDF','Prioritas support'],true,'solid','Coba 14 Hari Gratis'],
-            ['Business','Untuk multi-cabang','Rp XXX.000','/bulan',['Unlimited toko','Unlimited user','Semua fitur Pro','Laporan lintas cabang','Dedicated support','Custom subdomain'],false,'outline','Hubungi Kami'],
-        ] as [$name,$tagline,$price,$period,$features,$featured,$btnClass,$btnLabel])
+        @forelse($plans as $plan)
+        @php $featured = $plan->is_popular; @endphp
         <div class="pricing-card {{ $featured ? 'featured' : '' }}">
             @if($featured)
             <div class="pricing-badge">⭐ Paling Populer</div>
             @endif
-            <p class="pricing-name">{{ $name }}</p>
-            <p style="font-size:13px;color:{{ $featured?'rgba(255,255,255,0.6)':'var(--muted)' }};margin-bottom:16px;">{{ $tagline }}</p>
-            <p class="pricing-price">{{ $price }}</p>
-            <p class="pricing-period">{{ $period }}</p>
+            <p class="pricing-name">{{ $plan->name }}</p>
+            <p style="font-size:13px;color:{{ $featured?'rgba(255,255,255,0.6)':'var(--muted)' }};margin-bottom:16px;">{{ $plan->tagline }}</p>
+
+            @if($plan->hasDiscount())
+                <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                    <span style="font-size:14px;text-decoration:line-through;color:{{ $featured?'rgba(255,255,255,0.5)':'#9ca3af' }};">{{ $plan->originalPriceLabel() }}</span>
+                    <span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:6px;background:{{ $featured?'rgba(255,255,255,0.2)':'#fde8ec' }};color:{{ $featured?'#fff':'#e11d48' }};">HEMAT {{ $plan->discountPercent() }}%</span>
+                </div>
+            @endif
+            <p class="pricing-price" style="margin-top:4px;">{{ $plan->priceLabel() }}</p>
+            <p class="pricing-period">{{ $plan->periodLabel() }} &middot; setara {{ $plan->perMonthLabel() }}/bln</p>
+
             <ul class="pricing-features">
-                @foreach($features as $f)
+                @foreach($allFeatures as $f)
                 <li>
                     <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="{{ $featured ? 'rgba(255,255,255,0.8)' : 'var(--green)' }}" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
                     {{ $f }}
                 </li>
                 @endforeach
             </ul>
-            <a href="{{ route('login') }}" class="btn-pricing {{ $btnClass }}">{{ $btnLabel }}</a>
+            <a href="{{ route('login') }}" class="btn-pricing {{ $featured ? 'solid' : 'outline' }}">{{ $plan->cta_label }}</a>
         </div>
-        @endforeach
+        @empty
+        <p style="grid-column:1/-1;text-align:center;color:var(--muted);">Paket harga belum tersedia.</p>
+        @endforelse
     </div>
 </section>
 
