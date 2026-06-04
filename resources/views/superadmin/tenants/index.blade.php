@@ -43,6 +43,18 @@
                         </div>
                     </div>
                 </div>
+                <div style="padding-top:8px;border-top:1px solid #f1f5f9;">
+                    <label style="display:block;font-size:12.5px;font-weight:500;color:#374151;margin-bottom:5px;">Tipe Langganan *</label>
+                    <select name="status" id="tenantStatus" class="form-input" onchange="toggleTrialField()">
+                        <option value="trial" {{ old('status','trial')==='trial'?'selected':'' }}>Trial (masa percobaan)</option>
+                        <option value="active" {{ old('status')==='active'?'selected':'' }}>Langsung Aktif (tanpa trial)</option>
+                    </select>
+                </div>
+                <div id="trialDaysWrap">
+                    <label style="display:block;font-size:12.5px;font-weight:500;color:#374151;margin-bottom:5px;">Durasi Trial (hari)</label>
+                    <input type="number" name="trial_days" min="1" max="365" value="{{ old('trial_days', config('tokaku.trial_days', 14)) }}" class="form-input" placeholder="14">
+                    <p style="font-size:11px;color:#94a3b8;margin-top:5px;">Kosongkan untuk memakai default ({{ config('tokaku.trial_days', 14) }} hari).</p>
+                </div>
                 <button type="submit" class="btn-primary" style="justify-content:center;margin-top:4px;">Buat Tenant</button>
             </form>
         </div>
@@ -69,7 +81,10 @@
                         </div>
                         <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
                             @if($t->status==='active')<span style="font-size:12px;font-weight:500;background:#f0fdf4;color:#15803d;padding:4px 10px;border-radius:99px;">Aktif</span>
-                            @elseif($t->status==='trial')<span style="font-size:12px;font-weight:500;background:#fffbeb;color:#b45309;padding:4px 10px;border-radius:99px;">Trial {{ $t->trial_ends_at?'· '.$t->trial_ends_at->diffForHumans():'' }}</span>
+                            @elseif($t->status==='trial')
+                                <span style="font-size:12px;font-weight:500;padding:4px 10px;border-radius:99px;{{ $t->isTrialExpired() ? 'background:#fff1f2;color:#be123c;' : 'background:#fffbeb;color:#b45309;' }}">
+                                    {{ $t->isTrialExpired() ? 'Trial habis' : 'Trial · '.$t->trialLabel() }}
+                                </span>
                             @else<span style="font-size:12px;font-weight:500;background:#fff1f2;color:#be123c;padding:4px 10px;border-radius:99px;">Suspended</span>@endif
                             <form method="POST" action="{{ route('superadmin.tenants.suspend',$t) }}">
                                 @csrf @method('PUT')
@@ -92,3 +107,21 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+function toggleTrialField() {
+    var status = document.getElementById('tenantStatus').value;
+    var wrap = document.getElementById('trialDaysWrap');
+    var input = wrap.querySelector('input[name="trial_days"]');
+    if (status === 'active') {
+        wrap.style.display = 'none';
+        input.disabled = true;
+    } else {
+        wrap.style.display = '';
+        input.disabled = false;
+    }
+}
+document.addEventListener('DOMContentLoaded', toggleTrialField);
+</script>
+@endpush

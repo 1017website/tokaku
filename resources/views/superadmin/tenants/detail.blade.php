@@ -25,7 +25,7 @@
             {{ $tenant->status==='active'?'background:#f0fdf4;color:#15803d;':($tenant->status==='trial'?'background:#fffbeb;color:#b45309;':'background:#fff1f2;color:#be123c;') }}">
             {{ ucfirst($tenant->status) }}
             @if($tenant->status==='trial' && $tenant->trial_ends_at)
-                · {{ $tenant->trial_ends_at->diffForHumans() }}
+                · {{ $tenant->trialLabel() }}
             @endif
         </span>
         <form method="POST" action="{{ route('superadmin.tenants.suspend', $tenant) }}">

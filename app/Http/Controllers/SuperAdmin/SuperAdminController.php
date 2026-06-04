@@ -115,19 +115,24 @@ class SuperAdminController extends Controller
     public function storeTenant(Request $request)
     {
         $request->validate([
-            'name'      => 'required|string|max:255',
-            'subdomain' => 'required|string|max:50|unique:tenants,subdomain|alpha_dash',
-            'phone'     => 'nullable|string|max:20',
-            'email'     => 'required|email|unique:users,email',
-            'password'  => 'required|min:8',
+            'name'       => 'required|string|max:255',
+            'subdomain'  => 'required|string|max:50|unique:tenants,subdomain|alpha_dash',
+            'phone'      => 'nullable|string|max:20',
+            'email'      => 'required|email|unique:users,email',
+            'password'   => 'required|min:8',
+            'status'     => 'required|in:trial,active',
+            'trial_days' => 'nullable|integer|min:1|max:365',
         ]);
+
+        $isTrial = $request->status === 'trial';
+        $trialDays = (int) ($request->input('trial_days') ?: config('tokaku.trial_days', 14));
 
         $tenant = Tenant::create([
             'name'          => $request->name,
             'subdomain'     => $request->subdomain,
             'phone'         => $request->phone,
-            'status'        => 'trial',
-            'trial_ends_at' => now()->addDays(14),
+            'status'        => $isTrial ? 'trial' : 'active',
+            'trial_ends_at' => $isTrial ? now()->addDays($trialDays) : null,
         ]);
 
         User::create([
@@ -139,7 +144,11 @@ class SuperAdminController extends Controller
             'is_active' => true,
         ]);
 
-        return back()->with('success', "Tenant {$tenant->name} berhasil dibuat. Trial 14 hari dimulai.");
+        $msg = $isTrial
+            ? "Tenant {$tenant->name} berhasil dibuat. Trial {$trialDays} hari dimulai."
+            : "Tenant {$tenant->name} berhasil dibuat dengan status aktif.";
+
+        return back()->with('success', $msg);
     }
 
     // Suspend / aktifkan tenant

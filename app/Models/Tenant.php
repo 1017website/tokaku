@@ -57,4 +57,36 @@ class Tenant extends Model
     {
         return $this->status === 'trial' && (!$this->trial_ends_at || $this->trial_ends_at->isPast());
     }
+
+    /**
+     * Sisa hari trial (dibulatkan ke atas). 0 jika sudah lewat / tidak ada.
+     */
+    public function trialDaysLeft(): int
+    {
+        if (!$this->trial_ends_at || $this->trial_ends_at->isPast()) {
+            return 0;
+        }
+
+        return (int) ceil(now()->diffInDays($this->trial_ends_at, false));
+    }
+
+    /**
+     * Label trial untuk ditampilkan, mis. "13 hari lagi" / "Trial habis".
+     */
+    public function trialLabel(): string
+    {
+        if (!$this->trial_ends_at) {
+            return 'Tanpa batas';
+        }
+
+        if ($this->trial_ends_at->isPast()) {
+            return 'Trial habis';
+        }
+
+        $days = $this->trialDaysLeft();
+
+        return $days <= 0
+            ? 'Berakhir hari ini'
+            : $days . ' hari lagi';
+    }
 }
