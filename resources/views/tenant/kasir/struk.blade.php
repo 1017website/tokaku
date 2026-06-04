@@ -4,68 +4,189 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Struk {{ $transaction->invoice_no }}</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        * { margin:0;padding:0;box-sizing:border-box;-webkit-font-smoothing:antialiased; }
-        body { font-family:'Inter',sans-serif;background:#f8fafc;display:flex;justify-content:center;padding:24px;min-height:100vh;align-items:flex-start; }
-        .receipt { background:#fff;width:100%;max-width:320px;border-radius:16px;border:1px solid #f1f5f9;box-shadow:0 4px 20px rgba(0,0,0,0.06);overflow:hidden; }
-        .receipt-header { background:#0F6E56;padding:20px;text-align:center; }
-        .receipt-body { padding:20px; }
-        .divider { border:none;border-top:1.5px dashed #e2e8f0;margin:14px 0; }
-        .row { display:flex;justify-content:space-between;margin:5px 0;font-size:13px; }
-        .row .label { color:#64748b; }
-        .row .value { font-weight:500;color:#0f172a; }
-        .total-row { font-size:15px;font-weight:700; }
-        .btn { display:block;text-align:center;padding:12px;border-radius:12px;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;cursor:pointer;border:none;margin-top:12px;transition:all 0.15s; }
-        .btn-print { background:#0F6E56;color:#fff; }
-        .btn-print:hover { background:#085041; }
-        .btn-back { background:#fff;color:#374151;border:1.5px solid #e2e8f0;text-decoration:none;display:block; }
-        @media print { body{background:#fff;padding:0;} .receipt{box-shadow:none;border:none;max-width:100%;border-radius:0;} .no-print{display:none;} }
+        * { margin:0; padding:0; box-sizing:border-box; }
+
+        body {
+            background:#e5e7eb;
+            display:flex;
+            justify-content:center;
+            align-items:flex-start;
+            padding:20px;
+            min-height:100vh;
+            font-family:'Consolas','Courier New',monospace;
+        }
+
+        .receipt {
+            background:#fff;
+            width:58mm;
+            max-width:100%;
+            padding:6px 4px;
+            color:#000;
+            font-size:12px;
+            line-height:1.4;
+            font-weight:700;            /* semua teks tebal -> tajam di thermal */
+        }
+
+        .center { text-align:center; }
+
+        .store-name { font-size:16px; font-weight:700; letter-spacing:0.5px; }
+        .store-sub  { font-size:11px; font-weight:700; }
+        .logo       { max-width:40px; max-height:40px; object-fit:contain; margin:0 auto 4px; display:block; filter:grayscale(1) contrast(3); }
+
+        .divider { border:none; border-top:1px dashed #000; margin:5px 0; }
+
+        .row { display:flex; justify-content:space-between; gap:6px; }
+        .row span:last-child { text-align:right; white-space:nowrap; }
+
+        .item-name { font-weight:700; word-break:break-word; }
+        .item-line { display:flex; justify-content:space-between; gap:6px; }
+
+        .total-row { font-size:14px; font-weight:700; }
+
+        .footer { font-size:10px; line-height:1.5; font-weight:700; }
+
+        .actions { width:58mm; max-width:100%; margin:14px auto 0; }
+        .btn {
+            display:block; width:100%; text-align:center;
+            padding:11px; border-radius:8px; border:none; cursor:pointer;
+            font-family:system-ui, sans-serif; font-size:14px; font-weight:600;
+            margin-top:8px; text-decoration:none;
+        }
+        .btn-print { background:#0F6E56; color:#fff; }
+        .btn-pdf   { background:#f0fdf6; color:#0F6E56; border:1.5px solid #bbf7d2; }
+        .btn-back  { background:#fff; color:#374151; border:1.5px solid #e2e8f0; }
+
+        @media print {
+            @page { size:58mm auto; margin:0; }
+            html, body { width:58mm; margin:0; padding:0; }
+            body { background:#fff; display:block; }
+            .receipt {
+                width:100%;
+                max-width:58mm;
+                padding:0;
+                margin:0;
+                font-size:11.5px;
+                font-weight:700;
+                -webkit-print-color-adjust:exact;
+                print-color-adjust:exact;
+            }
+            .no-print { display:none !important; }
+        }
     </style>
 </head>
 <body>
 <div class="receipt">
-    <div class="receipt-header">
-        <div style="display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;background:rgba(255,255,255,0.15);border-radius:12px;margin-bottom:8px;overflow:hidden;">
-            @if(!empty($transaction->user->tenant->logo_path))
-                <img src="{{ Storage::url($transaction->user->tenant->logo_path) }}" alt="Logo toko" style="width:100%;height:100%;object-fit:cover;">
-            @elseif(!empty($appSettings['app_logo_path']))
-                <img src="{{ Storage::url($appSettings['app_logo_path']) }}" alt="Logo Tokaku" style="width:100%;height:100%;object-fit:cover;">
-            @else
-                <svg width="20" height="20" viewBox="0 0 18 18" fill="none"><path d="M3 5h12M3 9h8M3 13h5" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
-            @endif
-        </div>
-        <p style="color:#fff;font-size:18px;font-weight:700;letter-spacing:-0.3px;">{{ $transaction->user->tenant->name ?? ($appSettings['app_name'] ?? 'Tokaku') }}</p>
-        <p style="color:rgba(255,255,255,0.75);font-size:12px;margin-top:3px;">{{ $appSettings['app_name'] ?? 'Tokaku' }}</p>
-    </div>
-    <div class="receipt-body">
-        <div class="row"><span class="label">Invoice</span><span class="value" style="font-family:monospace;font-size:12px;">{{ $transaction->invoice_no }}</span></div>
-        <div class="row"><span class="label">Kasir</span><span class="value">{{ $transaction->user->name }}</span></div>
-        <div class="row"><span class="label">Waktu</span><span class="value">{{ $transaction->created_at->format('d/m/Y H:i') }}</span></div>
-        <hr class="divider">
-        @foreach($transaction->items as $item)
-        <div style="margin-bottom:10px;">
-            <p style="font-size:13.5px;font-weight:500;color:#0f172a;margin-bottom:3px;">{{ $item->product_name }}</p>
-            <div class="row">
-                <span style="font-size:12.5px;color:#64748b;">{{ $item->quantity }}x Rp {{ number_format($item->unit_price,0,',','.') }}</span>
-                <span style="font-size:13px;font-weight:600;color:#0f172a;">Rp {{ number_format($item->subtotal,0,',','.') }}</span>
-            </div>
-        </div>
-        @endforeach
-        <hr class="divider">
-        <div class="row"><span class="label">Subtotal</span><span class="value">Rp {{ number_format($transaction->subtotal,0,',','.') }}</span></div>
-        @if($transaction->discount > 0)
-        <div class="row"><span class="label">Diskon</span><span class="value" style="color:#f43f5e;">-Rp {{ number_format($transaction->discount,0,',','.') }}</span></div>
+    <div class="center">
+        <div class="store-name">{{ $transaction->user->tenant->name ?? ($appSettings['app_name'] ?? 'Tokaku') }}</div>
+        @if($transaction->user->tenant->address ?? false)
+            <div class="store-sub">{{ $transaction->user->tenant->address }}</div>
         @endif
-        <div class="row total-row" style="margin-top:8px;"><span>TOTAL</span><span style="color:#0F6E56;">Rp {{ number_format($transaction->total,0,',','.') }}</span></div>
-        <div class="row" style="margin-top:6px;"><span class="label">Bayar ({{ strtoupper($transaction->payment_method) }})</span><span class="value">Rp {{ number_format($transaction->paid_amount,0,',','.') }}</span></div>
-        <div class="row"><span class="label">Kembalian</span><span class="value">Rp {{ number_format($transaction->change_amount,0,',','.') }}</span></div>
-        <hr class="divider">
-        <p style="text-align:center;font-size:12.5px;color:#94a3b8;line-height:1.6;">Terima kasih sudah berbelanja!<br><span style="font-size:11.5px;">Powered by {{ $appSettings['app_name'] ?? 'Tokaku' }} · 1017studios.id</span></p>
-        <button onclick="window.print()" class="btn btn-print no-print">Cetak Struk</button>
-        <a href="{{ route('tenant.kasir.index') }}" class="btn btn-back no-print">Kembali ke Kasir</a>
+        @if($transaction->user->tenant->phone ?? false)
+            <div class="store-sub">{{ $transaction->user->tenant->phone }}</div>
+        @endif
+    </div>
+
+    <hr class="divider">
+
+    <div class="row"><span>Invoice</span><span>{{ $transaction->invoice_no }}</span></div>
+    <div class="row"><span>Kasir</span><span>{{ $transaction->user->name }}</span></div>
+    <div class="row"><span>Waktu</span><span>{{ $transaction->created_at->format('d/m/y H:i') }}</span></div>
+
+    <hr class="divider">
+
+    @foreach($transaction->items as $item)
+    <div style="margin-bottom:4px;">
+        <div class="item-name">{{ $item->product_name }}</div>
+        <div class="item-line">
+            <span>{{ $item->quantity }} x {{ number_format($item->unit_price,0,',','.') }}</span>
+            <span>{{ number_format($item->subtotal,0,',','.') }}</span>
+        </div>
+    </div>
+    @endforeach
+
+    <hr class="divider">
+
+    <div class="row"><span>Subtotal</span><span>Rp {{ number_format($transaction->subtotal,0,',','.') }}</span></div>
+    @if($transaction->discount > 0)
+    <div class="row"><span>Diskon</span><span>-Rp {{ number_format($transaction->discount,0,',','.') }}</span></div>
+    @endif
+    @if($transaction->tax > 0)
+    <div class="row"><span>Pajak ({{ rtrim(rtrim(number_format($transaction->tax_rate,2,',','.'),'0'),',') }}%)</span><span>Rp {{ number_format($transaction->tax,0,',','.') }}</span></div>
+    @endif
+
+    <hr class="divider">
+
+    <div class="row total-row"><span>TOTAL</span><span>Rp {{ number_format($transaction->total,0,',','.') }}</span></div>
+    <div class="row"><span>Bayar ({{ strtoupper($transaction->payment_method) }})</span><span>Rp {{ number_format($transaction->paid_amount,0,',','.') }}</span></div>
+    <div class="row"><span>Kembalian</span><span>Rp {{ number_format($transaction->change_amount,0,',','.') }}</span></div>
+
+    @if($transaction->payment_status === 'debt')
+    <hr class="divider">
+    <div class="center">** TRANSAKSI HUTANG **</div>
+    @endif
+
+    <hr class="divider">
+
+    <div class="center footer">
+        Terima kasih sudah berbelanja!<br>
+        Powered by {{ $appSettings['app_name'] ?? 'Tokaku' }} &middot; 1017studios.id
     </div>
 </div>
+
+<div class="actions no-print">
+    <button onclick="cetakLangsung()" class="btn btn-print" id="btnCetakLangsung">Cetak Langsung (Printer)</button>
+    <button onclick="window.print()" class="btn btn-back">Cetak via Browser</button>
+    <a href="{{ route('tenant.kasir.struk.pdf', $transaction->id) }}" class="btn btn-pdf">Download PDF</a>
+    <a href="{{ route('tenant.kasir.index') }}" class="btn btn-back">Kembali ke Kasir</a>
+    <p id="cetakStatus" style="text-align:center;font-size:12px;color:#64748b;margin-top:8px;font-family:system-ui,sans-serif;"></p>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/qz-tray@2.2.4/qz-tray.js"></script>
+<script>
+    var ESCPOS_URL = "{{ route('tenant.kasir.escpos', $transaction->id) }}";
+    var IS_ANDROID = /Android/i.test(navigator.userAgent);
+
+    function setStatus(msg){ document.getElementById('cetakStatus').textContent = msg || ''; }
+
+    // Deteksi device: Android -> RawBT, selain itu -> QZ Tray (PC)
+    function cetakLangsung(){
+        if (IS_ANDROID) { cetakRawBT(); } else { cetakQZ(); }
+    }
+
+    // ---- Jalur Android: RawBT ----
+    function cetakRawBT(){
+        setStatus('Mengirim ke RawBT...');
+        // RawBT membaca data mentah dari URL via intent rawbt:
+        var url = ESCPOS_URL + '?format=raw';
+        window.location.href = 'rawbt:' + new URL(url, window.location.origin).href;
+        setTimeout(function(){ setStatus('Jika tidak tercetak, pastikan app RawBT terpasang & printer terhubung.'); }, 1500);
+    }
+
+    // ---- Jalur PC: QZ Tray ----
+    function cetakQZ(){
+        if (typeof qz === 'undefined') { setStatus('Library QZ Tray gagal dimuat.'); return; }
+        setStatus('Menghubungkan ke QZ Tray...');
+
+        var connect = qz.websocket.isActive()
+            ? Promise.resolve()
+            : qz.websocket.connect();
+
+        connect.then(function(){
+            return fetch(ESCPOS_URL).then(function(r){ return r.json(); });
+        }).then(function(data){
+            return qz.printers.getDefault().then(function(printer){
+                var cfg  = qz.configs.create(printer, { encoding: 'ISO-8859-1' });
+                var bytes = [{ type: 'raw', format: 'base64', data: data.base64 }];
+                return qz.print(cfg, bytes);
+            });
+        }).then(function(){
+            setStatus('Struk berhasil dikirim ke printer.');
+        }).catch(function(err){
+            console.error(err);
+            setStatus('Gagal: pastikan aplikasi QZ Tray berjalan di PC ini.');
+        });
+    }
+</script>
 </body>
 </html>

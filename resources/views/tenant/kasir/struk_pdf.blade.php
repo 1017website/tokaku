@@ -4,9 +4,9 @@
     <meta charset="UTF-8">
     <style>
         * { margin:0; padding:0; box-sizing:border-box; }
-        body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 11px; color: #000; background: #fff; width: 80mm; }
+        body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 11px; color: #000; background: #fff; width: 58mm; }
         .header { text-align: center; padding: 12px 0 8px; border-bottom: 1px dashed #000; margin-bottom: 8px; }
-        .header h1 { font-size: 18px; font-weight: 700; color: #0F6E56; margin-bottom: 2px; }
+        .header h1 { font-size: 16px; font-weight: 700; color: #000; margin-bottom: 2px; }
         .logo { width: 42px; height: 42px; object-fit: contain; margin: 0 auto 4px; display: block; }
         .header p { font-size: 10px; color: #555; }
         .meta { margin-bottom: 8px; border-bottom: 1px dashed #000; padding-bottom: 8px; }
@@ -24,9 +24,6 @@
 </head>
 <body>
     <div class="header">
-        @if(!empty($transaction->user->tenant->logo_path) && file_exists(public_path('storage/'.$transaction->user->tenant->logo_path)))
-            <img class="logo" src="{{ public_path('storage/'.$transaction->user->tenant->logo_path) }}" alt="Logo toko">
-        @endif
         <h1>{{ $transaction->user->tenant->name ?? ($appSettings['app_name'] ?? 'Tokaku') }}</h1>
         <p>{{ $appSettings['app_name'] ?? 'Tokaku' }}</p>
         @if($transaction->user->tenant->address ?? false)

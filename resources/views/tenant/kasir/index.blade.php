@@ -108,7 +108,7 @@
 <div id="modalStruk" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);align-items:center;justify-content:center;z-index:60;padding:16px;">
     <div style="background:#fff;border-radius:20px;width:100%;max-width:360px;padding:28px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.15);">
         <h3 style="font-size:17px;font-weight:800;color:#0f172a;">Transaksi Berhasil!</h3><p id="modalInvoice" style="font-size:13px;color:#64748b;margin:8px 0 18px;"></p>
-        <div style="display:flex;flex-direction:column;gap:8px;"><a id="btnStruk" target="_blank" class="btn-secondary" style="justify-content:center;">Cetak Struk</a><a id="btnPdf" target="_blank" class="btn-primary" style="justify-content:center;">Download PDF</a><button onclick="closeModal()" class="btn-secondary" style="justify-content:center;">Tutup</button></div>
+        <div style="display:flex;flex-direction:column;gap:8px;"><button id="btnCetakLangsung" onclick="cetakLangsungKasir()" class="btn-primary" style="justify-content:center;">Cetak Struk</button><button onclick="kirimWaKasir()" class="btn-secondary" style="justify-content:center;background:#dcfce7;color:#15803d;border-color:#bbf7d0;">Kirim Struk ke WhatsApp</button><a id="btnStruk" target="_blank" class="btn-secondary" style="justify-content:center;">Buka Struk (Browser)</a><a id="btnPdf" target="_blank" class="btn-secondary" style="justify-content:center;">Download PDF</a><button onclick="closeModal()" class="btn-secondary" style="justify-content:center;">Tutup</button><p id="cetakStatusKasir" style="font-size:12px;color:#64748b;margin-top:4px;"></p></div>
     </div>
 </div>
 @endsection
@@ -129,7 +129,7 @@ function recalculate(){ var sub=0; Object.values(cart).forEach(function(i){sub+=
 function setPayment(m){ paymentMethod=m; ['cash','qris','transfer'].forEach(function(v){var b=document.getElementById('pay-'+v); b.style.background=v===m?'#0F6E56':'#fff'; b.style.color=v===m?'#fff':'#374151'; b.style.borderColor=v===m?'#0F6E56':'#e2e8f0';}); }
 function showConfirmModal(){ if(!Object.keys(cart).length){alert('Keranjang masih kosong!');return;} var sub=0; Object.values(cart).forEach(function(i){sub+=i.price*i.qty;}); var disc=parseFloat(document.getElementById('discountInput').value)||0, total=Math.max(0,sub-disc), paid=parseFloat(document.getElementById('paidInput').value)||0; if(paymentMethod==='cash' && paid<total){alert('Jumlah bayar kurang dari total!');return;} var html=''; Object.values(cart).forEach(function(i){html+='<div style="display:flex;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid #f1f5f9;"><div><b style="font-size:13.5px;color:#0f172a;">'+escapeHtml(i.name)+'</b><p style="font-size:12px;color:#64748b;">'+fmt(i.price)+' × '+i.qty+'</p></div><b style="font-size:13px;color:#0f172a;">'+fmt(i.price*i.qty)+'</b></div>';}); document.getElementById('confirmItemList').innerHTML=html; document.getElementById('confirmSummary').innerHTML='<div style="display:flex;justify-content:space-between;"><span>Subtotal</span><b>'+fmt(sub)+'</b></div><div style="display:flex;justify-content:space-between;"><span>Diskon</span><b>'+fmt(disc)+'</b></div><div style="display:flex;justify-content:space-between;border-top:1px solid #e2e8f0;padding-top:8px;"><b>Total</b><b style="color:#0F6E56;">'+fmt(total)+'</b></div>'; document.getElementById('modalKonfirmasi').style.display='flex'; }
 function closeConfirmModal(){ document.getElementById('modalKonfirmasi').style.display='none'; }
-async function processTransaction(){ var btn=document.getElementById('btnKonfirmasi'), disc=parseFloat(document.getElementById('discountInput').value)||0, paid=parseFloat(document.getElementById('paidInput').value)||0; btn.disabled=true; btn.textContent='Memproses...'; try{ var res=await fetch('{{ route("tenant.kasir.proses") }}',{method:'POST',headers:{'Content-Type':'application/json','X-CSRF-TOKEN':document.querySelector('meta[name="csrf-token"]').getAttribute('content')},body:JSON.stringify({items:Object.values(cart).map(function(i){return {id:parseInt(i.id),qty:i.qty};}),paid_amount:paid,payment_method:paymentMethod,discount:disc,customer_id:document.getElementById('customerSelect').value || null})}); var data=await res.json(); if(data.success){ closeConfirmModal(); document.getElementById('modalInvoice').textContent='Invoice #'+data.transaction_id; document.getElementById('btnStruk').href='/kasir/'+data.transaction_id+'/struk'; document.getElementById('btnPdf').href='/kasir/'+data.transaction_id+'/struk-pdf'; document.getElementById('modalStruk').style.display='flex'; clearCart(); document.getElementById('paidInput').value=''; document.getElementById('discountInput').value='0'; document.getElementById('customerSelect').value=''; recalculate(); } else alert(data.message || 'Terjadi kesalahan.'); } catch(e){ alert('Gagal terhubung ke server.'); console.error(e); } finally{ btn.disabled=false; btn.textContent='Konfirmasi & Bayar'; } }
+async function processTransaction(){ var btn=document.getElementById('btnKonfirmasi'), disc=parseFloat(document.getElementById('discountInput').value)||0, paid=parseFloat(document.getElementById('paidInput').value)||0; btn.disabled=true; btn.textContent='Memproses...'; try{ var res=await fetch('{{ route("tenant.kasir.proses") }}',{method:'POST',headers:{'Content-Type':'application/json','X-CSRF-TOKEN':document.querySelector('meta[name="csrf-token"]').getAttribute('content')},body:JSON.stringify({items:Object.values(cart).map(function(i){return {id:parseInt(i.id),qty:i.qty};}),paid_amount:paid,payment_method:paymentMethod,discount:disc,customer_id:document.getElementById('customerSelect').value || null})}); var data=await res.json(); if(data.success){ closeConfirmModal(); window.lastTransactionId=data.transaction_id; document.getElementById('modalInvoice').textContent='Invoice #'+data.transaction_id; document.getElementById('btnStruk').href='/kasir/'+data.transaction_id+'/struk'; document.getElementById('btnPdf').href='/kasir/'+data.transaction_id+'/struk-pdf'; document.getElementById('cetakStatusKasir').textContent=''; document.getElementById('modalStruk').style.display='flex'; clearCart(); document.getElementById('paidInput').value=''; document.getElementById('discountInput').value='0'; document.getElementById('customerSelect').value=''; recalculate(); } else alert(data.message || 'Terjadi kesalahan.'); } catch(e){ alert('Gagal terhubung ke server.'); console.error(e); } finally{ btn.disabled=false; btn.textContent='Konfirmasi & Bayar'; } }
 function closeModal(){ document.getElementById('modalStruk').style.display='none'; }
 document.getElementById('searchProduct').addEventListener('input', filterProducts);
 document.getElementById('categoryTabs').addEventListener('click', function(e){ var btn=e.target.closest('.cat-btn'); if(!btn) return; document.querySelectorAll('.cat-btn').forEach(function(b){b.classList.remove('active')}); btn.classList.add('active'); document.querySelectorAll('.product-section').forEach(function(sec){sec.style.display = (btn.dataset.category==='top' ? sec.dataset.section==='top' : sec.dataset.section==='all') ? 'grid':'none';}); filterProducts(); });
@@ -139,5 +139,54 @@ document.getElementById('modalKonfirmasi').addEventListener('click', function(e)
 document.getElementById('modalStruk').addEventListener('click', function(e){ if(e.target===this) closeModal(); });
 if (window.jQuery && jQuery.fn.select2) { jQuery('#customerSelect').select2({ width: '100%', placeholder: 'Pilih pelanggan', allowClear: true }); }
 renderCart();
+
+// ===== Cetak Langsung ESC/POS (QZ Tray untuk PC, RawBT untuk Android) =====
+var IS_ANDROID = /Android/i.test(navigator.userAgent);
+function setCetakStatus(m){ var el=document.getElementById('cetakStatusKasir'); if(el) el.textContent=m||''; }
+
+function cetakLangsungKasir(){
+    var id = window.lastTransactionId;
+    if(!id){ setCetakStatus('Transaksi tidak ditemukan.'); return; }
+    var escposUrl = '/kasir/'+id+'/escpos';
+    if (IS_ANDROID) {
+        setCetakStatus('Mengirim ke RawBT...');
+        window.location.href = 'rawbt:' + new URL(escposUrl+'?format=raw', window.location.origin).href;
+        setTimeout(function(){ setCetakStatus('Jika tidak tercetak, pastikan RawBT terpasang & printer terhubung.'); }, 1500);
+        return;
+    }
+    if (typeof qz === 'undefined') { setCetakStatus('Library QZ Tray gagal dimuat.'); return; }
+    setCetakStatus('Menghubungkan ke QZ Tray...');
+    (qz.websocket.isActive() ? Promise.resolve() : qz.websocket.connect())
+        .then(function(){ return fetch(escposUrl).then(function(r){ return r.json(); }); })
+        .then(function(data){
+            return qz.printers.getDefault().then(function(printer){
+                var cfg = qz.configs.create(printer, { encoding: 'ISO-8859-1' });
+                return qz.print(cfg, [{ type:'raw', format:'base64', data:data.base64 }]);
+            });
+        })
+        .then(function(){ setCetakStatus('Struk berhasil dikirim ke printer.'); })
+        .catch(function(err){ console.error(err); setCetakStatus('Gagal: pastikan QZ Tray berjalan di PC ini.'); });
+}
+
+function kirimWaKasir(){
+    var id = window.lastTransactionId;
+    if(!id){ setCetakStatus('Transaksi tidak ditemukan.'); return; }
+    setCetakStatus('Menyiapkan struk WhatsApp...');
+    fetch('/kasir/'+id+'/whatsapp')
+        .then(function(r){ return r.json(); })
+        .then(function(data){
+            var input = prompt('Masukkan nomor WhatsApp pembeli\n(contoh: 081234567890)', data.phone || '');
+            if(input === null){ setCetakStatus(''); return; }   // batal
+            var phone = input.replace(/[^0-9]/g, '');
+            if(phone.charAt(0) === '0'){ phone = '62' + phone.slice(1); }
+            else if(phone.charAt(0) === '8'){ phone = '62' + phone; }
+            if(phone.length < 9){ setCetakStatus('Nomor WhatsApp tidak valid.'); return; }
+            var url = 'https://api.whatsapp.com/send/?phone=' + phone + '&text=' + encodeURIComponent(data.text);
+            window.open(url, '_blank');
+            setCetakStatus('Membuka WhatsApp ke '+phone+'...');
+        })
+        .catch(function(err){ console.error(err); setCetakStatus('Gagal menyiapkan struk WhatsApp.'); });
+}
 </script>
+<script src="https://cdn.jsdelivr.net/npm/qz-tray@2.2.4/qz-tray.js"></script>
 @endpush

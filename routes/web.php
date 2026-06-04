@@ -45,6 +45,8 @@ Route::middleware(['auth', 'tenant', 'subscription'])->group(function () {
         Route::post('/proses',        [TransactionController::class, 'proses'])->name('proses');
         Route::get('/{id}/struk',     [TransactionController::class, 'struk'])->name('struk');
         Route::get('/{id}/struk-pdf', [TransactionController::class, 'strukPdf'])->name('struk.pdf');
+        Route::get('/{id}/escpos',    [TransactionController::class, 'escpos'])->name('escpos');
+        Route::get('/{id}/whatsapp',  [TransactionController::class, 'whatsapp'])->name('whatsapp');
     });
 
     // Laporan

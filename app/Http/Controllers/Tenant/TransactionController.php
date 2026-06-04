@@ -10,6 +10,7 @@ use App\Models\Product;
 use App\Models\Shift;
 use App\Models\Transaction;
 use App\Models\TransactionItem;
+use App\Services\ReceiptEscposService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -145,8 +146,55 @@ class TransactionController extends Controller {
         $transaction = Transaction::with(['items','user','user.tenant','customer'])
             ->where('tenant_id', app('currentTenant')->id)->findOrFail($id);
         $pdf = Pdf::loadView('tenant.kasir.struk_pdf', compact('transaction'))
-            ->setPaper([0,0,226.77,600],'portrait');
+            ->setPaper([0,0,164.41,800],'portrait');
         return $pdf->download("struk-{$transaction->invoice_no}.pdf");
+    }
+
+    /**
+     * Perintah ESC/POS mentah (base64) untuk QZ Tray / RawBT.
+     * format=raw  -> string byte langsung (untuk RawBT intent)
+     * default     -> JSON { base64 } untuk QZ Tray
+     */
+    public function escpos(int $id, Request $request) {
+        $transaction = Transaction::with(['items','user','user.tenant','customer'])
+            ->where('tenant_id', app('currentTenant')->id)->findOrFail($id);
+
+        $appSettings = ['app_name' => \App\Models\AppSetting::getValue('app_name', 'Tokaku')];
+        $raw = app(ReceiptEscposService::class)->build($transaction, $appSettings);
+
+        if ($request->query('format') === 'raw') {
+            return response($raw, 200, ['Content-Type' => 'application/octet-stream']);
+        }
+
+        return response()->json([
+            'invoice' => $transaction->invoice_no,
+            'base64'  => base64_encode($raw),
+        ]);
+    }
+
+    /**
+     * Teks struk + nomor tujuan untuk dikirim via WhatsApp.
+     */
+    public function whatsapp(int $id) {
+        $transaction = Transaction::with(['items','user','user.tenant','customer'])
+            ->where('tenant_id', app('currentTenant')->id)->findOrFail($id);
+
+        $appSettings = ['app_name' => \App\Models\AppSetting::getValue('app_name', 'Tokaku')];
+        $text = app(ReceiptEscposService::class)->whatsappText($transaction, $appSettings);
+
+        // Normalisasi nomor pelanggan ke format 62 (jika ada)
+        $phone = $transaction->customer->phone ?? null;
+        if ($phone) {
+            $phone = preg_replace('/[^0-9]/', '', $phone);
+            if (str_starts_with($phone, '0')) { $phone = '62' . substr($phone, 1); }
+            elseif (str_starts_with($phone, '8')) { $phone = '62' . $phone; }
+        }
+
+        return response()->json([
+            'invoice' => $transaction->invoice_no,
+            'phone'   => $phone,   // null jika pelanggan tidak punya nomor
+            'text'    => $text,
+        ]);
     }
 
     public function laporan(Request $request) {
