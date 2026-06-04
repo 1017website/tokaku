@@ -70,7 +70,7 @@ class LoginController extends Controller
             return redirect()->route('login')->withErrors(['email' => $message]);
         }
 
-        return redirect()->intended(route('tenant.dashboard'));
+        return redirect()->intended($user->homeRoute());
     }
 
     public function logout(Request $request)

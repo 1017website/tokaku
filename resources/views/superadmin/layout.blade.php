@@ -35,13 +35,15 @@
 <aside class="sa-sidebar w-60 bg-white border-r border-gray-100 flex flex-col flex-shrink-0" id="saSidebar">
     <div style="padding:16px 20px;border-bottom:1px solid #f1f5f9;display:flex;align-items:center;justify-content:space-between;">
         <div style="display:flex;align-items:center;gap:10px;">
-            <div style="width:32px;height:32px;background:#0F6E56;border-radius:10px;display:flex;align-items:center;justify-content:center;overflow:hidden;">
-                @if(!empty($appSettings['app_logo_path']))
-                    <img src="{{ Storage::url($appSettings['app_logo_path']) }}" alt="{{ $appSettings['app_name'] ?? 'Tokaku' }}" style="width:100%;height:100%;object-fit:cover;">
-                @else
+            @if(!empty($appSettings['app_logo_path']))
+                <div style="width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#fff;border:1px solid #f1f5f9;">
+                    <img src="{{ Storage::url($appSettings['app_logo_path']) }}" alt="{{ $appSettings['app_name'] ?? 'Tokaku' }}" style="width:100%;height:100%;object-fit:contain;">
+                </div>
+            @else
+                <div style="width:36px;height:36px;background:#0F6E56;border-radius:10px;display:flex;align-items:center;justify-content:center;overflow:hidden;">
                     <svg width="16" height="16" viewBox="0 0 18 18" fill="none"><path d="M3 5h12M3 9h8M3 13h5" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
-                @endif
-            </div>
+                </div>
+            @endif
             <div>
                 <p style="font-size:14px;font-weight:700;color:#0F6E56;">{{ $appSettings['app_name'] ?? 'Tokaku' }}</p>
                 <p style="font-size:11px;color:#9ca3af;">Super Admin</p>

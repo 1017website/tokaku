@@ -29,7 +29,7 @@ class UserController extends Controller
             'name'          => 'required|string|max:255',
             'email'         => 'required|email',
             'role'          => 'required|in:admin,cashier',
-            'password'      => ['required', Password::min(8)],
+            'password'      => ['required', 'confirmed', Password::min(8)],
             'permissions'   => 'nullable|array',
             'permissions.*' => 'in:' . implode(',', $modules),
         ]);

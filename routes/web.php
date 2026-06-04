@@ -19,7 +19,7 @@ Route::get('/', function () {
     if (auth()->check()) {
         return auth()->user()->role === 'superadmin'
             ? redirect()->route('superadmin.dashboard')
-            : redirect()->route('tenant.dashboard');
+            : redirect()->to(auth()->user()->homeRoute());
     }
     return view('welcome');
 })->name('home');
@@ -32,7 +32,10 @@ Route::post('/logout', [LoginController::class, 'logout'])->middleware('auth')->
 
 // TENANT
 Route::middleware(['auth', 'tenant', 'subscription'])->group(function () {
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('tenant.dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->middleware('role:owner')->name('tenant.dashboard');
+
+    // Halaman untuk user tanpa akses modul apapun
+    Route::get('/no-access', fn() => view('tenant.no-access'))->name('tenant.no-access');
     Route::resource('products', ProductController::class)->names('tenant.products')->middleware('permission:produk');
     Route::resource('categories', CategoryController::class)->names('tenant.categories')->middleware('permission:kategori');
 

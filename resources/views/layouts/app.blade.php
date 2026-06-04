@@ -180,6 +180,7 @@
                     style="font-size:10.5px;font-weight:600;color:#9ca3af;letter-spacing:0.8px;text-transform:uppercase;padding:0 14px;margin-bottom:6px;">
                     Menu</p>
 
+                @if(auth()->user()->isOwner())
                 <a href="{{ route('tenant.dashboard') }}"
                     class="sidebar-link {{ request()->routeIs('tenant.dashboard') ? 'active' : '' }}">
                     <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -188,6 +189,7 @@
                     </svg>
                     Dashboard
                 </a>
+                @endif
                 @if(auth()->user()->hasAccess('kasir'))
                 <a href="{{ route('tenant.kasir.index') }}"
                     class="sidebar-link {{ request()->routeIs('tenant.kasir.*') ? 'active' : '' }}">

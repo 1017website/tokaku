@@ -69,4 +69,38 @@ class User extends Authenticatable
 
         return in_array($module, (array) $this->permissions, true);
     }
+
+    /**
+     * Rute landing page sesuai akses user setelah login.
+     * Owner → dashboard. Lainnya → modul pertama yang boleh diakses.
+     */
+    public function homeRoute(): string
+    {
+        if (in_array($this->role, ['owner', 'superadmin'], true)) {
+            return route('tenant.dashboard');
+        }
+
+        // Urutan prioritas modul → nama route index-nya
+        $map = [
+            'kasir'       => 'tenant.kasir.index',
+            'produk'      => 'tenant.products.index',
+            'kategori'    => 'tenant.categories.index',
+            'laporan'     => 'tenant.laporan.index',
+            'stok'        => 'tenant.stok.index',
+            'pelanggan'   => 'tenant.pelanggan.index',
+            'promo'       => 'tenant.promo.index',
+            'pengeluaran' => 'tenant.expenses.index',
+            'hutang'      => 'tenant.hutang.index',
+            'shift'       => 'tenant.shift.index',
+        ];
+
+        foreach ($map as $module => $routeName) {
+            if ($this->hasAccess($module)) {
+                return route($routeName);
+            }
+        }
+
+        // Tidak punya akses modul apapun
+        return route('tenant.no-access');
+    }
 }
