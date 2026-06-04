@@ -48,6 +48,19 @@
         </div>
     </div>
 
+    <div style="background:#fff;border-radius:16px;border:1px solid #f1f5f9;box-shadow:0 1px 3px rgba(0,0,0,0.04);padding:22px;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;">
+            <div>
+                <p style="font-size:15px;font-weight:700;color:#0f172a;margin-bottom:4px;">Optimize Clear</p>
+                <p style="font-size:13px;color:#64748b;line-height:1.6;">Menjalankan <code>php artisan optimize:clear</code> untuk membersihkan cache config, route, view, event, dan cache aplikasi setelah update source code.</p>
+            </div>
+            <form method="POST" action="{{ route('superadmin.maintenance.optimize-clear') }}">
+                @csrf
+                <button type="submit" class="btn-primary" onclick="return confirm('Jalankan php artisan optimize:clear sekarang?')">Run Optimize Clear</button>
+            </form>
+        </div>
+    </div>
+
     <div style="background:#fffbeb;border:1px solid #fde68a;color:#92400e;border-radius:14px;padding:14px;font-size:12.5px;line-height:1.6;">
         Gunakan fitur ini hanya dari akun superadmin. Untuk keamanan, tombol ini tetap membutuhkan login administrator dan role superadmin.
     </div>

@@ -279,5 +279,18 @@ class SuperAdminController extends Controller
         }
     }
 
+    public function runOptimizeClear()
+    {
+        try {
+            Artisan::call('optimize:clear');
+            $output = trim(Artisan::output());
+
+            return back()->with('success', 'php artisan optimize:clear berhasil dijalankan.')
+                ->with('artisan_output', $output ?: 'Tidak ada output dari command.');
+        } catch (Throwable $e) {
+            return back()->with('error', 'Gagal menjalankan optimize:clear: ' . $e->getMessage());
+        }
+    }
+
 }
 

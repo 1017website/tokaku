@@ -133,6 +133,7 @@ Route::middleware(['auth','role:superadmin'])->prefix('superadmin')->name('super
     Route::get('/maintenance', [SuperAdminController::class, 'maintenance'])->name('maintenance');
     Route::post('/maintenance/migrate', [SuperAdminController::class, 'runMigrate'])->name('maintenance.migrate');
     Route::post('/maintenance/storage-link', [SuperAdminController::class, 'runStorageLink'])->name('maintenance.storage-link');
+    Route::post('/maintenance/optimize-clear', [SuperAdminController::class, 'runOptimizeClear'])->name('maintenance.optimize-clear');
     Route::get('/users', function () {
         $users = \App\Models\User::with('tenant')
             ->when(request('search'),fn($q)=>$q->where('name','like','%'.request('search').'%')->orWhere('email','like','%'.request('search').'%'))
