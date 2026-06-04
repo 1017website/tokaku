@@ -42,7 +42,7 @@ class ProductController extends Controller
 
         if ($request->hasFile('photo')) {
             $validated['photo_path'] = $request->file('photo')
-                ->store('products', 'local');
+                ->store('products', 'public');
         }
 
         Product::create($validated);
@@ -100,8 +100,11 @@ class ProductController extends Controller
         ]);
 
         if ($request->hasFile('photo')) {
+            if ($product->photo_path) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($product->photo_path);
+            }
             $validated['photo_path'] = $request->file('photo')
-                ->store('products', 'local');
+                ->store('products', 'public');
         }
 
         $validated['is_active'] = $request->boolean('is_active');

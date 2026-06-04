@@ -9,7 +9,17 @@
     {{-- Form Tambah User --}}
     <div>
         <div style="background:#fff;border-radius:16px;border:1px solid #f1f5f9;box-shadow:0 1px 3px rgba(0,0,0,0.04);padding:22px;">
-            <p style="font-size:14px;font-weight:600;color:#0f172a;margin-bottom:16px;">Tambah Anggota Tim</p>
+            @php
+                $maxUsers = (int) config('tokaku.max_users', 3);
+                $usedSlot = $users->count();
+                $slotPenuh = $usedSlot >= $maxUsers;
+            @endphp
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+                <p style="font-size:14px;font-weight:600;color:#0f172a;">Tambah Anggota Tim</p>
+                <span style="font-size:11.5px;font-weight:500;padding:3px 10px;border-radius:99px;{{ $slotPenuh ? 'background:#fff1f2;color:#be123c;' : 'background:#f0fdf6;color:#0F6E56;' }}">
+                    {{ $usedSlot }}/{{ $maxUsers }} slot
+                </span>
+            </div>
 
             @if($errors->any())
             <div style="background:#fff1f2;border:1px solid #fecdd3;color:#be123c;font-size:13px;border-radius:10px;padding:10px 14px;margin-bottom:14px;">
@@ -17,6 +27,11 @@
             </div>
             @endif
 
+            @if($slotPenuh)
+            <div style="background:#fffbeb;border:1px solid #fde68a;color:#92400e;font-size:13px;border-radius:10px;padding:12px 14px;line-height:1.5;">
+                Slot user sudah penuh ({{ $maxUsers }} termasuk owner). Hapus atau nonaktifkan anggota lain untuk menambah user baru.
+            </div>
+            @else
             <form method="POST" action="{{ route('tenant.users.store') }}" style="display:flex;flex-direction:column;gap:13px;">
                 @csrf
                 <div>
@@ -43,6 +58,21 @@
                         <option value="admin" {{ old('role')=='admin'?'selected':'' }}>Admin</option>
                     </select>
                 </div>
+
+                <div>
+                    <label style="display:block;font-size:12.5px;font-weight:500;color:#374151;margin-bottom:8px;">Akses Modul</label>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;border:1.5px solid #e2e8f0;border-radius:10px;padding:12px;background:#fafafa;">
+                        @foreach(config('permissions.modules') as $key => $label)
+                        <label style="display:flex;align-items:center;gap:7px;font-size:12.5px;color:#374151;cursor:pointer;">
+                            <input type="checkbox" name="permissions[]" value="{{ $key }}"
+                                {{ in_array($key, old('permissions', [])) ? 'checked' : '' }}
+                                style="width:15px;height:15px;accent-color:#0F6E56;cursor:pointer;">
+                            {{ $label }}
+                        </label>
+                        @endforeach
+                    </div>
+                    <p style="font-size:11px;color:#94a3b8;margin-top:6px;">Centang modul yang boleh diakses anggota ini.</p>
+                </div>
                 <div>
                     <label style="display:block;font-size:12.5px;font-weight:500;color:#374151;margin-bottom:5px;">Password *</label>
                     <input type="password" name="password" required
@@ -57,6 +87,7 @@
                     Tambah Anggota
                 </button>
             </form>
+            @endif
         </div>
     </div>
 
@@ -108,6 +139,13 @@
                                     {{ $user->is_active ? 'Nonaktifkan' : 'Aktifkan' }}
                                 </button>
                             </form>
+
+                            {{-- Atur Akses --}}
+                            <button onclick='showAccessModal(@json($user->id), @json($user->name), @json($user->role), @json(array_values((array) $user->permissions)))'
+                                style="font-size:12px;font-weight:500;padding:6px 12px;border-radius:8px;border:1.5px solid #bbf7d2;cursor:pointer;font-family:Inter,sans-serif;background:#fff;color:#15803d;transition:all 0.15s;"
+                                onmouseover="this.style.background='#f0fdf6'" onmouseout="this.style.background='#fff'">
+                                Atur Akses
+                            </button>
 
                             {{-- Reset Password --}}
                             <button onclick="showResetModal({{ $user->id }}, '{{ addslashes($user->name) }}')"
@@ -168,6 +206,48 @@
     </div>
 </div>
 
+{{-- Modal Atur Akses --}}
+<div id="accessModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);align-items:center;justify-content:center;z-index:50;padding:16px;">
+    <div style="background:#fff;border-radius:20px;width:100%;max-width:440px;padding:28px;max-height:90vh;overflow-y:auto;">
+        <h3 style="font-size:16px;font-weight:700;color:#0f172a;margin-bottom:4px;">Atur Akses</h3>
+        <p style="font-size:13.5px;color:#64748b;margin-bottom:20px;" id="accessModalName"></p>
+
+        <form method="POST" id="accessForm" style="display:flex;flex-direction:column;gap:16px;">
+            @csrf @method('PUT')
+            <div>
+                <label style="display:block;font-size:12.5px;font-weight:500;color:#374151;margin-bottom:5px;">Role *</label>
+                <select name="role" id="accessRole" style="width:100%;border:1.5px solid #e2e8f0;border-radius:10px;padding:10px 14px;font-size:13.5px;font-family:Inter,sans-serif;outline:none;background:#fafafa;cursor:pointer;box-sizing:border-box;">
+                    <option value="cashier">Kasir</option>
+                    <option value="admin">Admin</option>
+                </select>
+            </div>
+            <div>
+                <label style="display:block;font-size:12.5px;font-weight:500;color:#374151;margin-bottom:8px;">Akses Modul</label>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;border:1.5px solid #e2e8f0;border-radius:10px;padding:12px;background:#fafafa;">
+                    @foreach(config('permissions.modules') as $key => $label)
+                    <label style="display:flex;align-items:center;gap:7px;font-size:12.5px;color:#374151;cursor:pointer;">
+                        <input type="checkbox" name="permissions[]" value="{{ $key }}" class="access-perm"
+                            style="width:15px;height:15px;accent-color:#0F6E56;cursor:pointer;">
+                        {{ $label }}
+                    </label>
+                    @endforeach
+                </div>
+            </div>
+            <div style="display:flex;gap:10px;margin-top:4px;">
+                <button type="button" onclick="closeAccessModal()"
+                    style="flex:1;background:#fff;color:#374151;font-family:Inter,sans-serif;font-size:13.5px;font-weight:500;padding:11px;border-radius:10px;border:1.5px solid #e2e8f0;cursor:pointer;">
+                    Batal
+                </button>
+                <button type="submit"
+                    style="flex:1;background:#0F6E56;color:#fff;font-family:Inter,sans-serif;font-size:13.5px;font-weight:600;padding:11px;border-radius:10px;border:none;cursor:pointer;"
+                    onmouseover="this.style.background='#085041'" onmouseout="this.style.background='#0F6E56'">
+                    Simpan
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
 @endsection
 
 @push('scripts')
@@ -180,6 +260,19 @@ function showResetModal(userId, name) {
 function closeResetModal() {
     document.getElementById('resetModal').style.display = 'none';
     document.getElementById('resetForm').reset();
+}
+
+function showAccessModal(userId, name, role, perms) {
+    document.getElementById('accessModalName').textContent = 'Atur akses untuk: ' + name;
+    document.getElementById('accessForm').action = '/users/' + userId + '/permissions';
+    document.getElementById('accessRole').value = role === 'admin' ? 'admin' : 'cashier';
+    document.querySelectorAll('.access-perm').forEach(function (cb) {
+        cb.checked = Array.isArray(perms) && perms.includes(cb.value);
+    });
+    document.getElementById('accessModal').style.display = 'flex';
+}
+function closeAccessModal() {
+    document.getElementById('accessModal').style.display = 'none';
 }
 </script>
 @endpush

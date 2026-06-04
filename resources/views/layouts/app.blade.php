@@ -146,17 +146,21 @@
         <aside class="sidebar-desktop w-60 bg-white border-r border-gray-100 flex flex-col flex-shrink-0" id="sidebar">
             <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
                 <div class="flex items-center gap-2.5">
-                    <div style="width:32px;height:32px;background:#0F6E56;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;">
-                        @if(!empty($currentTenant?->logo_path))
-                            <img src="{{ Storage::url($currentTenant->logo_path) }}" alt="Logo {{ $currentTenant->name }}" style="width:100%;height:100%;object-fit:cover;">
-                        @elseif(!empty($appSettings['app_logo_path']))
-                            <img src="{{ Storage::url($appSettings['app_logo_path']) }}" alt="{{ $appSettings['app_name'] ?? 'Tokaku' }}" style="width:100%;height:100%;object-fit:cover;">
-                        @else
+                    @if(!empty($currentTenant?->logo_path))
+                        <div style="width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;background:#fff;border:1px solid #f1f5f9;">
+                            <img src="{{ Storage::url($currentTenant->logo_path) }}" alt="Logo {{ $currentTenant->name }}" style="width:100%;height:100%;object-fit:contain;">
+                        </div>
+                    @elseif(!empty($appSettings['app_logo_path']))
+                        <div style="width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;background:#fff;border:1px solid #f1f5f9;">
+                            <img src="{{ Storage::url($appSettings['app_logo_path']) }}" alt="{{ $appSettings['app_name'] ?? 'Tokaku' }}" style="width:100%;height:100%;object-fit:contain;">
+                        </div>
+                    @else
+                        <div style="width:36px;height:36px;background:#0F6E56;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;">
                             <svg width="16" height="16" viewBox="0 0 18 18" fill="none">
                                 <path d="M3 5h12M3 9h8M3 13h5" stroke="white" stroke-width="2" stroke-linecap="round" />
                             </svg>
-                        @endif
-                    </div>
+                        </div>
+                    @endif
                     <div class="leading-tight">
                         <p style="font-size:15px;font-weight:700;color:#0F6E56;letter-spacing:-0.3px;">{{ $appSettings['app_name'] ?? 'Tokaku' }}</p>
                         <p style="font-size:11px;color:#9ca3af;margin-top:1px;" class="truncate max-w-[110px]">
@@ -184,6 +188,7 @@
                     </svg>
                     Dashboard
                 </a>
+                @if(auth()->user()->hasAccess('kasir'))
                 <a href="{{ route('tenant.kasir.index') }}"
                     class="sidebar-link {{ request()->routeIs('tenant.kasir.*') ? 'active' : '' }}">
                     <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -192,6 +197,8 @@
                     </svg>
                     Kasir
                 </a>
+                @endif
+                @if(auth()->user()->hasAccess('produk'))
                 <a href="{{ route('tenant.products.index') }}"
                     class="sidebar-link {{ request()->routeIs('tenant.products.*') ? 'active' : '' }}">
                     <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -200,6 +207,8 @@
                     </svg>
                     Produk
                 </a>
+                @endif
+                @if(auth()->user()->hasAccess('kategori'))
                 <a href="{{ route('tenant.categories.index') }}"
                     class="sidebar-link {{ request()->routeIs('tenant.categories.*') ? 'active' : '' }}">
                     <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -208,6 +217,8 @@
                     </svg>
                     Kategori
                 </a>
+                @endif
+                @if(auth()->user()->hasAccess('laporan'))
                 <a href="{{ route('tenant.laporan.index') }}"
                     class="sidebar-link {{ request()->routeIs('tenant.laporan.*') ? 'active' : '' }}">
                     <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -216,6 +227,8 @@
                     </svg>
                     Laporan
                 </a>
+                @endif
+                @if(auth()->user()->hasAccess('stok'))
                 <a href="{{ route('tenant.stok.index') }}"
                     class="sidebar-link {{ request()->routeIs('tenant.stok.*') ? 'active' : '' }}">
                     <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -224,6 +237,8 @@
                     </svg>
                     Stok
                 </a>
+                @endif
+                @if(auth()->user()->hasAccess('pelanggan'))
                 <a href="{{ route('tenant.pelanggan.index') }}"
                     class="sidebar-link {{ request()->routeIs('tenant.pelanggan.*') ? 'active' : '' }}">
                     <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -232,6 +247,8 @@
                     </svg>
                     Pelanggan
                 </a>
+                @endif
+                @if(auth()->user()->hasAccess('promo'))
                 <a href="{{ route('tenant.promo.index') }}"
                     class="sidebar-link {{ request()->routeIs('tenant.promo.*') ? 'active' : '' }}">
                     <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -240,6 +257,8 @@
                     </svg>
                     Promo & Diskon
                 </a>
+                @endif
+                @if(auth()->user()->hasAccess('pengeluaran'))
                 <a href="{{ route('tenant.expenses.index') }}"
                     class="sidebar-link {{ request()->routeIs('tenant.expenses.*') ? 'active' : '' }}">
                     <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -247,6 +266,8 @@
                     </svg>
                     Pengeluaran
                 </a>
+                @endif
+                @if(auth()->user()->hasAccess('hutang'))
                 <a href="{{ route('tenant.hutang.index') }}"
                     class="sidebar-link {{ request()->routeIs('tenant.hutang.*') ? 'active' : '' }}">
                     <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -255,6 +276,8 @@
                     </svg>
                     Hutang Piutang
                 </a>
+                @endif
+                @if(auth()->user()->hasAccess('shift'))
                 <a href="{{ route('tenant.shift.index') }}"
                     class="sidebar-link {{ request()->routeIs('tenant.shift.*') ? 'active' : '' }}">
                     <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -263,6 +286,7 @@
                     </svg>
                     Shift Kasir
                 </a>
+                @endif
 
                 @if(auth()->user()->isAdmin())
                     <a href="{{ route('tenant.users.index') }}"

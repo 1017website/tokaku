@@ -16,6 +16,7 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
+        'permissions',
         'is_active',
     ];
 
@@ -28,6 +29,7 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password'          => 'hashed',
         'is_active'         => 'boolean',
+        'permissions'       => 'array',
     ];
 
     public function tenant()
@@ -53,5 +55,18 @@ class User extends Authenticatable
     public function isCashier(): bool
     {
         return $this->role === 'cashier';
+    }
+
+    /**
+     * Cek apakah user punya akses ke sebuah modul.
+     * Owner & superadmin selalu full akses.
+     */
+    public function hasAccess(string $module): bool
+    {
+        if (in_array($this->role, ['owner', 'superadmin'], true)) {
+            return true;
+        }
+
+        return in_array($module, (array) $this->permissions, true);
     }
 }

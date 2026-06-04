@@ -33,11 +33,11 @@ Route::post('/logout', [LoginController::class, 'logout'])->middleware('auth')->
 // TENANT
 Route::middleware(['auth', 'tenant', 'subscription'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('tenant.dashboard');
-    Route::resource('products', ProductController::class)->names('tenant.products');
-    Route::resource('categories', CategoryController::class)->names('tenant.categories');
+    Route::resource('products', ProductController::class)->names('tenant.products')->middleware('permission:produk');
+    Route::resource('categories', CategoryController::class)->names('tenant.categories')->middleware('permission:kategori');
 
     // Kasir
-    Route::prefix('kasir')->name('tenant.kasir.')->group(function () {
+    Route::prefix('kasir')->name('tenant.kasir.')->middleware('permission:kasir')->group(function () {
         Route::get('/',               [TransactionController::class, 'index'])->name('index');
         Route::post('/proses',        [TransactionController::class, 'proses'])->name('proses');
         Route::get('/{id}/struk',     [TransactionController::class, 'struk'])->name('struk');
@@ -45,13 +45,13 @@ Route::middleware(['auth', 'tenant', 'subscription'])->group(function () {
     });
 
     // Laporan
-    Route::prefix('laporan')->name('tenant.laporan.')->group(function () {
+    Route::prefix('laporan')->name('tenant.laporan.')->middleware('permission:laporan')->group(function () {
         Route::get('/',       [TransactionController::class, 'laporan'])->name('index');
         Route::get('/export', [TransactionController::class, 'export'])->name('export');
     });
 
     // Stok
-    Route::prefix('stok')->name('tenant.stok.')->group(function () {
+    Route::prefix('stok')->name('tenant.stok.')->middleware('permission:stok')->group(function () {
         Route::get('/',                  [StockController::class, 'index'])->name('index');
         Route::get('/riwayat',           [StockController::class, 'allHistory'])->name('history.all');
         Route::get('/{product}',         [StockController::class, 'show'])->name('show');
@@ -60,7 +60,7 @@ Route::middleware(['auth', 'tenant', 'subscription'])->group(function () {
     });
 
     // Pelanggan
-    Route::prefix('pelanggan')->name('tenant.pelanggan.')->group(function () {
+    Route::prefix('pelanggan')->name('tenant.pelanggan.')->middleware('permission:pelanggan')->group(function () {
         Route::get('/',            [CustomerController::class, 'index'])->name('index');
         Route::post('/',           [CustomerController::class, 'store'])->name('store');
         Route::get('/search',      [CustomerController::class, 'search'])->name('search');
@@ -69,7 +69,7 @@ Route::middleware(['auth', 'tenant', 'subscription'])->group(function () {
     });
 
     // Promo
-    Route::prefix('promo')->name('tenant.promo.')->group(function () {
+    Route::prefix('promo')->name('tenant.promo.')->middleware('permission:promo')->group(function () {
         Route::get('/',              [PromoController::class, 'index'])->name('index');
         Route::post('/',             [PromoController::class, 'store'])->name('store');
         Route::put('/{promo}/toggle',[PromoController::class, 'toggle'])->name('toggle');
@@ -80,7 +80,7 @@ Route::middleware(['auth', 'tenant', 'subscription'])->group(function () {
 
 
     // Pengeluaran
-    Route::prefix('expenses')->name('tenant.expenses.')->group(function () {
+    Route::prefix('expenses')->name('tenant.expenses.')->middleware('permission:pengeluaran')->group(function () {
         Route::get('/', [ExpenseController::class, 'index'])->name('index');
         Route::post('/', [ExpenseController::class, 'store'])->name('store');
         Route::put('/{expense}', [ExpenseController::class, 'update'])->name('update');
@@ -88,7 +88,7 @@ Route::middleware(['auth', 'tenant', 'subscription'])->group(function () {
     });
 
     // Hutang Piutang
-    Route::prefix('hutang')->name('tenant.hutang.')->group(function () {
+    Route::prefix('hutang')->name('tenant.hutang.')->middleware('permission:hutang')->group(function () {
         Route::get('/',          [DebtController::class, 'index'])->name('index');
         Route::get('/riwayat',   [DebtController::class, 'history'])->name('history');
         Route::post('/',         [DebtController::class, 'store'])->name('store');
@@ -96,7 +96,7 @@ Route::middleware(['auth', 'tenant', 'subscription'])->group(function () {
     });
 
     // Shift
-    Route::prefix('shift')->name('tenant.shift.')->group(function () {
+    Route::prefix('shift')->name('tenant.shift.')->middleware('permission:shift')->group(function () {
         Route::get('/',           [ShiftController::class, 'index'])->name('index');
         Route::post('/buka',      [ShiftController::class, 'open'])->name('open');
         Route::post('/{shift}/tutup', [ShiftController::class, 'close'])->name('close');
@@ -108,6 +108,7 @@ Route::middleware(['auth', 'tenant', 'subscription'])->group(function () {
         Route::get('/',                      [UserController::class, 'index'])->name('index');
         Route::post('/',                     [UserController::class, 'store'])->name('store');
         Route::put('/{user}/toggle',         [UserController::class, 'toggleActive'])->name('toggle');
+        Route::put('/{user}/permissions',    [UserController::class, 'updatePermissions'])->name('permissions');
         Route::put('/{user}/reset-password', [UserController::class, 'resetPassword'])->name('reset-password');
         Route::delete('/{user}',             [UserController::class, 'destroy'])->name('destroy');
     });

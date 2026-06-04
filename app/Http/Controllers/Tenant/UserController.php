@@ -23,12 +23,15 @@ class UserController extends Controller
     public function store(Request $request)
     {
         $tenant = app('currentTenant');
+        $modules = array_keys(config('permissions.modules'));
 
         $request->validate([
-            'name'     => 'required|string|max:255',
-            'email'    => 'required|email',
-            'role'     => 'required|in:admin,cashier',
-            'password' => ['required', Password::min(8)],
+            'name'          => 'required|string|max:255',
+            'email'         => 'required|email',
+            'role'          => 'required|in:admin,cashier',
+            'password'      => ['required', Password::min(8)],
+            'permissions'   => 'nullable|array',
+            'permissions.*' => 'in:' . implode(',', $modules),
         ]);
 
         // Cek email unik per tenant
@@ -40,16 +43,48 @@ class UserController extends Controller
             return back()->withErrors(['email' => 'Email ini sudah dipakai di toko Anda.'])->withInput();
         }
 
+        // Batas jumlah user per tenant (termasuk owner)
+        $maxUsers = (int) config('tokaku.max_users', 3);
+        $currentCount = User::where('tenant_id', $tenant->id)->count();
+
+        if ($currentCount >= $maxUsers) {
+            return back()
+                ->withErrors(['email' => "Maksimal {$maxUsers} user per toko (termasuk owner). Hapus atau nonaktifkan user lain terlebih dahulu."])
+                ->withInput();
+        }
+
         User::create([
-            'tenant_id' => $tenant->id,
-            'name'      => $request->name,
-            'email'     => $request->email,
-            'role'      => $request->role,
-            'password'  => Hash::make($request->password),
-            'is_active' => true,
+            'tenant_id'   => $tenant->id,
+            'name'        => $request->name,
+            'email'       => $request->email,
+            'role'        => $request->role,
+            'permissions' => array_values((array) $request->input('permissions', [])),
+            'password'    => Hash::make($request->password),
+            'is_active'   => true,
         ]);
 
         return back()->with('success', 'User berhasil ditambahkan.');
+    }
+
+    public function updatePermissions(Request $request, User $user)
+    {
+        abort_if($user->tenant_id !== app('currentTenant')->id, 403);
+        abort_if($user->role === 'owner', 403, 'Owner selalu memiliki akses penuh.');
+
+        $modules = array_keys(config('permissions.modules'));
+
+        $request->validate([
+            'role'          => 'required|in:admin,cashier',
+            'permissions'   => 'nullable|array',
+            'permissions.*' => 'in:' . implode(',', $modules),
+        ]);
+
+        $user->update([
+            'role'        => $request->role,
+            'permissions' => array_values((array) $request->input('permissions', [])),
+        ]);
+
+        return back()->with('success', "Akses {$user->name} berhasil diperbarui.");
     }
 
     public function toggleActive(User $user)
