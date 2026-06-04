@@ -3,6 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    @include('partials.tracking')
+    @if(!empty($appSettings['app_favicon']))
+        <link rel="icon" href="{{ Storage::url($appSettings['app_favicon']) }}">
+        <link rel="apple-touch-icon" href="{{ Storage::url($appSettings['app_favicon']) }}">
+    @endif
     <title>Masuk — {{ $appSettings['app_name'] ?? 'Tokaku' }}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -21,6 +26,7 @@
     <style>* { -webkit-font-smoothing:antialiased; } </style>
 </head>
 <body class="min-h-screen bg-gray-50 flex font-sans" style="font-family:Inter,sans-serif;">
+@include('partials.gtm-noscript')
 
     {{-- Left branding — hidden on mobile --}}
     <div class="hidden lg:flex lg:w-5/12 xl:w-1/2 bg-primary-700 flex-col justify-between p-12 relative overflow-hidden">
@@ -29,10 +35,19 @@
         <div class="absolute -bottom-10 right-20 w-52 h-52 bg-white/5 rounded-full"></div>
 
         <div class="relative z-10 flex items-center gap-3">
-            <div class="w-10 h-10 bg-white/20 rounded-2xl flex items-center justify-center">
-                <svg width="22" height="22" viewBox="0 0 18 18" fill="none"><path d="M3 5h12M3 9h8M3 13h5" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
-            </div>
-            <span style="color:white;font-size:20px;font-weight:700;letter-spacing:-0.4px;">{{ $appSettings['app_name'] ?? 'Tokaku' }}</span>
+            @if(!empty($appSettings['app_logo_full']))
+                <img src="{{ Storage::url($appSettings['app_logo_full']) }}" alt="{{ $appSettings['app_name'] ?? 'Tokaku' }}" style="height:40px;max-width:200px;object-fit:contain;filter:brightness(0) invert(1);">
+            @elseif(!empty($appSettings['app_logo_path']))
+                <div class="w-10 h-10 bg-white rounded-2xl flex items-center justify-center overflow-hidden">
+                    <img src="{{ Storage::url($appSettings['app_logo_path']) }}" alt="{{ $appSettings['app_name'] ?? 'Tokaku' }}" style="width:100%;height:100%;object-fit:contain;">
+                </div>
+                <span style="color:white;font-size:20px;font-weight:700;letter-spacing:-0.4px;">{{ $appSettings['app_name'] ?? 'Tokaku' }}</span>
+            @else
+                <div class="w-10 h-10 bg-white/20 rounded-2xl flex items-center justify-center">
+                    <svg width="22" height="22" viewBox="0 0 18 18" fill="none"><path d="M3 5h12M3 9h8M3 13h5" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
+                </div>
+                <span style="color:white;font-size:20px;font-weight:700;letter-spacing:-0.4px;">{{ $appSettings['app_name'] ?? 'Tokaku' }}</span>
+            @endif
         </div>
 
         <div class="relative z-10">
@@ -65,10 +80,14 @@
 
             {{-- Mobile logo --}}
             <div class="flex items-center gap-2 mb-10 lg:hidden">
-                <div class="w-9 h-9 bg-primary-700 rounded-xl flex items-center justify-center">
-                    <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M3 5h12M3 9h8M3 13h5" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
-                </div>
-                <span style="font-size:18px;font-weight:700;color:#0F6E56;letter-spacing:-0.3px;">{{ $appSettings['app_name'] ?? 'Tokaku' }}</span>
+                @if(!empty($appSettings['app_logo_full']))
+                    <img src="{{ Storage::url($appSettings['app_logo_full']) }}" alt="{{ $appSettings['app_name'] ?? 'Tokaku' }}" style="height:36px;max-width:200px;object-fit:contain;">
+                @else
+                    <div class="w-9 h-9 bg-primary-700 rounded-xl flex items-center justify-center">
+                        <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M3 5h12M3 9h8M3 13h5" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
+                    </div>
+                    <span style="font-size:18px;font-weight:700;color:#0F6E56;letter-spacing:-0.3px;">{{ $appSettings['app_name'] ?? 'Tokaku' }}</span>
+                @endif
             </div>
 
             <div style="margin-bottom:28px;">

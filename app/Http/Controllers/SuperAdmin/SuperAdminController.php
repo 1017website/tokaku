@@ -226,10 +226,16 @@ class SuperAdminController extends Controller
 
     public function settings()
     {
-        $settings = [
-            'app_name' => AppSetting::getValue('app_name', 'Tokaku'),
-            'app_logo_path' => AppSetting::getValue('app_logo_path'),
+        $keys = [
+            'app_name', 'app_logo_path', 'app_logo_full', 'app_favicon',
+            'seo_title', 'seo_description', 'seo_keywords', 'seo_og_image',
+            'google_ads_id', 'google_analytics_id', 'meta_pixel_id', 'gtm_id',
         ];
+
+        $settings = [];
+        foreach ($keys as $key) {
+            $settings[$key] = AppSetting::getValue($key, $key === 'app_name' ? 'Tokaku' : null);
+        }
 
         return view('superadmin.settings.index', compact('settings'));
     }
@@ -237,23 +243,59 @@ class SuperAdminController extends Controller
     public function updateSettings(Request $request)
     {
         $validated = $request->validate([
-            'app_name' => 'required|string|max:100',
-            'app_logo' => 'nullable|image|mimes:jpg,jpeg,png,webp,svg|max:2048',
+            'app_name'            => 'required|string|max:100',
+            'app_logo'            => 'nullable|image|mimes:jpg,jpeg,png,webp,svg|max:2048',
+            'app_logo_full_file'  => 'nullable|image|mimes:jpg,jpeg,png,webp,svg|max:2048',
+            'app_favicon_file'    => 'nullable|image|mimes:png,ico,svg,jpg,jpeg,webp|max:1024',
+            'seo_og_image_file'   => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+            // SEO teks
+            'seo_title'           => 'nullable|string|max:70',
+            'seo_description'     => 'nullable|string|max:300',
+            'seo_keywords'        => 'nullable|string|max:255',
+            // Ads / Tracking
+            'google_ads_id'       => ['nullable', 'string', 'max:30', 'regex:/^AW-[A-Za-z0-9]+$/'],
+            'google_analytics_id' => ['nullable', 'string', 'max:30', 'regex:/^G-[A-Za-z0-9]+$/'],
+            'gtm_id'              => ['nullable', 'string', 'max:30', 'regex:/^GTM-[A-Za-z0-9]+$/'],
+            'meta_pixel_id'       => ['nullable', 'string', 'max:20', 'regex:/^[0-9]+$/'],
+        ], [
+            'google_ads_id.regex'       => 'Format Google Ads ID harus AW-XXXXXXXXX.',
+            'google_analytics_id.regex' => 'Format Google Analytics ID harus G-XXXXXXXXXX.',
+            'gtm_id.regex'              => 'Format GTM ID harus GTM-XXXXXXX.',
+            'meta_pixel_id.regex'       => 'Meta Pixel ID hanya boleh berisi angka.',
         ]);
 
         AppSetting::setValue('app_name', $validated['app_name']);
 
-        if ($request->hasFile('app_logo')) {
-            $oldLogo = AppSetting::getValue('app_logo_path');
-            if ($oldLogo) {
-                Storage::disk('public')->delete($oldLogo);
-            }
+        // ── Upload file (logo ikon, logo full, favicon, OG image) ──
+        $uploads = [
+            'app_logo'           => ['key' => 'app_logo_path',  'dir' => 'app-logos'],
+            'app_logo_full_file' => ['key' => 'app_logo_full',  'dir' => 'app-logos'],
+            'app_favicon_file'   => ['key' => 'app_favicon',    'dir' => 'app-favicon'],
+            'seo_og_image_file'  => ['key' => 'seo_og_image',   'dir' => 'app-seo'],
+        ];
 
-            $path = $request->file('app_logo')->store('app-logos', 'public');
-            AppSetting::setValue('app_logo_path', $path);
+        foreach ($uploads as $field => $conf) {
+            if ($request->hasFile($field)) {
+                $old = AppSetting::getValue($conf['key']);
+                if ($old) {
+                    Storage::disk('public')->delete($old);
+                }
+                $path = $request->file($field)->store($conf['dir'], 'public');
+                AppSetting::setValue($conf['key'], $path);
+            }
         }
 
-        return back()->with('success', 'Logo aplikasi Tokaku berhasil diperbarui.');
+        // ── Teks: SEO & Ads ──
+        $textKeys = [
+            'seo_title', 'seo_description', 'seo_keywords',
+            'google_ads_id', 'google_analytics_id', 'meta_pixel_id', 'gtm_id',
+        ];
+
+        foreach ($textKeys as $key) {
+            AppSetting::setValue($key, $request->filled($key) ? trim($request->input($key)) : null);
+        }
+
+        return back()->with('success', 'Pengaturan aplikasi berhasil diperbarui.');
     }
     public function maintenance()
     {

@@ -3,8 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tokaku — Toko kamu, lebih mudah.</title>
-    <meta name="description" content="Tokaku adalah aplikasi kasir & manajemen UMKM all-in-one. Kelola penjualan, stok, laporan, dan tim toko dari satu platform yang simpel.">
+    @include('partials.tracking')
+    @if(!empty($appSettings['app_favicon']))
+        <link rel="icon" href="{{ Storage::url($appSettings['app_favicon']) }}">
+        <link rel="apple-touch-icon" href="{{ Storage::url($appSettings['app_favicon']) }}">
+    @endif
+    <title>{{ $appSettings['seo_title'] ?? 'Tokaku — Toko kamu, lebih mudah.' }}</title>
+    <meta name="description" content="{{ $appSettings['seo_description'] ?? 'Tokaku adalah aplikasi kasir & manajemen UMKM all-in-one. Kelola penjualan, stok, laporan, dan tim toko dari satu platform yang simpel.' }}">
+    @if(!empty($appSettings['seo_keywords']))<meta name="keywords" content="{{ $appSettings['seo_keywords'] }}">@endif
+    @if(!empty($appSettings['seo_og_image']))
+        <meta property="og:image" content="{{ Storage::url($appSettings['seo_og_image']) }}">
+        <meta name="twitter:card" content="summary_large_image">
+    @endif
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap" rel="stylesheet">
@@ -398,14 +408,19 @@
     </style>
 </head>
 <body>
+@include('partials.gtm-noscript')
 
 <!-- NAV -->
 <nav id="navbar">
     <a href="#" class="nav-logo">
-        <div class="nav-logo-mark">
-            <svg width="16" height="16" viewBox="0 0 18 18" fill="none"><path d="M3 5h12M3 9h8M3 13h5" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
-        </div>
-        <span class="nav-logo-text">Tokaku</span>
+        @if(!empty($appSettings['app_logo_full']))
+            <img src="{{ Storage::url($appSettings['app_logo_full']) }}" alt="{{ $appSettings['app_name'] ?? 'Tokaku' }}" style="height:38px;max-width:200px;object-fit:contain;">
+        @else
+            <div class="nav-logo-mark">
+                <svg width="16" height="16" viewBox="0 0 18 18" fill="none"><path d="M3 5h12M3 9h8M3 13h5" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
+            </div>
+            <span class="nav-logo-text">{{ $appSettings['app_name'] ?? 'Tokaku' }}</span>
+        @endif
     </a>
     <div class="nav-links">
         <a href="#fitur">Fitur</a>
@@ -640,10 +655,14 @@
     <div class="footer-grid">
         <div class="footer-brand">
             <div class="footer-logo">
-                <div class="footer-logo-mark">
-                    <svg width="14" height="14" viewBox="0 0 18 18" fill="none"><path d="M3 5h12M3 9h8M3 13h5" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
-                </div>
-                <span class="footer-logo-text">Tokaku</span>
+                @if(!empty($appSettings['app_logo_full']))
+                    <img src="{{ Storage::url($appSettings['app_logo_full']) }}" alt="{{ $appSettings['app_name'] ?? 'Tokaku' }}" style="height:36px;max-width:200px;object-fit:contain;filter:brightness(0) invert(1);">
+                @else
+                    <div class="footer-logo-mark">
+                        <svg width="14" height="14" viewBox="0 0 18 18" fill="none"><path d="M3 5h12M3 9h8M3 13h5" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
+                    </div>
+                    <span class="footer-logo-text">{{ $appSettings['app_name'] ?? 'Tokaku' }}</span>
+                @endif
             </div>
             <p class="footer-desc">Aplikasi kasir & manajemen UMKM yang simpel, cepat, dan terjangkau.</p>
             <p style="font-size:12px;color:#3A5A50;margin-top:16px;">by <a href="https://1017studios.id" style="color:#5DCAA5;text-decoration:none;">1017studios.id</a></p>

@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    @include('partials.tracking')
+    @include('partials.app-head')
     <title>@yield('title','Super Admin') — {{ $appSettings['app_name'] ?? 'Tokaku' }}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -28,6 +30,7 @@
     @stack('styles')
 </head>
 <body style="background:#f8fafc;font-family:Inter,sans-serif;">
+@include('partials.gtm-noscript')
 <div class="flex h-screen overflow-hidden">
 
 <div class="mobile-overlay" id="saOverlay" onclick="closeSA()"></div>
