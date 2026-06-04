@@ -53,6 +53,23 @@ class LoginController extends Controller
             return back()->withErrors(['email' => 'Akun Anda tidak terhubung ke toko manapun.']);
         }
 
+        $user->load('tenant');
+
+        // Jika trial sudah habis / tenant suspended, user tenant tidak boleh login.
+        // Contoh: tenant diberi trial 3 hari, setelah trial_ends_at lewat maka login langsung ditolak.
+        if (!$user->tenant || !$user->tenant->isActive()) {
+            Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            $message = 'Masa trial atau langganan toko Anda sudah berakhir. Silakan hubungi administrator.';
+            if ($user->tenant && $user->tenant->status === 'suspended') {
+                $message = 'Akun toko Anda sedang ditangguhkan. Silakan hubungi administrator.';
+            }
+
+            return redirect()->route('login')->withErrors(['email' => $message]);
+        }
+
         return redirect()->intended(route('tenant.dashboard'));
     }
 

@@ -146,14 +146,19 @@
         <aside class="sidebar-desktop w-60 bg-white border-r border-gray-100 flex flex-col flex-shrink-0" id="sidebar">
             <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
                 <div class="flex items-center gap-2.5">
-                    <div
-                        style="width:32px;height:32px;background:#0F6E56;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                        <svg width="16" height="16" viewBox="0 0 18 18" fill="none">
-                            <path d="M3 5h12M3 9h8M3 13h5" stroke="white" stroke-width="2" stroke-linecap="round" />
-                        </svg>
+                    <div style="width:32px;height:32px;background:#0F6E56;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;">
+                        @if(!empty($currentTenant?->logo_path))
+                            <img src="{{ Storage::url($currentTenant->logo_path) }}" alt="Logo {{ $currentTenant->name }}" style="width:100%;height:100%;object-fit:cover;">
+                        @elseif(!empty($appSettings['app_logo_path']))
+                            <img src="{{ Storage::url($appSettings['app_logo_path']) }}" alt="{{ $appSettings['app_name'] ?? 'Tokaku' }}" style="width:100%;height:100%;object-fit:cover;">
+                        @else
+                            <svg width="16" height="16" viewBox="0 0 18 18" fill="none">
+                                <path d="M3 5h12M3 9h8M3 13h5" stroke="white" stroke-width="2" stroke-linecap="round" />
+                            </svg>
+                        @endif
                     </div>
                     <div class="leading-tight">
-                        <p style="font-size:15px;font-weight:700;color:#0F6E56;letter-spacing:-0.3px;">Tokaku</p>
+                        <p style="font-size:15px;font-weight:700;color:#0F6E56;letter-spacing:-0.3px;">{{ $appSettings['app_name'] ?? 'Tokaku' }}</p>
                         <p style="font-size:11px;color:#9ca3af;margin-top:1px;" class="truncate max-w-[110px]">
                             {{ $currentTenant->name ?? '' }}
                         </p>
@@ -234,6 +239,13 @@
                             d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
                     </svg>
                     Promo & Diskon
+                </a>
+                <a href="{{ route('tenant.expenses.index') }}"
+                    class="sidebar-link {{ request()->routeIs('tenant.expenses.*') ? 'active' : '' }}">
+                    <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-2m2-5h2a2 2 0 012 2v3a2 2 0 01-2 2h-2m0-7h-4m4 0v7" />
+                    </svg>
+                    Pengeluaran
                 </a>
                 <a href="{{ route('tenant.hutang.index') }}"
                     class="sidebar-link {{ request()->routeIs('tenant.hutang.*') ? 'active' : '' }}">

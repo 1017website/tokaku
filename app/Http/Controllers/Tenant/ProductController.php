@@ -54,7 +54,7 @@ class ProductController extends Controller
 
     public function show(Product $product)
     {
-        abort_if($product->tenant_id !== app('currentTenant')->id, 403);
+        abort_if($product->tenant_id != app('currentTenant')->id, 403);
 
         // Riwayat transaksi produk ini
         $history = TransactionItem::with(['transaction', 'transaction.user'])
@@ -77,7 +77,7 @@ class ProductController extends Controller
 
     public function edit(Product $product)
     {
-        abort_if($product->tenant_id !== app('currentTenant')->id, 403);
+        abort_if($product->tenant_id != app('currentTenant')->id, 403);
         $categories = Category::orderBy('name')->get();
 
         return view('tenant.products.edit', compact('product', 'categories'));
@@ -85,7 +85,7 @@ class ProductController extends Controller
 
     public function update(Request $request, Product $product)
     {
-        abort_if($product->tenant_id !== app('currentTenant')->id, 403);
+        abort_if($product->tenant_id != app('currentTenant')->id, 403);
 
         $validated = $request->validate([
             'name'            => 'required|string|max:255',
@@ -114,7 +114,7 @@ class ProductController extends Controller
 
     public function destroy(Product $product)
     {
-        abort_if($product->tenant_id !== app('currentTenant')->id, 403);
+        abort_if($product->tenant_id != app('currentTenant')->id, 403);
         $product->update(['is_active' => false]);
 
         return redirect()

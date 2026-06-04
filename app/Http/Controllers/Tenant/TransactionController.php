@@ -2,6 +2,7 @@
 namespace App\Http\Controllers\Tenant;
 use App\Exports\TransactionsExport;
 use App\Http\Controllers\Controller;
+use App\Models\Category;
 use App\Models\Customer;
 use App\Models\Debt;
 use App\Models\Promo;
@@ -19,6 +20,18 @@ class TransactionController extends Controller {
     public function index() {
         $tenant  = app('currentTenant');
         $products = Product::active()->with('category')->orderBy('name')->get();
+        $categories = Category::whereHas('products', fn($q) => $q->active())->orderBy('name')->get();
+        $customers = Customer::where('tenant_id', $tenant->id)->where('is_active', true)->orderBy('name')->get();
+        $topProductIds = TransactionItem::select('product_id', DB::raw('SUM(quantity) as total_qty'))
+            ->whereNotNull('product_id')
+            ->whereHas('transaction', fn($q) => $q->where('tenant_id', $tenant->id))
+            ->groupBy('product_id')
+            ->orderByDesc('total_qty')
+            ->limit(12)
+            ->pluck('product_id');
+        $topProducts = Product::active()->with('category')->whereIn('id', $topProductIds)->get()->sortBy(function ($product) use ($topProductIds) {
+            return $topProductIds->search($product->id);
+        })->values();
         $promos   = Promo::where('tenant_id', $tenant->id)->where('is_active', true)->get()->filter(fn($p)=>$p->isValid());
         $activeShift = Shift::where('tenant_id', $tenant->id)
             ->where('user_id', auth()->id())->whereNull('closed_at')->latest()->first();
@@ -26,7 +39,7 @@ class TransactionController extends Controller {
         $taxRate     = $tenant->tax_rate ?? 11;
         $taxName     = $tenant->tax_name ?? 'PPN';
 
-        return view('tenant.kasir.index', compact('products','promos','activeShift','taxEnabled','taxRate','taxName'));
+        return view('tenant.kasir.index', compact('products','categories','customers','topProducts','promos','activeShift','taxEnabled','taxRate','taxName'));
     }
 
     public function proses(Request $request) {

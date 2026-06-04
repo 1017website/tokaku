@@ -20,10 +20,24 @@ class StockController extends Controller
         return view('tenant.stok.index', compact('products'));
     }
 
+
+    public function show(Product $product)
+    {
+        abort_if($product->tenant_id != app('currentTenant')->id, 403);
+
+        $logs = StockLog::with('user')
+            ->where('product_id', $product->id)
+            ->orderByDesc('created_at')
+            ->limit(10)
+            ->get();
+
+        return view('tenant.stok.show', compact('product', 'logs'));
+    }
+
     // Tambah/kurangi stok satu produk (via modal/form inline)
     public function update(Request $request, Product $product)
     {
-        abort_if($product->tenant_id !== app('currentTenant')->id, 403);
+        abort_if($product->tenant_id != app('currentTenant')->id, 403);
 
         $request->validate([
             'type'       => 'required|in:restock,adjustment,correction',
@@ -63,7 +77,7 @@ class StockController extends Controller
     // Riwayat stok satu produk
     public function history(Product $product)
     {
-        abort_if($product->tenant_id !== app('currentTenant')->id, 403);
+        abort_if($product->tenant_id != app('currentTenant')->id, 403);
 
         $logs = StockLog::with('user')
             ->where('product_id', $product->id)

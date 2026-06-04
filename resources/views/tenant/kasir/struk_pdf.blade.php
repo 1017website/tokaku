@@ -7,6 +7,7 @@
         body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 11px; color: #000; background: #fff; width: 80mm; }
         .header { text-align: center; padding: 12px 0 8px; border-bottom: 1px dashed #000; margin-bottom: 8px; }
         .header h1 { font-size: 18px; font-weight: 700; color: #0F6E56; margin-bottom: 2px; }
+        .logo { width: 42px; height: 42px; object-fit: contain; margin: 0 auto 4px; display: block; }
         .header p { font-size: 10px; color: #555; }
         .meta { margin-bottom: 8px; border-bottom: 1px dashed #000; padding-bottom: 8px; }
         .meta-row { display: flex; justify-content: space-between; margin-bottom: 3px; }
@@ -23,8 +24,11 @@
 </head>
 <body>
     <div class="header">
-        <h1>Tokaku</h1>
-        <p>{{ $transaction->user->tenant->name ?? '' }}</p>
+        @if(!empty($transaction->user->tenant->logo_path) && file_exists(public_path('storage/'.$transaction->user->tenant->logo_path)))
+            <img class="logo" src="{{ public_path('storage/'.$transaction->user->tenant->logo_path) }}" alt="Logo toko">
+        @endif
+        <h1>{{ $transaction->user->tenant->name ?? ($appSettings['app_name'] ?? 'Tokaku') }}</h1>
+        <p>{{ $appSettings['app_name'] ?? 'Tokaku' }}</p>
         @if($transaction->user->tenant->address ?? false)
         <p>{{ $transaction->user->tenant->address }}</p>
         @endif
@@ -88,7 +92,7 @@
 
     <div class="footer">
         <p>Terima kasih sudah berbelanja!</p>
-        <p style="margin-top:4px;">Powered by Tokaku &middot; 1017studios.id</p>
+        <p style="margin-top:4px;">Powered by {{ $appSettings['app_name'] ?? 'Tokaku' }} &middot; 1017studios.id</p>
     </div>
 </body>
 </html>

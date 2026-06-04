@@ -55,6 +55,10 @@
             <label style="display:block;font-size:12px;font-weight:500;color:#64748b;margin-bottom:4px;">Trial Berakhir</label>
             <input type="date" name="trial_ends_at" value="{{ $tenant->trial_ends_at?->format('Y-m-d') }}" class="form-input" style="width:auto;">
         </div>
+        <div>
+            <label style="display:block;font-size:12px;font-weight:500;color:#64748b;margin-bottom:4px;">Atau Trial Berapa Hari</label>
+            <input type="number" name="trial_days" min="1" max="365" class="form-input" style="width:150px;" placeholder="contoh: 3">
+        </div>
         <button type="submit" class="btn-primary">Simpan</button>
     </form>
 </div>

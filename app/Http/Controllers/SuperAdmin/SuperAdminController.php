@@ -6,9 +6,14 @@ use App\Http\Controllers\Controller;
 use App\Models\Tenant;
 use App\Models\Transaction;
 use App\Models\User;
+use App\Models\AppSetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\File;
+use Throwable;
 
 class SuperAdminController extends Controller
 {
@@ -154,11 +159,16 @@ class SuperAdminController extends Controller
         $request->validate([
             'status'        => 'required|in:trial,active,suspended',
             'trial_ends_at' => 'nullable|date',
+            'trial_days'    => 'nullable|integer|min:1|max:365',
         ]);
+
+        $trialEndsAt = $request->filled('trial_days')
+            ? now()->addDays((int) $request->trial_days)
+            : ($request->filled('trial_ends_at') ? \Carbon\Carbon::parse($request->trial_ends_at)->endOfDay() : null);
 
         $tenant->update([
             'status'        => $request->status,
-            'trial_ends_at' => $request->trial_ends_at,
+            'trial_ends_at' => $trialEndsAt,
         ]);
 
         return back()->with('success', "Status tenant {$tenant->name} berhasil diperbarui.");
@@ -204,4 +214,70 @@ class SuperAdminController extends Controller
             'startDate', 'endDate', 'tenantId'
         ));
     }
+
+    public function settings()
+    {
+        $settings = [
+            'app_name' => AppSetting::getValue('app_name', 'Tokaku'),
+            'app_logo_path' => AppSetting::getValue('app_logo_path'),
+        ];
+
+        return view('superadmin.settings.index', compact('settings'));
+    }
+
+    public function updateSettings(Request $request)
+    {
+        $validated = $request->validate([
+            'app_name' => 'required|string|max:100',
+            'app_logo' => 'nullable|image|mimes:jpg,jpeg,png,webp,svg|max:2048',
+        ]);
+
+        AppSetting::setValue('app_name', $validated['app_name']);
+
+        if ($request->hasFile('app_logo')) {
+            $oldLogo = AppSetting::getValue('app_logo_path');
+            if ($oldLogo) {
+                Storage::disk('public')->delete($oldLogo);
+            }
+
+            $path = $request->file('app_logo')->store('app-logos', 'public');
+            AppSetting::setValue('app_logo_path', $path);
+        }
+
+        return back()->with('success', 'Logo aplikasi Tokaku berhasil diperbarui.');
+    }
+    public function maintenance()
+    {
+        $storageLinked = File::exists(public_path('storage'));
+
+        return view('superadmin.maintenance.index', compact('storageLinked'));
+    }
+
+    public function runMigrate()
+    {
+        try {
+            Artisan::call('migrate', ['--force' => true]);
+            $output = trim(Artisan::output());
+
+            return back()->with('success', 'php artisan migrate berhasil dijalankan.')
+                ->with('artisan_output', $output ?: 'Tidak ada output dari command.');
+        } catch (Throwable $e) {
+            return back()->with('error', 'Gagal menjalankan migrate: ' . $e->getMessage());
+        }
+    }
+
+    public function runStorageLink()
+    {
+        try {
+            Artisan::call('storage:link', ['--force' => true]);
+            $output = trim(Artisan::output());
+
+            return back()->with('success', 'php artisan storage:link berhasil dijalankan.')
+                ->with('artisan_output', $output ?: 'Tidak ada output dari command.');
+        } catch (Throwable $e) {
+            return back()->with('error', 'Gagal menjalankan storage:link: ' . $e->getMessage());
+        }
+    }
+
 }
+

@@ -43,7 +43,7 @@
                 <tr style="border-bottom:1px solid #f8fafc;{{ $rowBg }}transition:opacity 0.1s;">
 
                     <td style="padding:13px 20px;">
-                        <p style="font-size:13.5px;font-weight:600;color:#0f172a;">{{ $product->name }}</p>
+                        <a href="{{ route('tenant.stok.show', $product) }}" style="font-size:13.5px;font-weight:600;color:#0f172a;text-decoration:none;">{{ $product->name }}</a>
                         <p style="font-size:12px;color:#94a3b8;margin-top:1px;">{{ $product->sku ?? '—' }}</p>
                     </td>
 

@@ -27,11 +27,17 @@
 <body>
 <div class="receipt">
     <div class="receipt-header">
-        <div style="display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;background:rgba(255,255,255,0.15);border-radius:12px;margin-bottom:8px;">
-            <svg width="20" height="20" viewBox="0 0 18 18" fill="none"><path d="M3 5h12M3 9h8M3 13h5" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
+        <div style="display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;background:rgba(255,255,255,0.15);border-radius:12px;margin-bottom:8px;overflow:hidden;">
+            @if(!empty($transaction->user->tenant->logo_path))
+                <img src="{{ Storage::url($transaction->user->tenant->logo_path) }}" alt="Logo toko" style="width:100%;height:100%;object-fit:cover;">
+            @elseif(!empty($appSettings['app_logo_path']))
+                <img src="{{ Storage::url($appSettings['app_logo_path']) }}" alt="Logo Tokaku" style="width:100%;height:100%;object-fit:cover;">
+            @else
+                <svg width="20" height="20" viewBox="0 0 18 18" fill="none"><path d="M3 5h12M3 9h8M3 13h5" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
+            @endif
         </div>
-        <p style="color:#fff;font-size:18px;font-weight:700;letter-spacing:-0.3px;">Tokaku</p>
-        <p style="color:rgba(255,255,255,0.75);font-size:12px;margin-top:3px;">{{ $transaction->user->tenant->name ?? '' }}</p>
+        <p style="color:#fff;font-size:18px;font-weight:700;letter-spacing:-0.3px;">{{ $transaction->user->tenant->name ?? ($appSettings['app_name'] ?? 'Tokaku') }}</p>
+        <p style="color:rgba(255,255,255,0.75);font-size:12px;margin-top:3px;">{{ $appSettings['app_name'] ?? 'Tokaku' }}</p>
     </div>
     <div class="receipt-body">
         <div class="row"><span class="label">Invoice</span><span class="value" style="font-family:monospace;font-size:12px;">{{ $transaction->invoice_no }}</span></div>
@@ -56,7 +62,7 @@
         <div class="row" style="margin-top:6px;"><span class="label">Bayar ({{ strtoupper($transaction->payment_method) }})</span><span class="value">Rp {{ number_format($transaction->paid_amount,0,',','.') }}</span></div>
         <div class="row"><span class="label">Kembalian</span><span class="value">Rp {{ number_format($transaction->change_amount,0,',','.') }}</span></div>
         <hr class="divider">
-        <p style="text-align:center;font-size:12.5px;color:#94a3b8;line-height:1.6;">Terima kasih sudah berbelanja!<br><span style="font-size:11.5px;">Powered by Tokaku · 1017studios.id</span></p>
+        <p style="text-align:center;font-size:12.5px;color:#94a3b8;line-height:1.6;">Terima kasih sudah berbelanja!<br><span style="font-size:11.5px;">Powered by {{ $appSettings['app_name'] ?? 'Tokaku' }} · 1017studios.id</span></p>
         <button onclick="window.print()" class="btn btn-print no-print">Cetak Struk</button>
         <a href="{{ route('tenant.kasir.index') }}" class="btn btn-back no-print">Kembali ke Kasir</a>
     </div>

@@ -14,10 +14,17 @@ class Tenant extends Model
         'address',
         'status',
         'trial_ends_at',
+        'tax_enabled',
+        'tax_rate',
+        'tax_name',
+        'initial_capital',
     ];
 
     protected $casts = [
         'trial_ends_at' => 'datetime',
+        'tax_enabled' => 'boolean',
+        'tax_rate' => 'decimal:2',
+        'initial_capital' => 'decimal:2',
     ];
 
     public function users()
@@ -43,6 +50,11 @@ class Tenant extends Model
     public function isActive(): bool
     {
         return $this->status === 'active' ||
-            ($this->status === 'trial' && $this->trial_ends_at?->isFuture());
+            ($this->status === 'trial' && $this->trial_ends_at && $this->trial_ends_at->isFuture());
+    }
+
+    public function isTrialExpired(): bool
+    {
+        return $this->status === 'trial' && (!$this->trial_ends_at || $this->trial_ends_at->isPast());
     }
 }

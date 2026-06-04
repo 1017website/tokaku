@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Masuk — Tokaku</title>
+    <title>Masuk — {{ $appSettings['app_name'] ?? 'Tokaku' }}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -32,7 +32,7 @@
             <div class="w-10 h-10 bg-white/20 rounded-2xl flex items-center justify-center">
                 <svg width="22" height="22" viewBox="0 0 18 18" fill="none"><path d="M3 5h12M3 9h8M3 13h5" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
             </div>
-            <span style="color:white;font-size:20px;font-weight:700;letter-spacing:-0.4px;">Tokaku</span>
+            <span style="color:white;font-size:20px;font-weight:700;letter-spacing:-0.4px;">{{ $appSettings['app_name'] ?? 'Tokaku' }}</span>
         </div>
 
         <div class="relative z-10">
@@ -68,7 +68,7 @@
                 <div class="w-9 h-9 bg-primary-700 rounded-xl flex items-center justify-center">
                     <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M3 5h12M3 9h8M3 13h5" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
                 </div>
-                <span style="font-size:18px;font-weight:700;color:#0F6E56;letter-spacing:-0.3px;">Tokaku</span>
+                <span style="font-size:18px;font-weight:700;color:#0F6E56;letter-spacing:-0.3px;">{{ $appSettings['app_name'] ?? 'Tokaku' }}</span>
             </div>
 
             <div style="margin-bottom:28px;">

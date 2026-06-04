@@ -11,6 +11,7 @@ use App\Http\Controllers\Tenant\CustomerController;
 use App\Http\Controllers\Tenant\PromoController;
 use App\Http\Controllers\Tenant\DebtController;
 use App\Http\Controllers\Tenant\ShiftController;
+use App\Http\Controllers\Tenant\ExpenseController;
 use App\Http\Controllers\SuperAdmin\SuperAdminController;
 use Illuminate\Support\Facades\Route;
 
@@ -52,8 +53,9 @@ Route::middleware(['auth', 'tenant', 'subscription'])->group(function () {
     // Stok
     Route::prefix('stok')->name('tenant.stok.')->group(function () {
         Route::get('/',                  [StockController::class, 'index'])->name('index');
-        Route::put('/{product}',         [StockController::class, 'update'])->name('update');
         Route::get('/riwayat',           [StockController::class, 'allHistory'])->name('history.all');
+        Route::get('/{product}',         [StockController::class, 'show'])->name('show');
+        Route::put('/{product}',         [StockController::class, 'update'])->name('update');
         Route::get('/{product}/riwayat', [StockController::class, 'history'])->name('history');
     });
 
@@ -73,6 +75,16 @@ Route::middleware(['auth', 'tenant', 'subscription'])->group(function () {
         Route::put('/{promo}/toggle',[PromoController::class, 'toggle'])->name('toggle');
         Route::delete('/{promo}',    [PromoController::class, 'destroy'])->name('destroy');
         Route::post('/calculate',    [PromoController::class, 'calculate'])->name('calculate');
+    });
+
+
+
+    // Pengeluaran
+    Route::prefix('expenses')->name('tenant.expenses.')->group(function () {
+        Route::get('/', [ExpenseController::class, 'index'])->name('index');
+        Route::post('/', [ExpenseController::class, 'store'])->name('store');
+        Route::put('/{expense}', [ExpenseController::class, 'update'])->name('update');
+        Route::delete('/{expense}', [ExpenseController::class, 'destroy'])->name('destroy');
     });
 
     // Hutang Piutang
@@ -116,6 +128,11 @@ Route::middleware(['auth','role:superadmin'])->prefix('superadmin')->name('super
     Route::put('/tenants/{tenant}/suspend',  [SuperAdminController::class, 'suspend'])->name('tenants.suspend');
     Route::put('/tenants/{tenant}/status',   [SuperAdminController::class, 'updateStatus'])->name('tenants.status');
     Route::get('/laporan', [SuperAdminController::class, 'laporan'])->name('laporan');
+    Route::get('/settings', [SuperAdminController::class, 'settings'])->name('settings');
+    Route::put('/settings', [SuperAdminController::class, 'updateSettings'])->name('settings.update');
+    Route::get('/maintenance', [SuperAdminController::class, 'maintenance'])->name('maintenance');
+    Route::post('/maintenance/migrate', [SuperAdminController::class, 'runMigrate'])->name('maintenance.migrate');
+    Route::post('/maintenance/storage-link', [SuperAdminController::class, 'runStorageLink'])->name('maintenance.storage-link');
     Route::get('/users', function () {
         $users = \App\Models\User::with('tenant')
             ->when(request('search'),fn($q)=>$q->where('name','like','%'.request('search').'%')->orWhere('email','like','%'.request('search').'%'))

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title','Super Admin') — Tokaku</title>
+    <title>@yield('title','Super Admin') — {{ $appSettings['app_name'] ?? 'Tokaku' }}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -35,11 +35,15 @@
 <aside class="sa-sidebar w-60 bg-white border-r border-gray-100 flex flex-col flex-shrink-0" id="saSidebar">
     <div style="padding:16px 20px;border-bottom:1px solid #f1f5f9;display:flex;align-items:center;justify-content:space-between;">
         <div style="display:flex;align-items:center;gap:10px;">
-            <div style="width:32px;height:32px;background:#0F6E56;border-radius:10px;display:flex;align-items:center;justify-content:center;">
-                <svg width="16" height="16" viewBox="0 0 18 18" fill="none"><path d="M3 5h12M3 9h8M3 13h5" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
+            <div style="width:32px;height:32px;background:#0F6E56;border-radius:10px;display:flex;align-items:center;justify-content:center;overflow:hidden;">
+                @if(!empty($appSettings['app_logo_path']))
+                    <img src="{{ Storage::url($appSettings['app_logo_path']) }}" alt="{{ $appSettings['app_name'] ?? 'Tokaku' }}" style="width:100%;height:100%;object-fit:cover;">
+                @else
+                    <svg width="16" height="16" viewBox="0 0 18 18" fill="none"><path d="M3 5h12M3 9h8M3 13h5" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
+                @endif
             </div>
             <div>
-                <p style="font-size:14px;font-weight:700;color:#0F6E56;">Tokaku</p>
+                <p style="font-size:14px;font-weight:700;color:#0F6E56;">{{ $appSettings['app_name'] ?? 'Tokaku' }}</p>
                 <p style="font-size:11px;color:#9ca3af;">Super Admin</p>
             </div>
         </div>
@@ -71,6 +75,17 @@
         <a href="{{ route('superadmin.users') }}" class="sa-link {{ request()->routeIs('superadmin.users')?'active':'' }}">
             <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
             Semua User
+        </a>
+
+        <a href="{{ route('superadmin.settings') }}" class="sa-link {{ request()->routeIs('superadmin.settings')?'active':'' }}">
+            <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.607 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            Pengaturan
+        </a>
+
+
+        <a href="{{ route('superadmin.maintenance') }}" class="sa-link {{ request()->routeIs('superadmin.maintenance*')?'active':'' }}">
+            <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 9l3 3-3 3m5 0h3M5 5h14a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2z"/></svg>
+            Maintenance
         </a>
     </nav>
 
