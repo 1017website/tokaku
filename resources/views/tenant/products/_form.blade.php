@@ -23,7 +23,7 @@
         <label class="form-label">Harga Jual <span style="color:#f43f5e;">*</span></label>
         <div style="position:relative;">
             <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:13px;color:#94a3b8;">Rp</span>
-            <input type="number" name="price" value="{{ old('price', $isEdit?$product->price:'') }}" min="0" required class="form-input" style="padding-left:38px;" placeholder="0">
+            <input type="text" inputmode="numeric" name="price" value="{{ old('price', $isEdit?$product->price:'') }}" required class="form-input input-rupiah" style="padding-left:38px;" placeholder="0">
         </div>
         @error('price')<p style="font-size:12px;color:#f43f5e;margin-top:4px;">{{ $message }}</p>@enderror
     </div>
@@ -31,7 +31,7 @@
         <label class="form-label">Harga Modal</label>
         <div style="position:relative;">
             <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:13px;color:#94a3b8;">Rp</span>
-            <input type="number" name="cost_price" value="{{ old('cost_price', $isEdit?$product->cost_price:0) }}" min="0" class="form-input" style="padding-left:38px;" placeholder="0">
+            <input type="text" inputmode="numeric" name="cost_price" value="{{ old('cost_price', $isEdit?$product->cost_price:0) }}" class="form-input input-rupiah" style="padding-left:38px;" placeholder="0">
         </div>
     </div>
     <div>

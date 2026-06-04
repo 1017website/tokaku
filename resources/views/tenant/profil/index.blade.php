@@ -53,7 +53,7 @@
                         <p style="font-size:13px;font-weight:600;color:#0f172a;margin-bottom:12px;">Target Balik Modal</p>
                         <div>
                             <label class="form-label">Modal Awal / Target BEP</label>
-                            <input type="number" name="initial_capital" value="{{ old('initial_capital', $tenant->initial_capital ?? 0) }}" min="0" step="1000" class="form-input" placeholder="contoh: 10000000">
+                            <input type="text" inputmode="numeric" name="initial_capital" value="{{ old('initial_capital', $tenant->initial_capital ?? 0) }}" class="form-input input-rupiah" placeholder="contoh: 10000000">
                             <p style="font-size:12px;color:#94a3b8;margin-top:6px;">Dipakai untuk progress bar balik modal di dashboard.</p>
                         </div>
                     </div>

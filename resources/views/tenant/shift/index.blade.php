@@ -84,7 +84,7 @@
             @csrf
             <div>
                 <label class="form-label">Kas Awal (Rp) *</label>
-                <input type="number" name="opening_cash" required min="0" class="form-input" placeholder="500000">
+                <input type="text" inputmode="numeric" name="opening_cash" required class="form-input input-rupiah" placeholder="500000">
             </div>
             <div style="display:flex;gap:10px;">
                 <button type="button" onclick="document.getElementById('openModal').style.display='none'" class="btn-secondary" style="flex:1;justify-content:center;">Batal</button>
@@ -104,7 +104,7 @@
             @csrf
             <div>
                 <label class="form-label">Kas Akhir (Rp) *</label>
-                <input type="number" name="closing_cash" required min="0" class="form-input" placeholder="0">
+                <input type="text" inputmode="numeric" name="closing_cash" required class="form-input input-rupiah" placeholder="0">
             </div>
             <div>
                 <label class="form-label">Catatan</label>

@@ -39,7 +39,7 @@
                 </div>
                 <div>
                     <label class="form-label">Jumlah Hutang (Rp) *</label>
-                    <input type="number" name="amount" value="{{ old('amount') }}" required min="1" class="form-input" placeholder="0">
+                    <input type="text" inputmode="numeric" name="amount" value="{{ old('amount') }}" required class="form-input input-rupiah" placeholder="0">
                 </div>
                 <div>
                     <label class="form-label">Jatuh Tempo</label>
@@ -110,7 +110,7 @@
             @csrf
             <div>
                 <label class="form-label">Jumlah Bayar (Rp) *</label>
-                <input type="number" name="amount" id="payAmount" required min="1" class="form-input" placeholder="0">
+                <input type="text" inputmode="numeric" name="amount" id="payAmount" required class="form-input input-rupiah" placeholder="0">
                 <p id="payMax" style="font-size:12px;color:#64748b;margin-top:4px;"></p>
             </div>
             <div>
@@ -130,8 +130,8 @@
 function openPayModal(id, name, remaining) {
     document.getElementById('payModalName').textContent = name;
     document.getElementById('payMax').textContent = 'Sisa hutang: Rp ' + remaining.toLocaleString('id-ID');
-    document.getElementById('payAmount').max = remaining;
-    document.getElementById('payAmount').value = remaining;
+    var payEl = document.getElementById('payAmount');
+    payEl.value = remaining ? remaining.toLocaleString('id-ID') : '';
     document.getElementById('payForm').action = '/hutang/' + id + '/bayar';
     document.getElementById('payModal').style.display = 'flex';
 }

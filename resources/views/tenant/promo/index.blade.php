@@ -34,11 +34,11 @@
                 </div>
                 <div>
                     <label class="form-label">Min. Transaksi (Rp)</label>
-                    <input type="number" name="min_transaction" value="{{ old('min_transaction',0) }}" min="0" class="form-input" placeholder="0 = tidak ada minimum">
+                    <input type="text" inputmode="numeric" name="min_transaction" value="{{ old('min_transaction',0) }}" class="form-input input-rupiah" placeholder="0 = tidak ada minimum">
                 </div>
                 <div>
                     <label class="form-label">Maks. Diskon (Rp) <span style="color:#94a3b8;font-weight:400;">0 = unlimited</span></label>
-                    <input type="number" name="max_discount" value="{{ old('max_discount',0) }}" min="0" class="form-input">
+                    <input type="text" inputmode="numeric" name="max_discount" value="{{ old('max_discount',0) }}" class="form-input input-rupiah">
                 </div>
                 <div class="grid grid-cols-2 gap-3">
                     <div>

@@ -29,7 +29,7 @@
             @csrf
             <div><label class="form-label">Tanggal</label><input type="date" name="expense_date" value="{{ old('expense_date', now()->toDateString()) }}" class="form-input" required></div>
             <div><label class="form-label">Kategori</label><select name="category" class="form-input" required>@foreach($categories as $cat)<option value="{{ $cat }}">{{ $cat }}</option>@endforeach</select></div>
-            <div><label class="form-label">Nominal</label><input type="number" name="amount" min="0" step="100" class="form-input" required placeholder="0"></div>
+            <div><label class="form-label">Nominal</label><input type="text" inputmode="numeric" name="amount" class="form-input input-rupiah" required placeholder="0"></div>
             <div><label class="form-label">Keterangan</label><input type="text" name="description" class="form-input" placeholder="contoh: Bayar listrik bulan ini"></div>
             <button class="btn-primary" style="justify-content:center;">Simpan</button>
         </form>

@@ -400,6 +400,39 @@
         function openSidebar() { document.getElementById('sidebar').classList.add('open'); document.getElementById('mobileOverlay').classList.add('open'); document.body.style.overflow = 'hidden'; }
         function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('mobileOverlay').classList.remove('open'); document.body.style.overflow = ''; }
     </script>
+
+    {{-- Format separator ribuan global untuk semua input .input-rupiah --}}
+    <script>
+    (function(){
+        function onlyDigits(v){ return (v||'').toString().replace(/[^0-9]/g,''); }
+        function formatRupiahInput(el){
+            var d = onlyDigits(el.value);
+            el.value = d ? parseInt(d,10).toLocaleString('id-ID') : '';
+        }
+        // Helper global: ambil nilai numeric murni dari sebuah input rupiah
+        window.rupiahValue = function(el){
+            if(typeof el === 'string') el = document.querySelector(el);
+            return el ? (parseInt(onlyDigits(el.value),10)||0) : 0;
+        };
+        function init(){
+            document.querySelectorAll('input.input-rupiah').forEach(function(el){
+                // format nilai awal (mis. dari old() / data edit)
+                if(el.value) formatRupiahInput(el);
+                el.addEventListener('input', function(){ formatRupiahInput(el); });
+            });
+            // Saat submit form, bersihkan titik agar backend terima angka murni
+            document.querySelectorAll('form').forEach(function(form){
+                form.addEventListener('submit', function(){
+                    form.querySelectorAll('input.input-rupiah').forEach(function(el){
+                        el.value = onlyDigits(el.value);
+                    });
+                });
+            });
+        }
+        if(document.readyState !== 'loading') init();
+        else document.addEventListener('DOMContentLoaded', init);
+    })();
+    </script>
     @stack('scripts')
 </body>
 
