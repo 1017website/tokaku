@@ -165,6 +165,26 @@
             </div>
         </div>
 
+        {{-- ════════ Rekening Pembayaran ════════ --}}
+        <div style="background:#fff;border-radius:14px;border:1px solid #f1f5f9;padding:20px;margin-bottom:16px;">
+            <p style="{{ $secTitle }}">Rekening Pembayaran</p>
+            <p style="font-size:12.5px;color:#64748b;margin:-6px 0 14px;">Rekening tujuan transfer yang ditampilkan ke tenant saat membayar langganan.</p>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;">
+                <div>
+                    <label class="form-label">Nama Bank</label>
+                    <input type="text" name="bank_name" value="{{ old('bank_name', $settings['bank_name'] ?? '') }}" class="form-input" placeholder="mis. BCA">
+                </div>
+                <div>
+                    <label class="form-label">Nomor Rekening</label>
+                    <input type="text" name="bank_account_no" value="{{ old('bank_account_no', $settings['bank_account_no'] ?? '') }}" class="form-input" placeholder="1234567890">
+                </div>
+                <div>
+                    <label class="form-label">Atas Nama</label>
+                    <input type="text" name="bank_account_name" value="{{ old('bank_account_name', $settings['bank_account_name'] ?? '') }}" class="form-input" placeholder="Nama pemilik rekening">
+                </div>
+            </div>
+        </div>
+
         <div style="display:flex;justify-content:flex-end;padding-bottom:20px;">
             <button type="submit" class="btn-primary">Simpan Perubahan</button>
         </div>

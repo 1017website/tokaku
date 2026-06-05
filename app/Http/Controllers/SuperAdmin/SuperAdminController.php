@@ -24,6 +24,8 @@ class SuperAdminController extends Controller
         $activeTenants    = Tenant::where('status', 'active')->count();
         $trialTenants     = Tenant::where('status', 'trial')->count();
         $suspendedTenants = Tenant::where('status', 'suspended')->count();
+        $pendingTenants   = Tenant::where('status', 'pending')->count();
+        $waitingPayments  = \App\Models\PaymentInvoice::where('status', 'waiting_confirmation')->count();
 
         // Total transaksi & revenue semua tenant
         $totalRevenue      = Transaction::sum('total');
@@ -52,6 +54,7 @@ class SuperAdminController extends Controller
 
         return view('superadmin.dashboard', compact(
             'totalTenants', 'activeTenants', 'trialTenants', 'suspendedTenants',
+            'pendingTenants', 'waitingPayments',
             'totalRevenue', 'totalTransactions', 'todayRevenue', 'todayTransactions',
             'recentTenants', 'recentTransactions', 'dailyRevenue'
         ));
@@ -162,6 +165,99 @@ class SuperAdminController extends Controller
         return back()->with('success', "Tenant {$tenant->name} berhasil {$label}.");
     }
 
+    /**
+     * Setujui pendaftaran tenant pending → mulai trial.
+     */
+    public function approve(Request $request, Tenant $tenant)
+    {
+        abort_if($tenant->status !== 'pending', 422, 'Tenant ini tidak dalam status menunggu persetujuan.');
+
+        $trialDays = (int) ($request->input('trial_days') ?: config('tokaku.trial_days', 14));
+
+        $tenant->update([
+            'status'        => 'trial',
+            'trial_ends_at' => now()->addDays($trialDays),
+            'approved_at'   => now(),
+            'rejected_at'   => null,
+            'reject_reason' => null,
+        ]);
+
+        return back()->with('success', "Pendaftaran {$tenant->name} disetujui. Trial {$trialDays} hari dimulai.");
+    }
+
+    /**
+     * Tolak pendaftaran tenant pending.
+     */
+    public function reject(Request $request, Tenant $tenant)
+    {
+        abort_if($tenant->status !== 'pending', 422, 'Tenant ini tidak dalam status menunggu persetujuan.');
+
+        $request->validate(['reject_reason' => 'nullable|string|max:255']);
+
+        $tenant->update([
+            'status'        => 'rejected',
+            'rejected_at'   => now(),
+            'reject_reason' => $request->reject_reason,
+        ]);
+
+        return back()->with('success', "Pendaftaran {$tenant->name} ditolak.");
+    }
+
+    /**
+     * Daftar invoice pembayaran (default: menunggu konfirmasi).
+     */
+    public function payments(Request $request)
+    {
+        $query = \App\Models\PaymentInvoice::with(['tenant', 'plan'])->latest();
+
+        $status = $request->input('status', 'waiting_confirmation');
+        if ($status && $status !== 'all') {
+            $query->where('status', $status);
+        }
+
+        $invoices = $query->paginate(20)->appends($request->query());
+        $waitingCount = \App\Models\PaymentInvoice::where('status', 'waiting_confirmation')->count();
+
+        return view('superadmin.payments', compact('invoices', 'status', 'waitingCount'));
+    }
+
+    /**
+     * Verifikasi pembayaran invoice: setujui (perpanjang langganan) atau tolak.
+     */
+    public function confirmPayment(Request $request, \App\Models\PaymentInvoice $invoice)
+    {
+        $request->validate(['action' => 'required|in:approve,reject', 'note' => 'nullable|string|max:255']);
+        abort_if($invoice->status !== 'waiting_confirmation', 422, 'Invoice ini tidak menunggu konfirmasi.');
+
+        $tenant = $invoice->tenant;
+
+        if ($request->action === 'approve') {
+            // Perpanjang dari sisa waktu jika masih aktif, atau dari sekarang.
+            $start = ($tenant->trial_ends_at && $tenant->trial_ends_at->isFuture())
+                ? $tenant->trial_ends_at
+                : now();
+            $tenant->update([
+                'status'        => 'active',
+                'trial_ends_at' => $start->copy()->addMonths($invoice->duration_months),
+            ]);
+            $invoice->update([
+                'status'       => 'paid',
+                'confirmed_at' => now(),
+                'confirmed_by' => auth()->id(),
+                'note'         => $request->note,
+            ]);
+            return back()->with('success', "Pembayaran {$invoice->invoice_no} dikonfirmasi. Langganan {$tenant->name} aktif {$invoice->duration_months} bulan.");
+        }
+
+        $invoice->update([
+            'status'       => 'rejected',
+            'confirmed_at' => now(),
+            'confirmed_by' => auth()->id(),
+            'note'         => $request->note,
+        ]);
+        return back()->with('success', "Pembayaran {$invoice->invoice_no} ditolak.");
+    }
+
     // Perpanjang trial / ubah status
     public function updateStatus(Request $request, Tenant $tenant)
     {
@@ -230,6 +326,7 @@ class SuperAdminController extends Controller
             'app_name', 'app_logo_path', 'app_logo_full', 'app_favicon',
             'seo_title', 'seo_description', 'seo_keywords', 'seo_og_image',
             'google_ads_id', 'google_analytics_id', 'meta_pixel_id', 'gtm_id',
+            'bank_name', 'bank_account_no', 'bank_account_name',
         ];
 
         $settings = [];
@@ -257,6 +354,10 @@ class SuperAdminController extends Controller
             'google_analytics_id' => ['nullable', 'string', 'max:30', 'regex:/^G-[A-Za-z0-9]+$/'],
             'gtm_id'              => ['nullable', 'string', 'max:30', 'regex:/^GTM-[A-Za-z0-9]+$/'],
             'meta_pixel_id'       => ['nullable', 'string', 'max:20', 'regex:/^[0-9]+$/'],
+            // Rekening pembayaran
+            'bank_name'           => 'nullable|string|max:50',
+            'bank_account_no'     => 'nullable|string|max:50',
+            'bank_account_name'   => 'nullable|string|max:100',
         ], [
             'google_ads_id.regex'       => 'Format Google Ads ID harus AW-XXXXXXXXX.',
             'google_analytics_id.regex' => 'Format Google Analytics ID harus G-XXXXXXXXXX.',
@@ -289,6 +390,7 @@ class SuperAdminController extends Controller
         $textKeys = [
             'seo_title', 'seo_description', 'seo_keywords',
             'google_ads_id', 'google_analytics_id', 'meta_pixel_id', 'gtm_id',
+            'bank_name', 'bank_account_no', 'bank_account_name',
         ];
 
         foreach ($textKeys as $key) {

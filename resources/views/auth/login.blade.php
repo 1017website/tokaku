@@ -148,7 +148,12 @@
                 </button>
             </form>
 
-            <p style="text-align:center;font-size:12px;color:#94a3b8;margin-top:28px;">
+            <p style="text-align:center;font-size:13.5px;color:#64748b;margin-top:22px;">
+                Belum punya akun?
+                <a href="{{ route('register') }}" style="color:#0F6E56;font-weight:600;text-decoration:none;">Daftar di sini</a>
+            </p>
+
+            <p style="text-align:center;font-size:12px;color:#94a3b8;margin-top:18px;">
                 Tokaku &copy; {{ date('Y') }} &middot; by
                 <a href="https://1017studios.id" style="color:#64748b;font-weight:500;text-decoration:none;" onmouseover="this.style.color='#0F6E56'" onmouseout="this.style.color='#64748b'">1017studios.id</a>
             </p>

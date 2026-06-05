@@ -427,8 +427,9 @@
         <a href="#cara-kerja">Cara Kerja</a>
         <a href="#harga">Harga</a>
         <a href="#testimoni">Testimoni</a>
+        <a href="{{ route('login') }}">Masuk</a>
     </div>
-    <a href="{{ route('login') }}" class="nav-cta">
+    <a href="{{ route('register') }}" class="nav-cta">
         Mulai Gratis
         <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
     </a>
@@ -445,7 +446,7 @@
         <h1>Toko kamu,<br><em>lebih mudah.</em></h1>
         <p>Kelola kasir, stok, laporan, dan tim toko dalam satu platform yang simpel — cocok untuk UMKM F&B, retail, dan jasa.</p>
         <div class="hero-actions">
-            <a href="{{ route('login') }}" class="btn-hero">
+            <a href="{{ route('register') }}" class="btn-hero">
                 Coba Gratis 14 Hari
                 <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
             </a>
@@ -625,7 +626,7 @@
                 </li>
                 @endforeach
             </ul>
-            <a href="{{ route('login') }}" class="btn-pricing {{ $featured ? 'solid' : 'outline' }}">{{ $plan->cta_label }}</a>
+            <a href="{{ route('register') }}" class="btn-pricing {{ $featured ? 'solid' : 'outline' }}">{{ $plan->cta_label }}</a>
         </div>
         @empty
         <p style="grid-column:1/-1;text-align:center;color:var(--muted);">Paket harga belum tersedia.</p>
@@ -667,7 +668,7 @@
     <p class="cta-tag">Mulai Sekarang</p>
     <h2 class="cta-title">Siap bawa tokomu<br>ke level berikutnya?</h2>
     <p class="cta-sub">Daftar gratis, tidak perlu kartu kredit. Trial 14 hari penuh tanpa batas fitur.</p>
-    <a href="{{ route('login') }}" class="btn-cta-white">
+    <a href="{{ route('register') }}" class="btn-cta-white">
         Mulai Gratis Sekarang
         <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
     </a>

@@ -65,6 +65,10 @@ class LoginController extends Controller
             $message = 'Masa trial atau langganan toko Anda sudah berakhir. Silakan hubungi administrator.';
             if ($user->tenant && $user->tenant->status === 'suspended') {
                 $message = 'Akun toko Anda sedang ditangguhkan. Silakan hubungi administrator.';
+            } elseif ($user->tenant && $user->tenant->status === 'pending') {
+                $message = 'Pendaftaran Anda sedang menunggu persetujuan administrator. Kami akan menghubungi Anda segera.';
+            } elseif ($user->tenant && $user->tenant->status === 'rejected') {
+                $message = 'Maaf, pendaftaran Anda belum dapat disetujui. Silakan hubungi administrator untuk informasi lebih lanjut.';
             }
 
             return redirect()->route('login')->withErrors(['email' => $message]);

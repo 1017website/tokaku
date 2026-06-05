@@ -85,7 +85,12 @@
                                 <span style="font-size:12px;font-weight:500;padding:4px 10px;border-radius:99px;{{ $t->isTrialExpired() ? 'background:#fff1f2;color:#be123c;' : 'background:#fffbeb;color:#b45309;' }}">
                                     {{ $t->isTrialExpired() ? 'Trial habis' : 'Trial · '.$t->trialLabel() }}
                                 </span>
+                            @elseif($t->status==='pending')<span style="font-size:12px;font-weight:500;background:#fffbeb;color:#92400e;padding:4px 10px;border-radius:99px;">Menunggu</span>
+                            @elseif($t->status==='rejected')<span style="font-size:12px;font-weight:500;background:#f8fafc;color:#64748b;padding:4px 10px;border-radius:99px;">Ditolak</span>
                             @else<span style="font-size:12px;font-weight:500;background:#fff1f2;color:#be123c;padding:4px 10px;border-radius:99px;">Suspended</span>@endif
+                            @if($t->status==='pending')
+                                <a href="{{ route('superadmin.tenants.detail',$t) }}" style="font-size:12.5px;font-weight:500;padding:6px 12px;border-radius:8px;border:1.5px solid #0F6E56;color:#0F6E56;text-decoration:none;font-family:Inter,sans-serif;">Tinjau</a>
+                            @elseif($t->status!=='rejected')
                             <form method="POST" action="{{ route('superadmin.tenants.suspend',$t) }}">
                                 @csrf @method('PUT')
                                 <button type="submit" onclick="return confirm('{{ $t->status==='suspended'?'Aktifkan':'Tangguhkan' }} tenant ini?')"
@@ -93,6 +98,7 @@
                                     {{ $t->status==='suspended'?'Aktifkan':'Tangguhkan' }}
                                 </button>
                             </form>
+                            @endif
                         </div>
                     </div>
                 </div>

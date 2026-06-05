@@ -38,6 +38,38 @@
     </div>
 </div>
 
+{{-- Panel approval untuk pendaftaran baru --}}
+@if($tenant->status === 'pending')
+<div style="background:#fffbeb;border:1px solid #fde68a;border-radius:14px;padding:20px;margin-bottom:16px;">
+    <p style="font-size:14px;font-weight:700;color:#92400e;margin-bottom:4px;">Pendaftaran Menunggu Persetujuan</p>
+    <p style="font-size:13px;color:#78350f;margin-bottom:14px;">Tinjau data pendaftar, lalu setujui untuk memulai trial atau tolak.</p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-bottom:16px;">
+        <div><p style="font-size:11px;color:#92400e;text-transform:uppercase;">Pendaftar</p><p style="font-size:13.5px;color:#0f172a;font-weight:500;">{{ $tenant->owner_name ?? '-' }}</p></div>
+        <div><p style="font-size:11px;color:#92400e;text-transform:uppercase;">Email</p><p style="font-size:13.5px;color:#0f172a;">{{ $tenant->owner_email ?? '-' }}</p></div>
+        <div><p style="font-size:11px;color:#92400e;text-transform:uppercase;">No. HP</p><p style="font-size:13.5px;color:#0f172a;">{{ $tenant->phone ?? '-' }}</p></div>
+        <div><p style="font-size:11px;color:#92400e;text-transform:uppercase;">Jenis Usaha</p><p style="font-size:13.5px;color:#0f172a;">{{ $tenant->business_type ?? '-' }}</p></div>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;">
+        <form method="POST" action="{{ route('superadmin.tenants.approve', $tenant) }}" style="display:flex;gap:8px;align-items:flex-end;" onsubmit="return confirm('Setujui pendaftaran ini dan mulai trial?')">
+            @csrf @method('PUT')
+            <div>
+                <label style="font-size:11px;color:#92400e;display:block;margin-bottom:3px;">Lama Trial (hari)</label>
+                <input type="number" name="trial_days" value="14" min="1" max="365" class="form-input" style="width:120px;">
+            </div>
+            <button type="submit" class="btn-primary">Setujui &amp; Mulai Trial</button>
+        </form>
+        <form method="POST" action="{{ route('superadmin.tenants.reject', $tenant) }}" style="display:flex;gap:8px;align-items:flex-end;" onsubmit="return confirm('Tolak pendaftaran ini?')">
+            @csrf @method('PUT')
+            <div>
+                <label style="font-size:11px;color:#92400e;display:block;margin-bottom:3px;">Alasan (opsional)</label>
+                <input type="text" name="reject_reason" class="form-input" style="width:200px;" placeholder="mis. data tidak valid">
+            </div>
+            <button type="submit" class="btn-secondary" style="color:#be123c;border-color:#fecdd3;">Tolak</button>
+        </form>
+    </div>
+</div>
+@endif
+
 {{-- Update Status --}}
 <div style="background:#fff;border-radius:14px;border:1px solid #f1f5f9;padding:20px;margin-bottom:16px;">
     <p style="font-size:13.5px;font-weight:600;color:#0f172a;margin-bottom:12px;">Ubah Status & Tanggal Trial</p>

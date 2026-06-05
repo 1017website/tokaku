@@ -12,8 +12,14 @@ class Tenant extends Model
         'phone',
         'logo_path',
         'address',
+        'business_type',
+        'owner_name',
+        'owner_email',
         'status',
         'trial_ends_at',
+        'approved_at',
+        'rejected_at',
+        'reject_reason',
         'tax_enabled',
         'tax_rate',
         'tax_name',
@@ -22,6 +28,8 @@ class Tenant extends Model
 
     protected $casts = [
         'trial_ends_at' => 'datetime',
+        'approved_at' => 'datetime',
+        'rejected_at' => 'datetime',
         'tax_enabled' => 'boolean',
         'tax_rate' => 'decimal:2',
         'initial_capital' => 'decimal:2',
@@ -45,6 +53,16 @@ class Tenant extends Model
     public function subscription()
     {
         return $this->hasOne(Subscription::class)->latestOfMany();
+    }
+
+    public function invoices()
+    {
+        return $this->hasMany(PaymentInvoice::class);
+    }
+
+    public function isPending(): bool
+    {
+        return $this->status === 'pending';
     }
 
     public function isActive(): bool

@@ -1,5 +1,7 @@
 <?php
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\Tenant\BillingController;
 use App\Http\Controllers\Tenant\DashboardController;
 use App\Http\Controllers\Tenant\ProductController;
 use App\Http\Controllers\Tenant\CategoryController;
@@ -31,6 +33,8 @@ Route::get('/', function () {
 Route::middleware('guest')->group(function () {
     Route::get('/login',  [LoginController::class, 'showForm'])->name('login');
     Route::post('/login', [LoginController::class, 'login'])->name('login.post');
+    Route::get('/register',  [RegisterController::class, 'showForm'])->name('register');
+    Route::post('/register', [RegisterController::class, 'register'])->name('register.post');
 });
 Route::post('/logout', [LoginController::class, 'logout'])->middleware('auth')->name('logout');
 
@@ -129,6 +133,14 @@ Route::middleware(['auth', 'tenant', 'subscription'])->group(function () {
     Route::get('/subscription/expired', fn() => view('tenant.subscription.expired'))->name('tenant.subscription.expired');
 });
 
+// BILLING — sengaja di luar middleware 'subscription' agar tetap bisa diakses
+// ketika trial/langganan sudah habis (justru saat itulah user perlu membayar).
+Route::middleware(['auth', 'tenant', 'role:owner'])->prefix('billing')->name('tenant.billing.')->group(function () {
+    Route::get('/',                         [BillingController::class, 'index'])->name('index');
+    Route::post('/invoice',                 [BillingController::class, 'createInvoice'])->name('invoice');
+    Route::post('/{invoice}/bukti',         [BillingController::class, 'uploadProof'])->name('proof');
+});
+
 // SUPER ADMIN
 Route::middleware(['auth','role:superadmin'])->prefix('superadmin')->name('superadmin.')->group(function () {
     Route::get('/', [SuperAdminController::class, 'index'])->name('dashboard');
@@ -136,7 +148,13 @@ Route::middleware(['auth','role:superadmin'])->prefix('superadmin')->name('super
     Route::post('/tenants',                  [SuperAdminController::class, 'storeTenant'])->name('tenants.store');
     Route::get('/tenants/{tenant}',          [SuperAdminController::class, 'tenantDetail'])->name('tenants.detail');
     Route::put('/tenants/{tenant}/suspend',  [SuperAdminController::class, 'suspend'])->name('tenants.suspend');
+    Route::put('/tenants/{tenant}/approve',  [SuperAdminController::class, 'approve'])->name('tenants.approve');
+    Route::put('/tenants/{tenant}/reject',   [SuperAdminController::class, 'reject'])->name('tenants.reject');
     Route::put('/tenants/{tenant}/status',   [SuperAdminController::class, 'updateStatus'])->name('tenants.status');
+
+    // Verifikasi pembayaran
+    Route::get('/pembayaran',                  [SuperAdminController::class, 'payments'])->name('payments');
+    Route::put('/pembayaran/{invoice}/konfirmasi', [SuperAdminController::class, 'confirmPayment'])->name('payments.confirm');
     Route::get('/laporan', [SuperAdminController::class, 'laporan'])->name('laporan');
 
     // Master Harga
