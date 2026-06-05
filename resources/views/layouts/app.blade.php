@@ -185,11 +185,11 @@
                 <div class="flex items-center gap-2.5">
                     @if(!empty($currentTenant?->logo_path))
                         <div style="width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;background:#fff;border:1px solid #f1f5f9;">
-                            <img src="{{ file_url($currentTenant->logo_path) }}" alt="Logo {{ $currentTenant->name }}" style="width:100%;height:100%;object-fit:contain;">
+                            <img src="{{ Storage::url($currentTenant->logo_path) }}" alt="Logo {{ $currentTenant->name }}" style="width:100%;height:100%;object-fit:contain;">
                         </div>
                     @elseif(!empty($appSettings['app_logo_path']))
                         <div style="width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;background:#fff;border:1px solid #f1f5f9;">
-                            <img src="{{ file_url($appSettings['app_logo_path']) }}" alt="{{ $appSettings['app_name'] ?? 'Tokaku' }}" style="width:100%;height:100%;object-fit:contain;">
+                            <img src="{{ Storage::url($appSettings['app_logo_path']) }}" alt="{{ $appSettings['app_name'] ?? 'Tokaku' }}" style="width:100%;height:100%;object-fit:contain;">
                         </div>
                     @else
                         <div style="width:36px;height:36px;background:#0F6E56;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;">
