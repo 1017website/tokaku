@@ -15,14 +15,29 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        $middleware->web(append: [
-            TenantMiddleware::class,
-        ]);
         $middleware->alias([
             'tenant'       => TenantMiddleware::class,
             'role'         => RoleMiddleware::class,
             'subscription' => SubscriptionMiddleware::class,
             'permission'   => PermissionMiddleware::class,
+        ]);
+
+        // Jalankan TenantMiddleware SEBELUM SubstituteBindings agar global scope
+        // BelongsToTenant sudah aktif ketika route-model-binding ({shift}, {product},
+        // {customer}, dst.) me-resolve model. Tanpa ini, binding mengabaikan filter
+        // tenant dan bisa memunculkan 403/data milik tenant lain.
+        $middleware->priority([
+            \Illuminate\Cookie\Middleware\EncryptCookies::class,
+            \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
+            \Illuminate\Session\Middleware\StartSession::class,
+            \Illuminate\View\Middleware\ShareErrorsFromSession::class,
+            \Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class,
+            \Illuminate\Auth\Middleware\Authenticate::class,
+            TenantMiddleware::class,
+            \Illuminate\Routing\Middleware\SubstituteBindings::class,
+            SubscriptionMiddleware::class,
+            RoleMiddleware::class,
+            PermissionMiddleware::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

@@ -33,7 +33,12 @@ class ShiftController extends Controller {
     }
 
     public function close(Request $request, Shift $shift) {
-        abort_if($shift->user_id !== auth()->id(), 403);
+        // Shift sudah otomatis terfilter tenant via global scope BelongsToTenant.
+        // Pemilik shift boleh menutup; owner/admin boleh menutup shift kasir manapun di tokonya.
+        abort_if($shift->user_id !== auth()->id() && !auth()->user()->isAdmin(), 403, 'Anda tidak berhak menutup shift ini.');
+        if (!is_null($shift->closed_at)) {
+            return redirect()->route('tenant.shift.index')->withErrors(['Shift ini sudah ditutup.']);
+        }
         $request->validate(['closing_cash'=>'required|integer|min:0','notes'=>'nullable|string']);
 
         // Hitung semua transaksi tunai dalam shift ini
@@ -58,7 +63,9 @@ class ShiftController extends Controller {
     }
 
     public function show(Shift $shift) {
-        abort_if($shift->tenant_id !== app('currentTenant')->id, 403);
+        // Shift sudah otomatis terfilter tenant via global scope BelongsToTenant.
+        // Jika shift bukan milik tenant ini, route-model-binding mengembalikan 404,
+        // sehingga tidak perlu cek tenant manual di sini.
         $transactions = $shift->transactions()->with('user')->latest()->get();
         return view('tenant.shift.detail', compact('shift','transactions'));
     }
