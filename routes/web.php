@@ -1,5 +1,6 @@
 <?php
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\FileController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Tenant\BillingController;
 use App\Http\Controllers\Tenant\DashboardController;
@@ -17,6 +18,12 @@ use App\Http\Controllers\Tenant\ExpenseController;
 use App\Http\Controllers\SuperAdmin\SuperAdminController;
 use App\Http\Controllers\SuperAdmin\PricingController;
 use Illuminate\Support\Facades\Route;
+
+// Penyaji file storage via PHP (pengganti symlink /storage yang kena 403 di
+// shared hosting). where('path','.*') agar menangkap subfolder & ekstensi.
+Route::get('/file/{path}', [FileController::class, 'show'])
+    ->where('path', '.*')
+    ->name('file.show');
 
 Route::get('/', function () {
     if (auth()->check()) {
