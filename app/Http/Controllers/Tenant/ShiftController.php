@@ -8,11 +8,38 @@ use Illuminate\Support\Facades\DB;
 
 class ShiftController extends Controller {
     public function index() {
-        $activeShift = Shift::where('tenant_id', app('currentTenant')->id)
+        $tenantId = app('currentTenant')->id;
+        $activeShift = Shift::where('tenant_id', $tenantId)
             ->where('user_id', auth()->id())->whereNull('closed_at')->latest()->first();
-        $shifts = Shift::with('user')->where('tenant_id', app('currentTenant')->id)
+
+        // Rincian kas untuk shift aktif, dipakai di modal tutup shift supaya
+        // kasir tahu berapa yang seharusnya ada di laci (hanya tunai), dan
+        // melihat pemasukan non-tunai (QRIS/transfer) secara terpisah.
+        $cashSummary = null;
+        if ($activeShift) {
+            $cashSales    = Transaction::where('shift_id', $activeShift->id)->where('payment_method', 'cash')->sum('total');
+            $nonCashSales = Transaction::where('shift_id', $activeShift->id)->where('payment_method', '!=', 'cash')->sum('total');
+            $cashSummary = [
+                'opening'  => (int) $activeShift->opening_cash,
+                'cash'     => (int) $cashSales,
+                'noncash'  => (int) $nonCashSales,
+                'expected' => (int) ($activeShift->opening_cash + $cashSales),
+            ];
+        }
+
+        // whereHas memastikan user pemilik shift masih milik tenant ini,
+        // sehingga shift "nyasar" (user_id menunjuk user tenant lain karena
+        // sisa data / ID daur ulang) tidak ikut tampil.
+        // Hitung jumlah & total transaksi secara live, supaya shift yang
+        // masih berjalan tidak menampilkan 0 (kolom total_* hanya terisi
+        // saat shift ditutup). withCount/withSum menghindari query N+1.
+        $shifts = Shift::with('user')
+            ->withCount('transactions')
+            ->withSum('transactions', 'total')
+            ->where('tenant_id', $tenantId)
+            ->whereHas('user', fn($q) => $q->where('tenant_id', $tenantId))
             ->latest()->paginate(20);
-        return view('tenant.shift.index', compact('activeShift','shifts'));
+        return view('tenant.shift.index', compact('activeShift','shifts','cashSummary'));
     }
 
     public function open(Request $request) {
@@ -66,7 +93,7 @@ class ShiftController extends Controller {
         // Shift sudah otomatis terfilter tenant via global scope BelongsToTenant.
         // Jika shift bukan milik tenant ini, route-model-binding mengembalikan 404,
         // sehingga tidak perlu cek tenant manual di sini.
-        $transactions = $shift->transactions()->with('user')->latest()->get();
+        $transactions = $shift->transactions()->with(['user','items'])->latest()->get();
         return view('tenant.shift.detail', compact('shift','transactions'));
     }
 }

@@ -53,8 +53,13 @@
                     @if($shift->closed_at){{ $shift->closed_at->format('d M, H:i') }}@else<span style="color:#f59e0b;font-weight:500;">Berjalan</span>@endif
                 </td>
                 <td style="padding:12px 14px;font-size:13px;color:#374151;">Rp {{ number_format($shift->opening_cash,0,',','.') }}</td>
-                <td style="padding:12px 14px;font-size:13.5px;font-weight:600;color:#0f172a;">{{ $shift->total_transactions }}</td>
-                <td style="padding:12px 14px;font-size:13.5px;font-weight:700;color:#0F6E56;">Rp {{ number_format($shift->total_revenue,0,',','.') }}</td>
+                @php
+                    $isRunning = is_null($shift->closed_at);
+                    $trxCount  = $isRunning ? ($shift->transactions_count ?? 0) : $shift->total_transactions;
+                    $trxRev    = $isRunning ? ($shift->transactions_sum_total ?? 0) : $shift->total_revenue;
+                @endphp
+                <td style="padding:12px 14px;font-size:13.5px;font-weight:600;color:#0f172a;">{{ $trxCount }}</td>
+                <td style="padding:12px 14px;font-size:13.5px;font-weight:700;color:#0F6E56;">Rp {{ number_format($trxRev,0,',','.') }}</td>
                 <td style="padding:12px 14px;">
                     @if(!is_null($shift->cash_difference))
                     <span style="font-size:13px;font-weight:600;color:{{ $shift->cash_difference==0?'#15803d':($shift->cash_difference>0?'#2563eb':'#be123c') }};">
@@ -99,7 +104,19 @@
 <div id="closeModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);align-items:center;justify-content:center;z-index:50;padding:16px;">
     <div style="background:#fff;border-radius:20px;width:100%;max-width:380px;padding:28px;">
         <h3 style="font-size:16px;font-weight:700;color:#0f172a;margin-bottom:4px;">Tutup Shift</h3>
-        <p style="font-size:13px;color:#64748b;margin-bottom:20px;">Hitung uang di laci kasir dan masukkan jumlahnya.</p>
+        <p style="font-size:13px;color:#64748b;margin-bottom:16px;">Hitung uang tunai di laci kasir, lalu masukkan jumlahnya.</p>
+
+        @if($cashSummary)
+        <div style="background:#f8fafc;border:1px solid #f1f5f9;border-radius:12px;padding:12px 14px;margin-bottom:16px;display:flex;flex-direction:column;gap:7px;">
+            <div style="display:flex;justify-content:space-between;font-size:12.5px;color:#64748b;"><span>Kas awal</span><b style="color:#0f172a;">Rp {{ number_format($cashSummary['opening'],0,',','.') }}</b></div>
+            <div style="display:flex;justify-content:space-between;font-size:12.5px;color:#64748b;"><span>Penjualan tunai</span><b style="color:#0f172a;">Rp {{ number_format($cashSummary['cash'],0,',','.') }}</b></div>
+            <div style="display:flex;justify-content:space-between;font-size:13px;border-top:1px dashed #e2e8f0;padding-top:7px;"><b style="color:#0f172a;">Kas seharusnya di laci</b><b style="color:#0F6E56;">Rp {{ number_format($cashSummary['expected'],0,',','.') }}</b></div>
+            @if($cashSummary['noncash'] > 0)
+            <div style="display:flex;justify-content:space-between;font-size:12px;color:#94a3b8;margin-top:2px;"><span>Non-tunai (QRIS/transfer)</span><span>Rp {{ number_format($cashSummary['noncash'],0,',','.') }}</span></div>
+            <p style="font-size:11px;color:#94a3b8;line-height:1.4;">Pemasukan non-tunai tidak masuk laci, jadi tidak dihitung di kas akhir.</p>
+            @endif
+        </div>
+        @endif
         <form method="POST" action="{{ route('tenant.shift.close', $activeShift) }}" style="display:flex;flex-direction:column;gap:14px;">
             @csrf
             <div>

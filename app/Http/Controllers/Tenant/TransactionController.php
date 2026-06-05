@@ -34,7 +34,7 @@ class TransactionController extends Controller {
             return $topProductIds->search($product->id);
         })->values();
         $promos   = Promo::where('tenant_id', $tenant->id)->where('is_active', true)->get()->filter(fn($p)=>$p->isValid());
-        $activeShift = Shift::where('tenant_id', $tenant->id)
+        $activeShift = Shift::with('user')->where('tenant_id', $tenant->id)
             ->where('user_id', auth()->id())->whereNull('closed_at')->latest()->first();
         $taxEnabled  = $tenant->tax_enabled ?? false;
         $taxRate     = $tenant->tax_rate ?? 11;
@@ -61,8 +61,10 @@ class TransactionController extends Controller {
         ]);
 
         $transactionId = null;
+        $invoiceNo = null;
+        $stocks = [];
 
-        DB::transaction(function () use ($request, &$transactionId) {
+        DB::transaction(function () use ($request, &$transactionId, &$invoiceNo, &$stocks) {
             $tenant   = app('currentTenant');
             $subtotal = 0;
             $items    = [];
@@ -74,6 +76,7 @@ class TransactionController extends Controller {
                 $subtotal    += $itemSubtotal;
                 $items[] = ['product_id'=>$product->id,'product_name'=>$product->name,'unit_price'=>$product->price,'quantity'=>$item['qty'],'subtotal'=>$itemSubtotal];
                 $product->decrement('stock', $item['qty']);
+                $stocks[$product->id] = $product->stock; // stok terbaru setelah dikurangi
             }
 
             $discount      = $request->discount ?? 0;
@@ -131,9 +134,10 @@ class TransactionController extends Controller {
             }
 
             $transactionId = $transaction->id;
+            $invoiceNo = $transaction->invoice_no;
         });
 
-        return response()->json(['success'=>true,'transaction_id'=>$transactionId,'message'=>'Transaksi berhasil.']);
+        return response()->json(['success'=>true,'transaction_id'=>$transactionId,'invoice_no'=>$invoiceNo,'stocks'=>$stocks,'message'=>'Transaksi berhasil.']);
     }
 
     public function struk(int $id) {

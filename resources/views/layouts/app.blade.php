@@ -408,8 +408,16 @@
     <script>
     (function(){
         function onlyDigits(v){ return (v||'').toString().replace(/[^0-9]/g,''); }
+        // Buang bagian desimal (.00 / ,00) dari nilai awal yang berasal dari
+        // kolom decimal database, supaya tidak ikut terbaca jadi digit ribuan.
+        function stripDecimal(v){ return (v||'').toString().replace(/[.,]\d{1,2}$/, ''); }
         function formatRupiahInput(el){
             var d = onlyDigits(el.value);
+            el.value = d ? parseInt(d,10).toLocaleString('id-ID') : '';
+        }
+        // Format khusus nilai awal: buang desimal dulu sebelum diformat.
+        function formatRupiahInitial(el){
+            var d = onlyDigits(stripDecimal(el.value));
             el.value = d ? parseInt(d,10).toLocaleString('id-ID') : '';
         }
         // Helper global: ambil nilai numeric murni dari sebuah input rupiah
@@ -420,7 +428,7 @@
         function init(){
             document.querySelectorAll('input.input-rupiah').forEach(function(el){
                 // format nilai awal (mis. dari old() / data edit)
-                if(el.value) formatRupiahInput(el);
+                if(el.value) formatRupiahInitial(el);
                 el.addEventListener('input', function(){ formatRupiahInput(el); });
             });
             // Saat submit form, bersihkan titik agar backend terima angka murni

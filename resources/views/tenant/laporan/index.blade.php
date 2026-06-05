@@ -124,6 +124,7 @@
                         <th style="text-align:left;font-size:11px;font-weight:600;color:#64748b;padding:10px 16px;text-transform:uppercase;">Invoice</th>
                         <th style="text-align:left;font-size:11px;font-weight:600;color:#64748b;padding:10px 16px;text-transform:uppercase;">Metode</th>
                         <th style="text-align:right;font-size:11px;font-weight:600;color:#64748b;padding:10px 16px;text-transform:uppercase;">Total</th>
+                        <th style="text-align:right;font-size:11px;font-weight:600;color:#64748b;padding:10px 16px;text-transform:uppercase;">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -139,9 +140,26 @@
                             </span>
                         </td>
                         <td style="padding:11px 16px;text-align:right;font-size:13px;font-weight:700;color:#0f172a;">Rp {{ number_format($t->total,0,',','.') }}</td>
+                        <td style="padding:11px 16px;text-align:right;">
+                            @php
+                                $trxData = [
+                                    'id' => $t->id,
+                                    'invoice_no' => $t->invoice_no,
+                                    'time' => $t->created_at->format('d M Y, H:i'),
+                                    'cashier' => $t->user->name ?? '-',
+                                    'method' => ucfirst($t->payment_method),
+                                    'subtotal' => (float) $t->subtotal,
+                                    'discount' => (float) $t->discount,
+                                    'tax' => (float) $t->tax,
+                                    'total' => (float) $t->total,
+                                    'items' => $t->items->map(fn($i) => ['name'=>$i->product_name,'price'=>(float)$i->unit_price,'qty'=>$i->quantity,'subtotal'=>(float)$i->subtotal]),
+                                ];
+                            @endphp
+                            <button type="button" onclick='showTrxDetail(@json($trxData))' style="font-size:12.5px;color:#0F6E56;font-weight:600;background:none;border:none;cursor:pointer;padding:0;">Detail</button>
+                        </td>
                     </tr>
                     @empty
-                    <tr><td colspan="3" style="padding:40px 16px;text-align:center;font-size:13.5px;color:#94a3b8;">Tidak ada transaksi.</td></tr>
+                    <tr><td colspan="4" style="padding:40px 16px;text-align:center;font-size:13.5px;color:#94a3b8;">Tidak ada transaksi.</td></tr>
                     @endforelse
                 </tbody>
             </table>
@@ -151,6 +169,8 @@
         @endif
     </div>
 </div>
+
+@include('tenant.partials.trx-detail-modal')
 
 @endsection
 

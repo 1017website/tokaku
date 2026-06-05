@@ -67,7 +67,7 @@
     <div class="overflow-x-auto">
         <table style="width:100%;border-collapse:collapse;min-width:560px;">
             <thead><tr style="background:#f8fafc;border-bottom:1px solid #f1f5f9;">
-                @foreach(['Invoice','Waktu','Kasir','Metode','Status','Total'] as $h)
+                @foreach(['Invoice','Waktu','Kasir','Metode','Status','Total','Aksi'] as $h)
                 <th style="text-align:left;font-size:11px;font-weight:600;color:#64748b;padding:10px 14px;text-transform:uppercase;">{{ $h }}</th>
                 @endforeach
             </tr></thead>
@@ -84,13 +84,32 @@
                         </span>
                     </td>
                     <td style="padding:12px 14px;font-size:13.5px;font-weight:700;color:#0F6E56;">Rp {{ number_format($trx->total,0,',','.') }}</td>
+                    <td style="padding:12px 14px;">
+                        @php
+                            $trxData = [
+                                'id' => $trx->id,
+                                'invoice_no' => $trx->invoice_no,
+                                'time' => $trx->created_at->format('d M Y, H:i'),
+                                'cashier' => $trx->user->name ?? '-',
+                                'method' => ucfirst($trx->payment_method),
+                                'subtotal' => (float) $trx->subtotal,
+                                'discount' => (float) $trx->discount,
+                                'tax' => (float) $trx->tax,
+                                'total' => (float) $trx->total,
+                                'items' => $trx->items->map(fn($i) => ['name'=>$i->product_name,'price'=>(float)$i->unit_price,'qty'=>$i->quantity,'subtotal'=>(float)$i->subtotal]),
+                            ];
+                        @endphp
+                        <button type="button" onclick='showTrxDetail(@json($trxData))' style="font-size:12.5px;color:#0F6E56;font-weight:600;background:none;border:none;cursor:pointer;padding:0;">Detail</button>
+                    </td>
                 </tr>
                 @empty
-                <tr><td colspan="6" style="padding:50px;text-align:center;color:#94a3b8;font-size:13.5px;">Belum ada transaksi dalam shift ini.</td></tr>
+                <tr><td colspan="7" style="padding:50px;text-align:center;color:#94a3b8;font-size:13.5px;">Belum ada transaksi dalam shift ini.</td></tr>
                 @endforelse
             </tbody>
         </table>
     </div>
 </div>
+
+@include('tenant.partials.trx-detail-modal')
 
 @endsection
