@@ -176,9 +176,24 @@ function cetakLangsungKasir(){
     if(!id){ setCetakStatus('Transaksi tidak ditemukan.'); return; }
     var escposUrl = '/kasir/'+id+'/escpos';
     if (IS_ANDROID) {
-        setCetakStatus('Mengirim ke RawBT...');
-        window.location.href = 'rawbt:' + new URL(escposUrl+'?format=raw', window.location.origin).href;
-        setTimeout(function(){ setCetakStatus('Jika tidak tercetak, pastikan RawBT terpasang & printer terhubung.'); }, 1500);
+        // Ambil data ESC/POS (base64), lalu kirim LANGSUNG ke RawBT via skema
+        // base64. Tidak mengirim URL, sehingga alamat sumber tidak ikut tercetak.
+        setCetakStatus('Menyiapkan struk...');
+        fetch(escposUrl)
+            .then(function(r){ return r.json(); })
+            .then(function(data){
+                setCetakStatus('Mengirim ke RawBT...');
+                var intent = 'rawbt:base64,' + data.base64;
+                // Sebagian Android membatasi panjang URL intent (~sekitar 8000 char).
+                // Bila data terlalu panjang (mis. ada logo), fallback ke mode URL.
+                if (intent.length > 7500) {
+                    window.location.href = 'rawbt:' + new URL(escposUrl, window.location.origin).href;
+                } else {
+                    window.location.href = intent;
+                }
+                setTimeout(function(){ setCetakStatus('Jika tidak tercetak, buka RawBT lalu pilih printer Bluetooth (bukan Emulator).'); }, 1500);
+            })
+            .catch(function(err){ console.error(err); setCetakStatus('Gagal menyiapkan struk.'); });
         return;
     }
     if (typeof qz === 'undefined') { setCetakStatus('Library QZ Tray gagal dimuat.'); return; }
