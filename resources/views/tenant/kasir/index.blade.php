@@ -11,14 +11,16 @@
 .category-tabs{display:flex;gap:10px;overflow-x:auto;padding:12px 2px 2px;scrollbar-width:thin}
 .cat-btn{white-space:nowrap;border:1.5px solid #e2e8f0;background:#fff;color:#334155;padding:9px 18px;border-radius:999px;font-size:13px;font-weight:700;cursor:pointer;font-family:Inter,sans-serif}
 .cat-btn.active{background:#0F6E56;border-color:#0F6E56;color:#fff}
-.product-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;overflow:auto;padding:16px;max-height:calc(100vh - 285px)}
+.product-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;overflow:auto;padding:16px;max-height:calc(100vh - 285px)}
 .product-card{background:#fff;border:1.5px solid #edf2f7;border-radius:16px;padding:12px;text-align:left;cursor:pointer;min-height:142px;transition:.15s;font-family:Inter,sans-serif}
 .product-card:hover{border-color:#0F6E56;box-shadow:0 8px 24px rgba(15,110,86,.08);transform:translateY(-1px)}
 .product-card:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none}
 .product-img{width:100%;height:66px;background:#f8fafc;border-radius:12px;display:flex;align-items:center;justify-content:center;margin-bottom:10px;overflow:hidden}
 .cart-sticky{position:sticky;top:0;max-height:calc(100vh - 120px);display:flex;flex-direction:column}
 .select-customer{width:100%;border:1.5px solid #e2e8f0;border-radius:10px;padding:9px 12px;font-size:13px;font-family:Inter,sans-serif;background:#fafafa;outline:none}
-@media(max-width:1024px){.pos-wrap{grid-template-columns:1fr}.cart-sticky{position:relative;max-height:none}.product-grid{max-height:none;grid-template-columns:repeat(auto-fill,minmax(135px,1fr))}}
+/* Tablet landscape (1025-1280px): rapatkan keranjang & perkecil kartu agar muat lebih banyak kolom */
+@media(min-width:1025px) and (max-width:1280px){.pos-wrap{grid-template-columns:minmax(0,1fr) 300px;gap:14px}.product-grid{grid-template-columns:repeat(auto-fill,minmax(125px,1fr));gap:10px;padding:12px}.product-card{min-height:132px;padding:10px}.product-img{height:58px}}
+@media(max-width:1024px){.pos-wrap{grid-template-columns:1fr}.cart-sticky{position:relative;max-height:none}.product-grid{max-height:none;grid-template-columns:repeat(auto-fill,minmax(130px,1fr))}}
 @media(max-width:640px){.product-grid{grid-template-columns:repeat(2,1fr);padding:12px}.pos-wrap{gap:12px}.cat-btn{padding:8px 14px}}
 </style>
 @endpush

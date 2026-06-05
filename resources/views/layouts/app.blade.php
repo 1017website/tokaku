@@ -136,11 +136,45 @@
                 transform: translateX(0);
             }
         }
+
+        /* Collapse sidebar di desktop/tablet (>=1024px): sembunyikan total, konten melebar */
+        @media(min-width:1024px) {
+            .sidebar-desktop {
+                transition: width 0.2s ease, margin 0.2s ease, opacity 0.15s ease;
+            }
+            body.sidebar-collapsed .sidebar-desktop,
+            html.pre-sidebar-collapsed .sidebar-desktop {
+                width: 0 !important;
+                margin-left: -1px;
+                opacity: 0;
+                overflow: hidden;
+                pointer-events: none;
+                border: none;
+            }
+        }
     </style>
     @stack('styles')
+    <script>
+        // Terapkan preferensi collapse sidebar sedini mungkin (sebelum render)
+        // agar tidak ada efek "kedip". Class ditambah ke <html>, lalu dipindah
+        // ke <body> saat body siap.
+        try {
+            if (localStorage.getItem('tokaku_sidebar_collapsed') === '1'
+                && window.matchMedia('(min-width:1024px)').matches) {
+                document.documentElement.classList.add('pre-sidebar-collapsed');
+            }
+        } catch (e) {}
+    </script>
 </head>
 
 <body style="background:#f8fafc;font-family:Inter,sans-serif;" class="antialiased">
+<script>
+    // Sinkronkan preferensi awal: pindah dari <html> ke <body> agar toggle konsisten.
+    if (document.documentElement.classList.contains('pre-sidebar-collapsed')) {
+        document.body.classList.add('sidebar-collapsed');
+        document.documentElement.classList.remove('pre-sidebar-collapsed');
+    }
+</script>
 @include('partials.gtm-noscript')
     <div class="flex h-screen overflow-hidden">
 
@@ -151,11 +185,11 @@
                 <div class="flex items-center gap-2.5">
                     @if(!empty($currentTenant?->logo_path))
                         <div style="width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;background:#fff;border:1px solid #f1f5f9;">
-                            <img src="{{ Storage::url($currentTenant->logo_path) }}" alt="Logo {{ $currentTenant->name }}" style="width:100%;height:100%;object-fit:contain;">
+                            <img src="{{ file_url($currentTenant->logo_path) }}" alt="Logo {{ $currentTenant->name }}" style="width:100%;height:100%;object-fit:contain;">
                         </div>
                     @elseif(!empty($appSettings['app_logo_path']))
                         <div style="width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;background:#fff;border:1px solid #f1f5f9;">
-                            <img src="{{ Storage::url($appSettings['app_logo_path']) }}" alt="{{ $appSettings['app_name'] ?? 'Tokaku' }}" style="width:100%;height:100%;object-fit:contain;">
+                            <img src="{{ file_url($appSettings['app_logo_path']) }}" alt="{{ $appSettings['app_name'] ?? 'Tokaku' }}" style="width:100%;height:100%;object-fit:contain;">
                         </div>
                     @else
                         <div style="width:36px;height:36px;background:#0F6E56;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;">
@@ -360,7 +394,7 @@
             <header
                 class="bg-white border-b border-gray-100 px-4 lg:px-8 py-4 flex items-center justify-between sticky top-0 z-20">
                 <div class="flex items-center gap-3">
-                    <button onclick="openSidebar()" class="lg:hidden text-gray-500 p-1 -ml-1">
+                    <button onclick="toggleSidebar()" class="text-gray-500 p-1 -ml-1" aria-label="Tampilkan/sembunyikan menu" title="Tampilkan/sembunyikan menu">
                         <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor"
                             stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
@@ -409,6 +443,18 @@
     <script>
         function openSidebar() { document.getElementById('sidebar').classList.add('open'); document.getElementById('mobileOverlay').classList.add('open'); document.body.style.overflow = 'hidden'; }
         function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('mobileOverlay').classList.remove('open'); document.body.style.overflow = ''; }
+
+        // Toggle universal: layar kecil (<1024px) buka/tutup overlay,
+        // layar besar collapse sidebar (konten melebar). Preferensi desktop
+        // disimpan agar konsisten saat pindah halaman.
+        function toggleSidebar() {
+            if (window.matchMedia('(max-width:1023px)').matches) {
+                document.getElementById('sidebar').classList.contains('open') ? closeSidebar() : openSidebar();
+            } else {
+                var collapsed = document.body.classList.toggle('sidebar-collapsed');
+                try { localStorage.setItem('tokaku_sidebar_collapsed', collapsed ? '1' : '0'); } catch (e) {}
+            }
+        }
     </script>
 
     {{-- Format separator ribuan global untuk semua input .input-rupiah --}}
