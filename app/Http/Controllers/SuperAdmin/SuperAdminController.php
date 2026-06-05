@@ -109,8 +109,17 @@ class SuperAdminController extends Controller
             ->limit(5)
             ->get();
 
+        // Riwayat pembayaran langganan
+        $invoices = \App\Models\PaymentInvoice::with('plan')
+            ->where('tenant_id', $tenant->id)
+            ->latest()
+            ->get();
+        $paidCount = $invoices->where('status', 'paid')->count();
+        $totalPaid = $invoices->where('status', 'paid')->sum('total_amount');
+
         return view('superadmin.tenants.detail', compact(
-            'tenant', 'users', 'recentTransactions', 'monthlyRevenue', 'topProducts'
+            'tenant', 'users', 'recentTransactions', 'monthlyRevenue', 'topProducts',
+            'invoices', 'paidCount', 'totalPaid'
         ));
     }
 
@@ -277,6 +286,55 @@ class SuperAdminController extends Controller
         ]);
 
         return back()->with('success', "Status tenant {$tenant->name} berhasil diperbarui.");
+    }
+
+    /**
+     * Edit data dasar tenant (nama, telepon, alamat, jenis usaha).
+     */
+    public function updateTenant(Request $request, Tenant $tenant)
+    {
+        $validated = $request->validate([
+            'name'          => 'required|string|max:255',
+            'phone'         => 'nullable|string|max:20',
+            'address'       => 'nullable|string|max:500',
+            'business_type' => 'nullable|string|max:100',
+            'owner_name'    => 'nullable|string|max:255',
+        ]);
+
+        $tenant->update($validated);
+
+        return back()->with('success', "Data {$tenant->name} berhasil diperbarui.");
+    }
+
+    /**
+     * Perpanjang trial: tambah N hari dari sisa trial (atau dari sekarang bila sudah lewat).
+     */
+    public function extendTrial(Request $request, Tenant $tenant)
+    {
+        $request->validate(['days' => 'required|integer|min:1|max:365']);
+
+        $base = ($tenant->trial_ends_at && $tenant->trial_ends_at->isFuture())
+            ? $tenant->trial_ends_at
+            : now();
+
+        $tenant->update([
+            'status'        => 'trial',
+            'trial_ends_at' => $base->copy()->addDays((int) $request->days),
+        ]);
+
+        return back()->with('success', "Trial {$tenant->name} diperpanjang {$request->days} hari.");
+    }
+
+    /**
+     * Hentikan trial sekarang juga (set kedaluwarsa ke saat ini).
+     */
+    public function stopTrial(Tenant $tenant)
+    {
+        abort_if($tenant->status !== 'trial', 422, 'Tenant ini tidak sedang dalam masa trial.');
+
+        $tenant->update(['trial_ends_at' => now()->subSecond()]);
+
+        return back()->with('success', "Trial {$tenant->name} dihentikan.");
     }
 
     // Laporan semua transaksi lintas tenant

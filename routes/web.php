@@ -151,6 +151,9 @@ Route::middleware(['auth','role:superadmin'])->prefix('superadmin')->name('super
     Route::put('/tenants/{tenant}/approve',  [SuperAdminController::class, 'approve'])->name('tenants.approve');
     Route::put('/tenants/{tenant}/reject',   [SuperAdminController::class, 'reject'])->name('tenants.reject');
     Route::put('/tenants/{tenant}/status',   [SuperAdminController::class, 'updateStatus'])->name('tenants.status');
+    Route::put('/tenants/{tenant}/edit',      [SuperAdminController::class, 'updateTenant'])->name('tenants.update');
+    Route::put('/tenants/{tenant}/extend',    [SuperAdminController::class, 'extendTrial'])->name('tenants.extend');
+    Route::put('/tenants/{tenant}/stop-trial',[SuperAdminController::class, 'stopTrial'])->name('tenants.stop-trial');
 
     // Verifikasi pembayaran
     Route::get('/pembayaran',                  [SuperAdminController::class, 'payments'])->name('payments');

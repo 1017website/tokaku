@@ -95,6 +95,80 @@
     </form>
 </div>
 
+{{-- Info Langganan + Aksi Cepat Trial --}}
+<div style="background:#fff;border-radius:14px;border:1px solid #f1f5f9;padding:20px;margin-bottom:16px;">
+    <p style="font-size:13.5px;font-weight:600;color:#0f172a;margin-bottom:12px;">Langganan</p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:16px;">
+        <div style="background:#f8fafc;border-radius:10px;padding:12px 14px;">
+            <p style="font-size:11px;color:#64748b;text-transform:uppercase;">Terdaftar Sejak</p>
+            <p style="font-size:14px;font-weight:600;color:#0f172a;margin-top:3px;">{{ $tenant->created_at->translatedFormat('d M Y') }}</p>
+        </div>
+        @if($tenant->approved_at)
+        <div style="background:#f8fafc;border-radius:10px;padding:12px 14px;">
+            <p style="font-size:11px;color:#64748b;text-transform:uppercase;">Disetujui</p>
+            <p style="font-size:14px;font-weight:600;color:#0f172a;margin-top:3px;">{{ $tenant->approved_at->translatedFormat('d M Y') }}</p>
+        </div>
+        @endif
+        <div style="background:#f8fafc;border-radius:10px;padding:12px 14px;">
+            <p style="font-size:11px;color:#64748b;text-transform:uppercase;">{{ $tenant->status==='active' ? 'Aktif Hingga' : 'Trial Berakhir' }}</p>
+            <p style="font-size:14px;font-weight:600;color:#0f172a;margin-top:3px;">{{ $tenant->trial_ends_at ? $tenant->trial_ends_at->translatedFormat('d M Y') : '—' }}
+                @if($tenant->trial_ends_at)<span style="font-size:11px;color:#64748b;font-weight:400;">({{ $tenant->trialLabel() }})</span>@endif
+            </p>
+        </div>
+        <div style="background:#f0fdf6;border-radius:10px;padding:12px 14px;">
+            <p style="font-size:11px;color:#0F6E56;text-transform:uppercase;">Jumlah Langganan</p>
+            <p style="font-size:14px;font-weight:700;color:#0F6E56;margin-top:3px;">{{ $paidCount }}x &middot; Rp {{ number_format($totalPaid,0,',','.') }}</p>
+        </div>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;border-top:1px solid #f1f5f9;padding-top:14px;">
+        <form method="POST" action="{{ route('superadmin.tenants.extend', $tenant) }}" style="display:flex;gap:8px;align-items:flex-end;">
+            @csrf @method('PUT')
+            <div>
+                <label style="display:block;font-size:12px;font-weight:500;color:#64748b;margin-bottom:4px;">Perpanjang Trial (hari)</label>
+                <input type="number" name="days" value="7" min="1" max="365" class="form-input" style="width:130px;">
+            </div>
+            <button type="submit" class="btn-secondary" style="color:#0F6E56;border-color:#bbf7d2;">Perpanjang</button>
+        </form>
+        @if($tenant->status==='trial')
+        <form method="POST" action="{{ route('superadmin.tenants.stop-trial', $tenant) }}" onsubmit="return confirm('Hentikan trial sekarang? User tidak akan bisa login.')">
+            @csrf @method('PUT')
+            <button type="submit" class="btn-secondary" style="color:#be123c;border-color:#fecdd3;">Hentikan Trial</button>
+        </form>
+        @endif
+    </div>
+</div>
+
+{{-- Edit Data Tenant --}}
+<div style="background:#fff;border-radius:14px;border:1px solid #f1f5f9;padding:20px;margin-bottom:16px;">
+    <p style="font-size:13.5px;font-weight:600;color:#0f172a;margin-bottom:12px;">Edit Data Toko</p>
+    <form method="POST" action="{{ route('superadmin.tenants.update', $tenant) }}">
+        @csrf @method('PUT')
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;">
+            <div>
+                <label style="display:block;font-size:12px;font-weight:500;color:#64748b;margin-bottom:4px;">Nama Toko *</label>
+                <input type="text" name="name" value="{{ old('name', $tenant->name) }}" required class="form-input">
+            </div>
+            <div>
+                <label style="display:block;font-size:12px;font-weight:500;color:#64748b;margin-bottom:4px;">Nama Owner</label>
+                <input type="text" name="owner_name" value="{{ old('owner_name', $tenant->owner_name) }}" class="form-input">
+            </div>
+            <div>
+                <label style="display:block;font-size:12px;font-weight:500;color:#64748b;margin-bottom:4px;">Nomor HP</label>
+                <input type="text" name="phone" value="{{ old('phone', $tenant->phone) }}" class="form-input">
+            </div>
+            <div>
+                <label style="display:block;font-size:12px;font-weight:500;color:#64748b;margin-bottom:4px;">Jenis Usaha</label>
+                <input type="text" name="business_type" value="{{ old('business_type', $tenant->business_type) }}" class="form-input">
+            </div>
+            <div style="grid-column:1/-1;">
+                <label style="display:block;font-size:12px;font-weight:500;color:#64748b;margin-bottom:4px;">Alamat</label>
+                <textarea name="address" rows="2" class="form-input">{{ old('address', $tenant->address) }}</textarea>
+            </div>
+        </div>
+        <button type="submit" class="btn-primary" style="margin-top:14px;">Simpan Perubahan</button>
+    </form>
+</div>
+
 {{-- Stats --}}
 <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:16px;">
     @foreach([
@@ -207,6 +281,40 @@
             @empty
             <tr><td colspan="5" style="padding:40px;text-align:center;color:#94a3b8;font-size:13.5px;">Belum ada transaksi.</td></tr>
             @endforelse
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{{-- Riwayat Pembayaran --}}
+<div style="background:#fff;border-radius:14px;border:1px solid #f1f5f9;overflow:hidden;margin-bottom:16px;">
+    <div style="padding:14px 18px;border-bottom:1px solid #f8fafc;"><p style="font-size:13.5px;font-weight:600;color:#0f172a;">Riwayat Pembayaran ({{ $invoices->count() }})</p></div>
+    <div class="overflow-x-auto">
+        <table style="width:100%;border-collapse:collapse;min-width:620px;">
+            <thead><tr style="background:#f8fafc;border-bottom:1px solid #f1f5f9;">
+                @foreach(['Invoice','Tanggal','Paket','Nominal','Status','Bukti'] as $h)
+                <th style="text-align:left;font-size:11px;font-weight:600;color:#64748b;padding:10px 14px;text-transform:uppercase;">{{ $h }}</th>
+                @endforeach
+            </tr></thead>
+            <tbody>
+                @forelse($invoices as $inv)
+                @php
+                    $sc = match($inv->status){
+                        'paid'=>['#f0fdf6','#15803d'], 'waiting_confirmation'=>['#eff6ff','#1d4ed8'],
+                        'rejected'=>['#fef2f2','#be123c'], 'expired'=>['#f8fafc','#64748b'], default=>['#fffbeb','#92400e'],
+                    };
+                @endphp
+                <tr style="border-bottom:1px solid #f8fafc;">
+                    <td style="padding:11px 14px;font-size:12.5px;font-weight:500;color:#0f172a;">{{ $inv->invoice_no }}</td>
+                    <td style="padding:11px 14px;font-size:12.5px;color:#374151;">{{ $inv->created_at->format('d M Y') }}</td>
+                    <td style="padding:11px 14px;font-size:12.5px;color:#374151;">{{ $inv->plan->name ?? ($inv->duration_months.' bln') }}</td>
+                    <td style="padding:11px 14px;font-size:13px;font-weight:600;color:#0F6E56;">Rp {{ number_format($inv->total_amount,0,',','.') }}</td>
+                    <td style="padding:11px 14px;"><span style="font-size:11.5px;font-weight:500;padding:3px 10px;border-radius:99px;background:{{ $sc[0] }};color:{{ $sc[1] }};">{{ $inv->statusLabel() }}</span></td>
+                    <td style="padding:11px 14px;">@if($inv->proof_path)<a href="{{ Storage::url($inv->proof_path) }}" target="_blank" style="font-size:12px;color:#0F6E56;font-weight:600;text-decoration:none;">Lihat →</a>@else<span style="font-size:12px;color:#94a3b8;">—</span>@endif</td>
+                </tr>
+                @empty
+                <tr><td colspan="6" style="padding:40px;text-align:center;color:#94a3b8;font-size:13px;">Belum ada pembayaran.</td></tr>
+                @endforelse
             </tbody>
         </table>
     </div>

@@ -74,9 +74,14 @@
                                 <span style="color:#0F6E56;font-size:14px;font-weight:700;">{{ strtoupper(substr($t->name,0,2)) }}</span>
                             </div>
                             <div>
-                                <p style="font-size:14px;font-weight:600;color:#0f172a;">{{ $t->name }}</p>
+                                <a href="{{ route('superadmin.tenants.detail',$t) }}" style="font-size:14px;font-weight:600;color:#0f172a;text-decoration:none;">{{ $t->name }}</a>
                                 <p style="font-size:12px;font-family:monospace;color:#94a3b8;margin-top:1px;">{{ $t->subdomain }}.tokaku.id</p>
-                                <p style="font-size:11.5px;color:#94a3b8;margin-top:2px;">{{ $t->users_count }} user &middot; {{ $t->created_at->format('d M Y') }}</p>
+                                <p style="font-size:11.5px;color:#94a3b8;margin-top:2px;">
+                                    {{ $t->users_count }} user &middot; daftar {{ $t->created_at->format('d M Y') }}
+                                    @if($t->trial_ends_at)
+                                        &middot; {{ $t->status==='active' ? 'aktif s/d' : 'trial s/d' }} {{ $t->trial_ends_at->format('d M Y') }}
+                                    @endif
+                                </p>
                             </div>
                         </div>
                         <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
