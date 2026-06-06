@@ -11,13 +11,21 @@ use Illuminate\Support\Facades\DB;
 
 class ProductController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $products = Product::with('category')
-            ->orderBy('name')
-            ->paginate(15);
+        $status = $request->query('status', 'active'); // active | inactive | all
 
-        return view('tenant.products.index', compact('products'));
+        $products = Product::with('category')
+            ->when($status === 'active',   fn($q) => $q->where('is_active', true))
+            ->when($status === 'inactive', fn($q) => $q->where('is_active', false))
+            ->orderBy('name')
+            ->get();
+
+        $categories = Category::whereHas('products')
+            ->orderBy('name')
+            ->get();
+
+        return view('tenant.products.index', compact('products', 'categories', 'status'));
     }
 
     public function create()
@@ -123,5 +131,15 @@ class ProductController extends Controller
         return redirect()
             ->route('tenant.products.index')
             ->with('success', 'Produk berhasil dinonaktifkan.');
+    }
+
+    public function activate(Product $product)
+    {
+        abort_if($product->tenant_id != app('currentTenant')->id, 403);
+        $product->update(['is_active' => true]);
+
+        return redirect()
+            ->route('tenant.products.index', ['status' => 'inactive'])
+            ->with('success', 'Produk berhasil diaktifkan kembali.');
     }
 }

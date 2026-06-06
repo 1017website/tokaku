@@ -27,6 +27,7 @@
         </div>
         @error('price')<p style="font-size:12px;color:#f43f5e;margin-top:4px;">{{ $message }}</p>@enderror
     </div>
+    @if(auth()->user()->isOwner())
     <div>
         <label class="form-label">Harga Modal</label>
         <div style="position:relative;">
@@ -34,6 +35,10 @@
             <input type="text" inputmode="numeric" name="cost_price" value="{{ old('cost_price', $isEdit?$product->cost_price:0) }}" class="form-input input-rupiah" style="padding-left:38px;" placeholder="0">
         </div>
     </div>
+    @elseif($isEdit)
+    {{-- Non-owner: jangan tampilkan modal, tapi pertahankan nilai lama agar tidak ter-reset --}}
+    <input type="hidden" name="cost_price" value="{{ $product->cost_price }}">
+    @endif
     <div>
         <label class="form-label">Stok <span style="color:#f43f5e;">*</span></label>
         <input type="number" name="stock" value="{{ old('stock', $isEdit?$product->stock:0) }}" min="0" required class="form-input" placeholder="0">

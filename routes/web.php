@@ -45,6 +45,7 @@ Route::middleware(['auth', 'tenant', 'subscription'])->group(function () {
     // Halaman untuk user tanpa akses modul apapun
     Route::get('/no-access', fn() => view('tenant.no-access'))->name('tenant.no-access');
     Route::resource('products', ProductController::class)->names('tenant.products')->middleware('permission:produk');
+    Route::put('products/{product}/activate', [ProductController::class, 'activate'])->name('tenant.products.activate')->middleware('permission:produk');
     Route::resource('categories', CategoryController::class)->names('tenant.categories')->middleware('permission:kategori');
 
     // Kasir
