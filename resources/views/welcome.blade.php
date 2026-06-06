@@ -279,7 +279,7 @@
         .pricing-name { font-size: 16px; font-weight: 600; color: var(--ink); margin-bottom: 8px; }
         .pricing-card.featured .pricing-name { color: rgba(255,255,255,0.8); }
         .pricing-price {
-            font-family: var(--serif); font-size: 42px; font-weight: 600;
+            font-family: var(--serif); font-size: 36px; font-weight: 600;
             color: var(--ink); line-height: 1; margin-bottom: 4px; letter-spacing: -1px;
         }
         .pricing-card.featured .pricing-price { color: var(--white); }
