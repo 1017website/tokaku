@@ -12,7 +12,9 @@
 .cat-btn{white-space:nowrap;border:1.5px solid #e2e8f0;background:#fff;color:#334155;padding:9px 18px;border-radius:999px;font-size:13px;font-weight:700;cursor:pointer;font-family:Inter,sans-serif}
 .cat-btn.active{background:#0F6E56;border-color:#0F6E56;color:#fff}
 .product-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;overflow:auto;padding:16px;max-height:calc(100vh - 285px)}
-.product-card{background:#fff;border:1.5px solid #edf2f7;border-radius:16px;padding:12px;text-align:left;cursor:pointer;min-height:148px;transition:.15s;font-family:Inter,sans-serif;min-width:0;display:flex;flex-direction:column;position:relative}
+.product-card{background:#fff;border:1.5px solid #edf2f7;border-radius:16px;padding:12px 12px 14px;text-align:left;cursor:pointer;min-height:152px;transition:.15s;font-family:Inter,sans-serif;min-width:0;display:flex;flex-direction:column;position:relative}
+.product-card .pc-name{flex:1}
+.product-card .pc-price{margin-top:10px}
 .stock-badge{position:absolute;top:8px;right:8px;z-index:2;font-size:10.5px;font-weight:600;line-height:1;padding:4px 8px;border-radius:99px;background:rgba(255,255,255,.92);color:#475569;border:1px solid #e2e8f0;backdrop-filter:blur(2px);box-shadow:0 1px 2px rgba(0,0,0,.05)}
 .stock-badge.out{background:#fef2f2;color:#dc2626;border-color:#fecaca}
 .stock-badge.low{background:#fffbeb;color:#b45309;border-color:#fde68a}
