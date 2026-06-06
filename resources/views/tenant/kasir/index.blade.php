@@ -12,7 +12,10 @@
 .cat-btn{white-space:nowrap;border:1.5px solid #e2e8f0;background:#fff;color:#334155;padding:9px 18px;border-radius:999px;font-size:13px;font-weight:700;cursor:pointer;font-family:Inter,sans-serif}
 .cat-btn.active{background:#0F6E56;border-color:#0F6E56;color:#fff}
 .product-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;overflow:auto;padding:16px;max-height:calc(100vh - 285px)}
-.product-card{background:#fff;border:1.5px solid #edf2f7;border-radius:16px;padding:12px;text-align:left;cursor:pointer;min-height:164px;transition:.15s;font-family:Inter,sans-serif;min-width:0;display:flex;flex-direction:column}
+.product-card{background:#fff;border:1.5px solid #edf2f7;border-radius:16px;padding:12px;text-align:left;cursor:pointer;min-height:148px;transition:.15s;font-family:Inter,sans-serif;min-width:0;display:flex;flex-direction:column;position:relative}
+.stock-badge{position:absolute;top:8px;right:8px;z-index:2;font-size:10.5px;font-weight:600;line-height:1;padding:4px 8px;border-radius:99px;background:rgba(255,255,255,.92);color:#475569;border:1px solid #e2e8f0;backdrop-filter:blur(2px);box-shadow:0 1px 2px rgba(0,0,0,.05)}
+.stock-badge.out{background:#fef2f2;color:#dc2626;border-color:#fecaca}
+.stock-badge.low{background:#fffbeb;color:#b45309;border-color:#fde68a}
 .product-card .product-img{flex-shrink:0}
 .product-card>p{flex:1}
 .product-card:hover{border-color:#0F6E56;box-shadow:0 8px 24px rgba(15,110,86,.08);transform:translateY(-1px)}
@@ -21,9 +24,9 @@
 .cart-sticky{position:sticky;top:0;max-height:calc(100vh - 120px);display:flex;flex-direction:column}
 .select-customer{width:100%;border:1.5px solid #e2e8f0;border-radius:10px;padding:9px 12px;font-size:13px;font-family:Inter,sans-serif;background:#fafafa;outline:none}
 /* Tablet landscape (1025-1280px): rapatkan keranjang & perkecil kartu agar muat lebih banyak kolom */
-@media(min-width:1025px) and (max-width:1280px){.pos-wrap{grid-template-columns:minmax(0,1fr) 300px;gap:14px}.product-grid{grid-template-columns:repeat(auto-fill,minmax(125px,1fr));gap:10px;padding:12px}.product-card{min-height:164px;padding:10px}.product-img{height:58px}}
+@media(min-width:1025px) and (max-width:1280px){.pos-wrap{grid-template-columns:minmax(0,1fr) 300px;gap:14px}.product-grid{grid-template-columns:repeat(auto-fill,minmax(125px,1fr));gap:10px;padding:12px}.product-card{min-height:148px;padding:10px}.product-img{height:58px}}
 @media(max-width:1024px){.pos-wrap{grid-template-columns:1fr}.cart-sticky{position:relative;max-height:none}.product-grid{max-height:none;grid-template-columns:repeat(auto-fill,minmax(130px,1fr))}}
-@media(max-width:640px){.product-grid{grid-template-columns:repeat(2,1fr);padding:12px}.pos-wrap{gap:12px}.cat-btn{padding:8px 14px}.product-card{min-height:170px}}
+@media(max-width:640px){.product-grid{grid-template-columns:repeat(2,1fr);padding:12px}.pos-wrap{gap:12px}.cat-btn{padding:8px 14px}.product-card{min-height:148px}}
 </style>
 @endpush
 
@@ -159,8 +162,9 @@ function updateStockUI(stocks){
             card.dataset.stock = stok;
             var label = card.querySelector('.stock-label');
             if(label){
-                if(stok <= 0){ label.textContent='Stok habis'; label.style.color='#dc2626'; label.style.fontWeight='700'; }
-                else { label.textContent='Stok '+stok; label.style.color='#94a3b8'; label.style.fontWeight='400'; }
+                label.classList.remove('out','low');
+                if(stok <= 0){ label.textContent='Habis'; label.classList.add('out'); }
+                else { label.textContent='Stok '+stok; }
             }
             card.disabled = stok <= 0;
         });

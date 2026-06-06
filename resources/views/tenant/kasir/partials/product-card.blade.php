@@ -1,4 +1,8 @@
+@php
+    $badgeClass = $product->stock <= 0 ? 'out' : ($product->isLowStock() ? 'low' : '');
+@endphp
 <button data-id="{{ $product->id }}" data-name="{{ addslashes($product->name) }}" data-price="{{ $product->price }}" data-stock="{{ $product->stock }}" data-search="{{ strtolower($product->name.' '.$product->sku.' '.($product->category?->name ?? '')) }}" data-category="cat-{{ $product->category_id }}" class="product-card" {{ $product->stock <= 0 ? 'disabled' : '' }}>
+    <span class="stock-badge stock-label {{ $badgeClass }}">{{ $product->stock <= 0 ? 'Habis' : 'Stok '.$product->stock }}</span>
     <div class="product-img">
         @if($product->photo_path)
             <img src="{{ Storage::url($product->photo_path) }}" style="width:100%;height:100%;object-fit:cover;" alt="{{ $product->name }}">
@@ -7,5 +11,5 @@
         @endif
     </div>
     <p style="font-size:13px;font-weight:800;color:#0f172a;line-height:1.25;min-height:32px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">{{ $product->name }}</p>
-    <div class="price-row" style="display:flex;flex-direction:column;align-items:flex-start;margin-top:8px;gap:2px;"><b class="price-val" style="font-size:13px;color:#0F6E56;white-space:nowrap;">Rp {{ number_format($product->price,0,',','.') }}</b><span class="stock-label" style="font-size:11px;color:{{ $product->stock <= 0 ? '#dc2626' : '#94a3b8' }};font-weight:{{ $product->stock <= 0 ? '700' : '400' }};white-space:nowrap;">{{ $product->stock <= 0 ? 'Stok habis' : 'Stok '.$product->stock }}</span></div>
+    <b style="font-size:13.5px;color:#0F6E56;white-space:nowrap;margin-top:8px;display:block;">Rp {{ number_format($product->price,0,',','.') }}</b>
 </button>
