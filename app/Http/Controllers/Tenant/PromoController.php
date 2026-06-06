@@ -31,13 +31,13 @@ class PromoController extends Controller {
     }
 
     public function toggle(Promo $promo) {
-        abort_if($promo->tenant_id !== app('currentTenant')->id, 403);
+        abort_if((int) $promo->tenant_id !== (int) app('currentTenant')->id, 403);
         $promo->update(['is_active' => !$promo->is_active]);
         return back()->with('success', 'Status promo diperbarui.');
     }
 
     public function destroy(Promo $promo) {
-        abort_if($promo->tenant_id !== app('currentTenant')->id, 403);
+        abort_if((int) $promo->tenant_id !== (int) app('currentTenant')->id, 403);
         $promo->delete();
         return back()->with('success', 'Promo dihapus.');
     }

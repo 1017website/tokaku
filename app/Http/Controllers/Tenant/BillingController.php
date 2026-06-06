@@ -58,7 +58,7 @@ class BillingController extends Controller
      */
     public function uploadProof(Request $request, PaymentInvoice $invoice)
     {
-        abort_if($invoice->tenant_id !== app('currentTenant')->id, 403);
+        abort_if((int) $invoice->tenant_id !== (int) app('currentTenant')->id, 403);
         abort_if(!in_array($invoice->status, ['unpaid', 'waiting_confirmation']), 422, 'Tagihan ini sudah diproses.');
 
         $request->validate([

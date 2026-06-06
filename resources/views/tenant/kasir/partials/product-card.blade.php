@@ -7,5 +7,5 @@
         @endif
     </div>
     <p style="font-size:13px;font-weight:800;color:#0f172a;line-height:1.25;min-height:32px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">{{ $product->name }}</p>
-    <div style="display:flex;justify-content:space-between;align-items:end;margin-top:8px;gap:6px;"><b style="font-size:13px;color:#0F6E56;">Rp {{ number_format($product->price,0,',','.') }}</b><span class="stock-label" style="font-size:11px;color:{{ $product->stock <= 0 ? '#dc2626' : '#94a3b8' }};font-weight:{{ $product->stock <= 0 ? '700' : '400' }};">{{ $product->stock <= 0 ? 'Stok habis' : 'Stok '.$product->stock }}</span></div>
+    <div style="display:flex;justify-content:space-between;align-items:end;margin-top:8px;gap:6px;flex-wrap:wrap;"><b style="font-size:13px;color:#0F6E56;white-space:nowrap;">Rp {{ number_format($product->price,0,',','.') }}</b><span class="stock-label" style="font-size:11px;color:{{ $product->stock <= 0 ? '#dc2626' : '#94a3b8' }};font-weight:{{ $product->stock <= 0 ? '700' : '400' }};white-space:nowrap;">{{ $product->stock <= 0 ? 'Stok habis' : 'Stok '.$product->stock }}</span></div>
 </button>

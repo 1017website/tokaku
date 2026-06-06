@@ -68,7 +68,7 @@ class UserController extends Controller
 
     public function updatePermissions(Request $request, User $user)
     {
-        abort_if($user->tenant_id !== app('currentTenant')->id, 403);
+        abort_if((int) $user->tenant_id !== (int) app('currentTenant')->id, 403);
         abort_if($user->role === 'owner', 403, 'Owner selalu memiliki akses penuh.');
 
         $modules = array_keys(config('permissions.modules'));
@@ -90,7 +90,7 @@ class UserController extends Controller
     public function toggleActive(User $user)
     {
         // Pastikan user milik tenant ini
-        abort_if($user->tenant_id !== app('currentTenant')->id, 403);
+        abort_if((int) $user->tenant_id !== (int) app('currentTenant')->id, 403);
 
         // Tidak boleh nonaktifkan diri sendiri
         abort_if($user->id === auth()->id(), 403, 'Tidak bisa menonaktifkan akun sendiri.');
@@ -104,7 +104,7 @@ class UserController extends Controller
 
     public function resetPassword(Request $request, User $user)
     {
-        abort_if($user->tenant_id !== app('currentTenant')->id, 403);
+        abort_if((int) $user->tenant_id !== (int) app('currentTenant')->id, 403);
 
         $request->validate([
             'password' => ['required', Password::min(8), 'confirmed'],
@@ -117,7 +117,7 @@ class UserController extends Controller
 
     public function destroy(User $user)
     {
-        abort_if($user->tenant_id !== app('currentTenant')->id, 403);
+        abort_if((int) $user->tenant_id !== (int) app('currentTenant')->id, 403);
         abort_if($user->id === auth()->id(), 403, 'Tidak bisa menghapus akun sendiri.');
         abort_if($user->role === 'owner', 403, 'Owner tidak bisa dihapus.');
 

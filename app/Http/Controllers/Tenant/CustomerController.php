@@ -27,14 +27,14 @@ class CustomerController extends Controller {
     }
 
     public function show(Customer $customer) {
-        abort_if($customer->tenant_id !== app('currentTenant')->id, 403);
+        abort_if((int) $customer->tenant_id !== (int) app('currentTenant')->id, 403);
         $transactions = $customer->transactions()->with('items')->latest()->paginate(15);
         $totalDebt    = $customer->totalDebt();
         return view('tenant.pelanggan.show', compact('customer','transactions','totalDebt'));
     }
 
     public function update(Request $request, Customer $customer) {
-        abort_if($customer->tenant_id !== app('currentTenant')->id, 403);
+        abort_if((int) $customer->tenant_id !== (int) app('currentTenant')->id, 403);
         $request->validate(['name'=>'required|string|max:255','phone'=>'nullable|string|max:20','email'=>'nullable|email','birthday'=>'nullable|date']);
         $customer->update($request->only('name','phone','email','address','birthday','notes'));
         return back()->with('success', 'Data pelanggan berhasil diperbarui.');

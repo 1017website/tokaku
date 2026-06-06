@@ -39,7 +39,7 @@ class DebtController extends Controller {
     }
 
     public function pay(Request $request, Debt $debt) {
-        abort_if($debt->tenant_id !== app('currentTenant')->id, 403);
+        abort_if((int) $debt->tenant_id !== (int) app('currentTenant')->id, 403);
         $request->validate([
             'amount' => 'required|integer|min:1|max:'.$debt->remaining,
             'note'   => 'nullable|string',
