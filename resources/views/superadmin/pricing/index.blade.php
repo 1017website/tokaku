@@ -27,6 +27,7 @@
 
     {{-- Tabel paket --}}
     <div style="background:#fff;border-radius:16px;border:1px solid #f1f5f9;box-shadow:0 1px 3px rgba(0,0,0,0.04);overflow:hidden;">
+        <div class="table-responsive">
         <table style="width:100%;border-collapse:collapse;font-size:13px;">
             <thead>
                 <tr style="background:#f8fafc;text-align:left;color:#64748b;">
@@ -43,19 +44,19 @@
             <tbody>
                 @forelse($plans as $plan)
                 <tr style="border-top:1px solid #f1f5f9;">
-                    <td style="padding:12px 16px;">
+                    <td data-label="Paket" style="padding:12px 16px;">
                         <span style="font-weight:600;color:#0f172a;">{{ $plan->name }}</span>
                         @if($plan->is_popular)
                             <span style="display:inline-block;margin-left:6px;font-size:10px;font-weight:700;color:#0F6E56;background:#dcfce9;padding:2px 7px;border-radius:6px;">POPULER</span>
                         @endif
                         <div style="font-size:11.5px;color:#94a3b8;">{{ $plan->tagline }}</div>
                     </td>
-                    <td style="padding:12px 16px;color:#475569;">{{ $plan->duration_months }} bln</td>
-                    <td style="padding:12px 16px;color:#94a3b8;text-decoration:line-through;">{{ $rp($plan->original_price) }}</td>
-                    <td style="padding:12px 16px;font-weight:600;color:#0f172a;">{{ $rp($plan->price) }}</td>
-                    <td style="padding:12px 16px;color:#e11d48;font-weight:600;">{{ $plan->discountPercent() }}%</td>
-                    <td style="padding:12px 16px;color:#475569;">{{ $rp(round($plan->pricePerMonth())) }}</td>
-                    <td style="padding:12px 16px;">
+                    <td data-label="Durasi" style="padding:12px 16px;color:#475569;">{{ $plan->duration_months }} bln</td>
+                    <td data-label="Harga Asli" style="padding:12px 16px;color:#94a3b8;text-decoration:line-through;">{{ $rp($plan->original_price) }}</td>
+                    <td data-label="Harga Diskon" style="padding:12px 16px;font-weight:600;color:#0f172a;">{{ $rp($plan->price) }}</td>
+                    <td data-label="Diskon" style="padding:12px 16px;color:#e11d48;font-weight:600;">{{ $plan->discountPercent() }}%</td>
+                    <td data-label="/bulan" style="padding:12px 16px;color:#475569;">{{ $rp(round($plan->pricePerMonth())) }}</td>
+                    <td data-label="Status" style="padding:12px 16px;">
                         <form method="POST" action="{{ route('superadmin.pricing.toggle', $plan) }}" style="display:inline;">
                             @csrf @method('PUT')
                             <button type="submit" style="border:none;cursor:pointer;font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;{{ $plan->is_active ? 'background:#dcfce9;color:#047857;' : 'background:#f1f5f9;color:#94a3b8;' }}">
@@ -63,7 +64,7 @@
                             </button>
                         </form>
                     </td>
-                    <td style="padding:12px 16px;text-align:right;white-space:nowrap;">
+                    <td data-label="Aksi" style="padding:12px 16px;text-align:right;white-space:nowrap;">
                         <button class="btn-secondary" style="padding:5px 12px;font-size:12px;"
                             onclick='editPlan(@json($plan))'>Edit</button>
                         <form method="POST" action="{{ route('superadmin.pricing.destroy', $plan) }}" style="display:inline;" onsubmit="return confirm('Hapus paket {{ $plan->name }}?')">
@@ -73,10 +74,11 @@
                     </td>
                 </tr>
                 @empty
-                <tr><td colspan="8" style="padding:24px;text-align:center;color:#94a3b8;">Belum ada paket harga.</td></tr>
+                <tr><td data-empty colspan="8" style="padding:24px;text-align:center;color:#94a3b8;">Belum ada paket harga.</td></tr>
                 @endforelse
             </tbody>
         </table>
+        </div>
     </div>
 
     <p style="font-size:12px;color:#94a3b8;margin-top:14px;">

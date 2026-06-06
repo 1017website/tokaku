@@ -19,7 +19,7 @@
 </div>
 
 <div style="background:#fff;border-radius:16px;border:1px solid #f1f5f9;overflow:hidden;">
-    <div class="overflow-x-auto">
+    <div class="table-responsive overflow-x-auto">
         <table style="width:100%;border-collapse:collapse;min-width:760px;">
             <thead><tr style="background:#f8fafc;border-bottom:1px solid #f1f5f9;">
                 @foreach(['Invoice','Tenant','Nominal','Durasi','Bukti','Status','Aksi'] as $h)
@@ -35,17 +35,17 @@
                     };
                 @endphp
                 <tr style="border-bottom:1px solid #f8fafc;">
-                    <td style="padding:12px 14px;font-size:12.5px;font-weight:500;color:#0f172a;">{{ $inv->invoice_no }}<br><span style="font-size:11px;color:#94a3b8;">{{ $inv->created_at->format('d M Y H:i') }}</span></td>
-                    <td style="padding:12px 14px;font-size:13px;color:#0f172a;">{{ $inv->tenant->name ?? '-' }}<br><span style="font-size:11px;color:#94a3b8;">{{ $inv->plan->name ?? '' }}</span></td>
-                    <td style="padding:12px 14px;font-size:13px;font-weight:700;color:#0F6E56;">Rp {{ number_format($inv->total_amount,0,',','.') }}<br><span style="font-size:11px;color:#94a3b8;font-weight:400;">kode {{ $inv->unique_code }}</span></td>
-                    <td style="padding:12px 14px;font-size:12.5px;color:#374151;">{{ $inv->duration_months }} bln</td>
-                    <td style="padding:12px 14px;">
+                    <td data-label="Invoice" style="padding:12px 14px;font-size:12.5px;font-weight:500;color:#0f172a;">{{ $inv->invoice_no }}<br><span style="font-size:11px;color:#94a3b8;">{{ $inv->created_at->format('d M Y H:i') }}</span></td>
+                    <td data-label="Tenant" style="padding:12px 14px;font-size:13px;color:#0f172a;">{{ $inv->tenant->name ?? '-' }}<br><span style="font-size:11px;color:#94a3b8;">{{ $inv->plan->name ?? '' }}</span></td>
+                    <td data-label="Nominal" style="padding:12px 14px;font-size:13px;font-weight:700;color:#0F6E56;">Rp {{ number_format($inv->total_amount,0,',','.') }}<br><span style="font-size:11px;color:#94a3b8;font-weight:400;">kode {{ $inv->unique_code }}</span></td>
+                    <td data-label="Durasi" style="padding:12px 14px;font-size:12.5px;color:#374151;">{{ $inv->duration_months }} bln</td>
+                    <td data-label="Bukti" style="padding:12px 14px;">
                         @if($inv->proof_path)
                         <a href="{{ Storage::url($inv->proof_path) }}" target="_blank" style="font-size:12.5px;color:#0F6E56;font-weight:600;text-decoration:none;">Lihat bukti →</a>
                         @else <span style="font-size:12px;color:#94a3b8;">—</span> @endif
                     </td>
-                    <td style="padding:12px 14px;"><span style="font-size:11.5px;font-weight:500;padding:3px 10px;border-radius:99px;background:{{ $sc[0] }};color:{{ $sc[1] }};">{{ $inv->statusLabel() }}</span></td>
-                    <td style="padding:12px 14px;">
+                    <td data-label="Status" style="padding:12px 14px;"><span style="font-size:11.5px;font-weight:500;padding:3px 10px;border-radius:99px;background:{{ $sc[0] }};color:{{ $sc[1] }};">{{ $inv->statusLabel() }}</span></td>
+                    <td data-label="Aksi" style="padding:12px 14px;">
                         @if($inv->status === 'waiting_confirmation')
                         <div style="display:flex;gap:6px;">
                             <form method="POST" action="{{ route('superadmin.payments.confirm', $inv) }}" onsubmit="return confirm('Konfirmasi pembayaran {{ $inv->invoice_no }}? Langganan tenant akan aktif {{ $inv->duration_months }} bulan.')">
@@ -65,7 +65,7 @@
                     </td>
                 </tr>
                 @empty
-                <tr><td colspan="7" style="padding:50px;text-align:center;color:#94a3b8;font-size:13.5px;">Tidak ada data pembayaran.</td></tr>
+                <tr><td data-empty colspan="7" style="padding:50px;text-align:center;color:#94a3b8;font-size:13.5px;">Tidak ada data pembayaran.</td></tr>
                 @endforelse
             </tbody>
         </table>

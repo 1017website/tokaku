@@ -34,7 +34,7 @@
     <div style="padding:14px 18px;border-bottom:1px solid #f8fafc;">
         <p style="font-size:14px;font-weight:600;color:#0f172a;">Riwayat Perubahan Stok</p>
     </div>
-    <div class="overflow-x-auto">
+    <div class="table-responsive overflow-x-auto">
         <table style="width:100%;border-collapse:collapse;min-width:500px;">
             <thead>
                 <tr style="background:#f8fafc;border-bottom:1px solid #f1f5f9;">
@@ -50,11 +50,11 @@
             <tbody>
                 @forelse($logs as $log)
                 <tr style="border-bottom:1px solid #f8fafc;transition:background 0.1s;" onmouseover="this.style.background='#fafafa'" onmouseout="this.style.background='#fff'">
-                    <td style="padding:12px 18px;">
+                    <td data-label="Waktu" style="padding:12px 18px;">
                         <p style="font-size:13px;font-weight:500;color:#0f172a;">{{ $log->created_at->format('d M Y') }}</p>
                         <p style="font-size:11.5px;color:#94a3b8;">{{ $log->created_at->format('H:i') }}</p>
                     </td>
-                    <td style="padding:12px 14px;">
+                    <td data-label="Jenis" style="padding:12px 14px;">
                         @php
                         $typeStyle = match($log->type) {
                             'restock'    => 'background:#f0fdf4;color:#15803d;',
@@ -66,19 +66,19 @@
                         @endphp
                         <span style="font-size:12px;font-weight:500;padding:3px 10px;border-radius:99px;{{ $typeStyle }}">{{ $log->type_label }}</span>
                     </td>
-                    <td style="padding:12px 14px;text-align:center;font-size:14px;font-weight:600;color:#64748b;">{{ $log->qty_before }}</td>
-                    <td style="padding:12px 14px;text-align:center;">
+                    <td data-label="Sebelum" style="padding:12px 14px;text-align:center;font-size:14px;font-weight:600;color:#64748b;">{{ $log->qty_before }}</td>
+                    <td data-label="Perubahan" style="padding:12px 14px;text-align:center;">
                         <span style="font-size:15px;font-weight:700;color:{{ $log->qty_change>0?'#15803d':'#be123c' }};">
                             {{ $log->qty_change > 0 ? '+' . $log->qty_change : $log->qty_change }}
                         </span>
                     </td>
-                    <td style="padding:12px 14px;text-align:center;font-size:14px;font-weight:700;color:#0f172a;">{{ $log->qty_after }}</td>
-                    <td style="padding:12px 14px;font-size:13px;color:#374151;">{{ $log->user->name }}</td>
-                    <td style="padding:12px 18px;font-size:13px;color:#64748b;">{{ $log->note ?? '—' }}</td>
+                    <td data-label="Sesudah" style="padding:12px 14px;text-align:center;font-size:14px;font-weight:700;color:#0f172a;">{{ $log->qty_after }}</td>
+                    <td data-label="Oleh" style="padding:12px 14px;font-size:13px;color:#374151;">{{ $log->user->name }}</td>
+                    <td data-label="Catatan" style="padding:12px 18px;font-size:13px;color:#64748b;">{{ $log->note ?? '—' }}</td>
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="7" style="padding:50px;text-align:center;font-size:14px;color:#94a3b8;">Belum ada riwayat perubahan stok.</td>
+                    <td data-empty colspan="7" style="padding:50px;text-align:center;font-size:14px;color:#94a3b8;">Belum ada riwayat perubahan stok.</td>
                 </tr>
                 @endforelse
             </tbody>

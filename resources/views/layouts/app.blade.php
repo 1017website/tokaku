@@ -152,6 +152,62 @@
                 border: none;
             }
         }
+
+        /* ============================================================
+           RESPONSIVE TABLE ENGINE
+           Tabel apa pun yang dibungkus .table-responsive akan otomatis
+           berubah menjadi kartu (card) di layar <640px. Tiap <td> cukup
+           diberi atribut data-label="Judul Kolom".
+           ============================================================ */
+        @media(max-width:639px) {
+            .table-responsive { overflow-x: visible !important; }
+            .table-responsive > table { min-width: 0 !important; width: 100% !important; }
+            .table-responsive thead { display: none; }
+            .table-responsive tbody,
+            .table-responsive tr,
+            .table-responsive td { display: block; width: 100%; box-sizing: border-box; }
+            .table-responsive tr {
+                background: #fff;
+                border: 1px solid #eef2f7 !important;
+                border-radius: 14px;
+                padding: 6px 4px;
+                margin-bottom: 12px;
+                box-shadow: 0 1px 2px rgba(15,23,42,.04);
+            }
+            .table-responsive td {
+                display: flex !important;
+                align-items: center;
+                justify-content: space-between;
+                gap: 14px;
+                text-align: right !important;
+                padding: 9px 14px !important;
+                border: none !important;
+                border-bottom: 1px solid #f5f7fa !important;
+            }
+            .table-responsive tr td:last-child { border-bottom: none !important; }
+            .table-responsive td::before {
+                content: attr(data-label);
+                flex: 0 0 auto;
+                text-align: left;
+                font-size: 11px;
+                font-weight: 600;
+                color: #94a3b8;
+                text-transform: uppercase;
+                letter-spacing: .3px;
+                white-space: nowrap;
+            }
+            /* Sel tanpa label (mis. baris kosong / colspan) tampil normal */
+            .table-responsive td:not([data-label])::before { content: ''; }
+            .table-responsive td[data-empty] { justify-content: center; text-align: center !important; }
+            .table-responsive td[data-empty]::before { content: ''; }
+            /* Kolom aksi: tombol rata kanan tetap nyaman ditekan */
+            .table-responsive td[data-label="Aksi"] > * { margin-left: auto; }
+        }
+
+        /* Tipografi & spacing global lebih nyaman di layar kecil */
+        @media(max-width:639px) {
+            .grid { gap: 12px !important; }
+        }
     </style>
     @stack('styles')
     <script>

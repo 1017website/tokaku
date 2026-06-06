@@ -44,7 +44,7 @@
     <div style="padding:16px 20px;border-bottom:1px solid #f8fafc;">
         <p style="font-size:14px;font-weight:600;color:#0f172a;">Riwayat Penjualan</p>
     </div>
-    <div class="overflow-x-auto">
+    <div class="table-responsive overflow-x-auto">
         <table style="width:100%;border-collapse:collapse;min-width:500px;">
             <thead>
                 <tr style="background:#f8fafc;border-bottom:1px solid #f1f5f9;">
@@ -58,14 +58,14 @@
             <tbody>
                 @forelse($history as $item)
                 <tr style="border-bottom:1px solid #f8fafc;transition:background 0.1s;" onmouseover="this.style.background='#fafafa'" onmouseout="this.style.background='#fff'">
-                    <td style="padding:12px 18px;font-size:13px;font-weight:500;color:#0f172a;">{{ $item->transaction->invoice_no }}</td>
-                    <td style="padding:12px 18px;font-size:13px;color:#374151;">{{ $item->transaction->user->name }}</td>
-                    <td style="padding:12px 18px;text-align:center;font-size:13px;font-weight:600;color:#0f172a;">{{ $item->quantity }}</td>
-                    <td style="padding:12px 18px;text-align:right;font-size:13px;font-weight:600;color:#0f172a;">Rp {{ number_format($item->subtotal,0,',','.') }}</td>
-                    <td style="padding:12px 18px;font-size:12.5px;color:#64748b;">{{ $item->transaction->created_at->format('d M Y, H:i') }}</td>
+                    <td data-label="Invoice" style="padding:12px 18px;font-size:13px;font-weight:500;color:#0f172a;">{{ $item->transaction->invoice_no }}</td>
+                    <td data-label="Kasir" style="padding:12px 18px;font-size:13px;color:#374151;">{{ $item->transaction->user->name }}</td>
+                    <td data-label="Qty" style="padding:12px 18px;text-align:center;font-size:13px;font-weight:600;color:#0f172a;">{{ $item->quantity }}</td>
+                    <td data-label="Subtotal" style="padding:12px 18px;text-align:right;font-size:13px;font-weight:600;color:#0f172a;">Rp {{ number_format($item->subtotal,0,',','.') }}</td>
+                    <td data-label="Waktu" style="padding:12px 18px;font-size:12.5px;color:#64748b;">{{ $item->transaction->created_at->format('d M Y, H:i') }}</td>
                 </tr>
                 @empty
-                <tr><td colspan="5" style="padding:50px 20px;text-align:center;font-size:14px;color:#94a3b8;">Produk ini belum pernah terjual.</td></tr>
+                <tr><td data-empty colspan="5" style="padding:50px 20px;text-align:center;font-size:14px;color:#94a3b8;">Produk ini belum pernah terjual.</td></tr>
                 @endforelse
             </tbody>
         </table>

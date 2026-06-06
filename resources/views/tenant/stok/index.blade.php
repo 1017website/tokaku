@@ -22,7 +22,7 @@
         </div>
     </div>
 
-    <div class="overflow-x-auto">
+    <div class="table-responsive overflow-x-auto">
         <table style="width:100%;border-collapse:collapse;min-width:500px;">
             <thead>
                 <tr style="background:#f8fafc;border-bottom:1px solid #f1f5f9;">
@@ -42,26 +42,26 @@
                 @endphp
                 <tr style="border-bottom:1px solid #f8fafc;{{ $rowBg }}transition:opacity 0.1s;">
 
-                    <td style="padding:13px 20px;">
+                    <td data-label="Produk" style="padding:13px 20px;">
                         <a href="{{ route('tenant.stok.show', $product) }}" style="font-size:13.5px;font-weight:600;color:#0f172a;text-decoration:none;">{{ $product->name }}</a>
                         <p style="font-size:12px;color:#94a3b8;margin-top:1px;">{{ $product->sku ?? '—' }}</p>
                     </td>
 
-                    <td style="padding:13px 14px;font-size:13px;color:#374151;" class="hidden sm:table-cell">
+                    <td data-label="Kategori" style="padding:13px 14px;font-size:13px;color:#374151;" class="hidden sm:table-cell">
                         {{ $product->category?->name ?? '—' }}
                     </td>
 
-                    <td style="padding:13px 14px;text-align:center;">
+                    <td data-label="Stok" style="padding:13px 14px;text-align:center;">
                         <span style="font-size:18px;font-weight:700;color:{{ $product->stock<=0?'#be123c':($product->isLowStock()?'#b45309':'#15803d') }};">
                             {{ $product->stock }}
                         </span>
                     </td>
 
-                    <td style="padding:13px 14px;text-align:center;">
+                    <td data-label="Min. Alert" style="padding:13px 14px;text-align:center;">
                         <span style="font-size:13px;color:#94a3b8;">{{ $product->low_stock_alert }}</span>
                     </td>
 
-                    <td style="padding:13px 20px;text-align:center;">
+                    <td data-label="Aksi" style="padding:13px 20px;text-align:center;">
                         <div style="display:flex;align-items:center;justify-content:center;gap:6px;">
                             <button
                                 onclick="openModal({{ $product->id }}, '{{ addslashes($product->name) }}', {{ $product->stock }})"
@@ -81,7 +81,7 @@
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="5" style="padding:60px 20px;text-align:center;font-size:14px;color:#94a3b8;">Belum ada produk.</td>
+                    <td data-empty colspan="5" style="padding:60px 20px;text-align:center;font-size:14px;color:#94a3b8;">Belum ada produk.</td>
                 </tr>
                 @endforelse
             </tbody>

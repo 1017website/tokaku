@@ -258,7 +258,7 @@
     <div style="padding:14px 18px;border-bottom:1px solid #f8fafc;">
         <p style="font-size:13.5px;font-weight:600;color:#0f172a;">Transaksi Terbaru</p>
     </div>
-    <div class="overflow-x-auto">
+    <div class="table-responsive overflow-x-auto">
         <table style="width:100%;border-collapse:collapse;min-width:400px;">
             <thead><tr style="background:#f8fafc;border-bottom:1px solid #f1f5f9;">
                 <th style="text-align:left;font-size:11px;font-weight:600;color:#64748b;padding:10px 16px;text-transform:uppercase;">Invoice</th>
@@ -270,16 +270,16 @@
             <tbody>
             @forelse($recentTransactions as $t)
             <tr style="border-bottom:1px solid #f8fafc;">
-                <td style="padding:11px 16px;font-size:13px;font-weight:500;color:#0f172a;">{{ $t->invoice_no }}</td>
-                <td style="padding:11px 16px;font-size:13px;color:#374151;">{{ $t->user->name }}</td>
-                <td style="padding:11px 16px;">
+                <td data-label="Invoice" style="padding:11px 16px;font-size:13px;font-weight:500;color:#0f172a;">{{ $t->invoice_no }}</td>
+                <td data-label="Kasir" style="padding:11px 16px;font-size:13px;color:#374151;">{{ $t->user->name }}</td>
+                <td data-label="Metode" style="padding:11px 16px;">
                     <span style="font-size:11.5px;font-weight:500;padding:3px 8px;border-radius:99px;{{ $t->payment_method==='cash'?'background:#f0fdf4;color:#15803d;':($t->payment_method==='qris'?'background:#eff6ff;color:#1d4ed8;':'background:#f5f3ff;color:#6d28d9;') }}">{{ strtoupper($t->payment_method) }}</span>
                 </td>
-                <td style="padding:11px 16px;text-align:right;font-size:13px;font-weight:700;color:#0f172a;">Rp {{ number_format($t->total,0,',','.') }}</td>
-                <td style="padding:11px 16px;font-size:12.5px;color:#64748b;">{{ $t->created_at->format('d M Y, H:i') }}</td>
+                <td data-label="Total" style="padding:11px 16px;text-align:right;font-size:13px;font-weight:700;color:#0f172a;">Rp {{ number_format($t->total,0,',','.') }}</td>
+                <td data-label="Waktu" style="padding:11px 16px;font-size:12.5px;color:#64748b;">{{ $t->created_at->format('d M Y, H:i') }}</td>
             </tr>
             @empty
-            <tr><td colspan="5" style="padding:40px;text-align:center;color:#94a3b8;font-size:13.5px;">Belum ada transaksi.</td></tr>
+            <tr><td data-empty colspan="5" style="padding:40px;text-align:center;color:#94a3b8;font-size:13.5px;">Belum ada transaksi.</td></tr>
             @endforelse
             </tbody>
         </table>
@@ -289,7 +289,7 @@
 {{-- Riwayat Pembayaran --}}
 <div style="background:#fff;border-radius:14px;border:1px solid #f1f5f9;overflow:hidden;margin-bottom:16px;">
     <div style="padding:14px 18px;border-bottom:1px solid #f8fafc;"><p style="font-size:13.5px;font-weight:600;color:#0f172a;">Riwayat Pembayaran ({{ $invoices->count() }})</p></div>
-    <div class="overflow-x-auto">
+    <div class="table-responsive overflow-x-auto">
         <table style="width:100%;border-collapse:collapse;min-width:620px;">
             <thead><tr style="background:#f8fafc;border-bottom:1px solid #f1f5f9;">
                 @foreach(['Invoice','Tanggal','Paket','Nominal','Status','Bukti'] as $h)
@@ -305,15 +305,15 @@
                     };
                 @endphp
                 <tr style="border-bottom:1px solid #f8fafc;">
-                    <td style="padding:11px 14px;font-size:12.5px;font-weight:500;color:#0f172a;">{{ $inv->invoice_no }}</td>
-                    <td style="padding:11px 14px;font-size:12.5px;color:#374151;">{{ $inv->created_at->format('d M Y') }}</td>
-                    <td style="padding:11px 14px;font-size:12.5px;color:#374151;">{{ $inv->plan->name ?? ($inv->duration_months.' bln') }}</td>
-                    <td style="padding:11px 14px;font-size:13px;font-weight:600;color:#0F6E56;">Rp {{ number_format($inv->total_amount,0,',','.') }}</td>
-                    <td style="padding:11px 14px;"><span style="font-size:11.5px;font-weight:500;padding:3px 10px;border-radius:99px;background:{{ $sc[0] }};color:{{ $sc[1] }};">{{ $inv->statusLabel() }}</span></td>
-                    <td style="padding:11px 14px;">@if($inv->proof_path)<a href="{{ Storage::url($inv->proof_path) }}" target="_blank" style="font-size:12px;color:#0F6E56;font-weight:600;text-decoration:none;">Lihat →</a>@else<span style="font-size:12px;color:#94a3b8;">—</span>@endif</td>
+                    <td data-label="Invoice" style="padding:11px 14px;font-size:12.5px;font-weight:500;color:#0f172a;">{{ $inv->invoice_no }}</td>
+                    <td data-label="Tanggal" style="padding:11px 14px;font-size:12.5px;color:#374151;">{{ $inv->created_at->format('d M Y') }}</td>
+                    <td data-label="Paket" style="padding:11px 14px;font-size:12.5px;color:#374151;">{{ $inv->plan->name ?? ($inv->duration_months.' bln') }}</td>
+                    <td data-label="Nominal" style="padding:11px 14px;font-size:13px;font-weight:600;color:#0F6E56;">Rp {{ number_format($inv->total_amount,0,',','.') }}</td>
+                    <td data-label="Status" style="padding:11px 14px;"><span style="font-size:11.5px;font-weight:500;padding:3px 10px;border-radius:99px;background:{{ $sc[0] }};color:{{ $sc[1] }};">{{ $inv->statusLabel() }}</span></td>
+                    <td data-label="Bukti" style="padding:11px 14px;">@if($inv->proof_path)<a href="{{ Storage::url($inv->proof_path) }}" target="_blank" style="font-size:12px;color:#0F6E56;font-weight:600;text-decoration:none;">Lihat →</a>@else<span style="font-size:12px;color:#94a3b8;">—</span>@endif</td>
                 </tr>
                 @empty
-                <tr><td colspan="6" style="padding:40px;text-align:center;color:#94a3b8;font-size:13px;">Belum ada pembayaran.</td></tr>
+                <tr><td data-empty colspan="6" style="padding:40px;text-align:center;color:#94a3b8;font-size:13px;">Belum ada pembayaran.</td></tr>
                 @endforelse
             </tbody>
         </table>

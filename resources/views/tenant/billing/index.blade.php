@@ -101,7 +101,7 @@
 @if($invoices->count())
 <div style="background:#fff;border-radius:16px;border:1px solid #f1f5f9;overflow:hidden;">
     <div style="padding:14px 18px;border-bottom:1px solid #f8fafc;"><p style="font-size:14px;font-weight:600;color:#0f172a;">Riwayat Tagihan</p></div>
-    <div class="overflow-x-auto">
+    <div class="table-responsive overflow-x-auto">
         <table style="width:100%;border-collapse:collapse;min-width:520px;">
             <thead><tr style="background:#f8fafc;border-bottom:1px solid #f1f5f9;">
                 @foreach(['Invoice','Tanggal','Nominal','Durasi','Status'] as $h)
@@ -117,11 +117,11 @@
                     };
                 @endphp
                 <tr style="border-bottom:1px solid #f8fafc;">
-                    <td style="padding:12px 14px;font-size:13px;font-weight:500;color:#0f172a;">{{ $inv->invoice_no }}</td>
-                    <td style="padding:12px 14px;font-size:12.5px;color:#374151;">{{ $inv->created_at->format('d M Y') }}</td>
-                    <td style="padding:12px 14px;font-size:13px;font-weight:600;color:#0F6E56;">Rp {{ number_format($inv->total_amount,0,',','.') }}</td>
-                    <td style="padding:12px 14px;font-size:12.5px;color:#374151;">{{ $inv->duration_months }} bln</td>
-                    <td style="padding:12px 14px;"><span style="font-size:11.5px;font-weight:500;padding:3px 10px;border-radius:99px;background:{{ $sc[0] }};color:{{ $sc[1] }};">{{ $inv->statusLabel() }}</span></td>
+                    <td data-label="Invoice" style="padding:12px 14px;font-size:13px;font-weight:500;color:#0f172a;">{{ $inv->invoice_no }}</td>
+                    <td data-label="Tanggal" style="padding:12px 14px;font-size:12.5px;color:#374151;">{{ $inv->created_at->format('d M Y') }}</td>
+                    <td data-label="Nominal" style="padding:12px 14px;font-size:13px;font-weight:600;color:#0F6E56;">Rp {{ number_format($inv->total_amount,0,',','.') }}</td>
+                    <td data-label="Durasi" style="padding:12px 14px;font-size:12.5px;color:#374151;">{{ $inv->duration_months }} bln</td>
+                    <td data-label="Status" style="padding:12px 14px;"><span style="font-size:11.5px;font-weight:500;padding:3px 10px;border-radius:99px;background:{{ $sc[0] }};color:{{ $sc[1] }};">{{ $inv->statusLabel() }}</span></td>
                 </tr>
                 @endforeach
             </tbody>

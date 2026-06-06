@@ -37,7 +37,7 @@
     <div style="padding:14px 18px;border-bottom:1px solid #f8fafc;">
         <p style="font-size:14px;font-weight:600;color:#0f172a;">Riwayat Shift</p>
     </div>
-    <div class="overflow-x-auto">
+    <div class="table-responsive overflow-x-auto">
         <table style="width:100%;border-collapse:collapse;min-width:600px;">
             <thead><tr style="background:#f8fafc;border-bottom:1px solid #f1f5f9;">
                 @foreach(['Kasir','Buka','Tutup','Kas Awal','Total Transaksi','Revenue','Selisih','Aksi'] as $h)
@@ -47,32 +47,32 @@
             <tbody>
             @forelse($shifts as $shift)
             <tr style="border-bottom:1px solid #f8fafc;transition:background 0.1s;" onmouseover="this.style.background='#fafafa'" onmouseout="this.style.background='#fff'">
-                <td style="padding:12px 14px;font-size:13.5px;font-weight:500;color:#0f172a;">{{ $shift->user->name }}</td>
-                <td style="padding:12px 14px;font-size:12.5px;color:#374151;">{{ $shift->opened_at->format('d M, H:i') }}</td>
-                <td style="padding:12px 14px;font-size:12.5px;color:#374151;">
+                <td data-label="Kasir" style="padding:12px 14px;font-size:13.5px;font-weight:500;color:#0f172a;">{{ $shift->user->name }}</td>
+                <td data-label="Buka" style="padding:12px 14px;font-size:12.5px;color:#374151;">{{ $shift->opened_at->format('d M, H:i') }}</td>
+                <td data-label="Tutup" style="padding:12px 14px;font-size:12.5px;color:#374151;">
                     @if($shift->closed_at){{ $shift->closed_at->format('d M, H:i') }}@else<span style="color:#f59e0b;font-weight:500;">Berjalan</span>@endif
                 </td>
-                <td style="padding:12px 14px;font-size:13px;color:#374151;">Rp {{ number_format($shift->opening_cash,0,',','.') }}</td>
+                <td data-label="Kas Awal" style="padding:12px 14px;font-size:13px;color:#374151;">Rp {{ number_format($shift->opening_cash,0,',','.') }}</td>
                 @php
                     $isRunning = is_null($shift->closed_at);
                     $trxCount  = $isRunning ? ($shift->transactions_count ?? 0) : $shift->total_transactions;
                     $trxRev    = $isRunning ? ($shift->transactions_sum_total ?? 0) : $shift->total_revenue;
                 @endphp
-                <td style="padding:12px 14px;font-size:13.5px;font-weight:600;color:#0f172a;">{{ $trxCount }}</td>
-                <td style="padding:12px 14px;font-size:13.5px;font-weight:700;color:#0F6E56;">Rp {{ number_format($trxRev,0,',','.') }}</td>
-                <td style="padding:12px 14px;">
+                <td data-label="Total Transaksi" style="padding:12px 14px;font-size:13.5px;font-weight:600;color:#0f172a;">{{ $trxCount }}</td>
+                <td data-label="Revenue" style="padding:12px 14px;font-size:13.5px;font-weight:700;color:#0F6E56;">Rp {{ number_format($trxRev,0,',','.') }}</td>
+                <td data-label="Selisih" style="padding:12px 14px;">
                     @if(!is_null($shift->cash_difference))
                     <span style="font-size:13px;font-weight:600;color:{{ $shift->cash_difference==0?'#15803d':($shift->cash_difference>0?'#2563eb':'#be123c') }};">
                         {{ $shift->cash_difference>0?'+':'' }}Rp {{ number_format($shift->cash_difference,0,',','.') }}
                     </span>
                     @else<span style="color:#94a3b8;">—</span>@endif
                 </td>
-                <td style="padding:12px 14px;">
+                <td data-label="Aksi" style="padding:12px 14px;">
                     <a href="{{ route('tenant.shift.show', $shift) }}" style="font-size:13px;color:#0F6E56;font-weight:500;text-decoration:none;">Detail</a>
                 </td>
             </tr>
             @empty
-            <tr><td colspan="8" style="padding:50px;text-align:center;color:#94a3b8;font-size:13.5px;">Belum ada riwayat shift.</td></tr>
+            <tr><td data-empty colspan="8" style="padding:50px;text-align:center;color:#94a3b8;font-size:13.5px;">Belum ada riwayat shift.</td></tr>
             @endforelse
             </tbody>
         </table>

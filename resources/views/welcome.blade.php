@@ -392,18 +392,27 @@
 
         /* ── RESPONSIVE ── */
         @media (max-width: 768px) {
-            .nav-links { display: none; }
+            nav { padding: 0 5vw; gap: 10px; }
+            /* Sembunyikan link section, tapi "Masuk" tetap tampil agar pengguna HP bisa login */
+            .nav-links { gap: 16px; }
+            .nav-links a:not(.nav-mobile-keep) { display: none; }
+            .nav-logo-text { font-size: 19px; }
+            .nav-cta { padding: 8px 15px; font-size: 13px; }
+            .hero { padding: 88px 6vw 60px; }
             .mockup-content { grid-template-columns: 1fr; }
             .mockup-sidebar { display: none; }
             .mockup-cards { grid-template-columns: repeat(2, 1fr); }
             .footer-grid { grid-template-columns: 1fr 1fr; }
             .pricing-card.featured { transform: none; }
             .steps { grid-template-columns: 1fr; }
+            section { padding: 56px 6vw; }
         }
         @media (max-width: 480px) {
             .footer-grid { grid-template-columns: 1fr; }
             .hero-actions { flex-direction: column; width: 100%; }
             .btn-hero, .btn-ghost { width: 100%; justify-content: center; }
+            .mockup-cards { grid-template-columns: 1fr; }
+            .nav-links a:not(.nav-mobile-keep) { display: none; }
         }
     </style>
 </head>
@@ -427,7 +436,7 @@
         <a href="#cara-kerja">Cara Kerja</a>
         <a href="#harga">Harga</a>
         <a href="#testimoni">Testimoni</a>
-        <a href="{{ route('login') }}">Masuk</a>
+        <a href="{{ route('login') }}" class="nav-mobile-keep">Masuk</a>
     </div>
     <a href="{{ route('register') }}" class="nav-cta">
         Mulai Gratis

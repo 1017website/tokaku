@@ -59,7 +59,7 @@
             <div style="padding:14px 18px;border-bottom:1px solid #f8fafc;">
                 <p style="font-size:14px;font-weight:600;color:#0f172a;">Hutang Belum Lunas</p>
             </div>
-            <div class="overflow-x-auto">
+            <div class="table-responsive overflow-x-auto">
                 <table style="width:100%;border-collapse:collapse;min-width:500px;">
                     <thead><tr style="background:#f8fafc;border-bottom:1px solid #f1f5f9;">
                         @foreach(['Pelanggan','Hutang','Sudah Bayar','Sisa','Jatuh Tempo','Aksi'] as $h)
@@ -69,21 +69,21 @@
                     <tbody>
                     @forelse($debts as $debt)
                     <tr style="border-bottom:1px solid #f8fafc;{{ $debt->isOverdue()?'background:#fff8f8;':'' }}">
-                        <td style="padding:12px 14px;">
+                        <td data-label="Pelanggan" style="padding:12px 14px;">
                             <p style="font-size:13.5px;font-weight:500;color:#0f172a;">{{ $debt->customer_name }}</p>
                             <p style="font-size:12px;color:#94a3b8;">{{ $debt->customer_phone ?? '—' }}</p>
                         </td>
-                        <td style="padding:12px 14px;font-size:13.5px;font-weight:600;color:#0f172a;">Rp {{ number_format($debt->amount,0,',','.') }}</td>
-                        <td style="padding:12px 14px;font-size:13px;color:#15803d;">Rp {{ number_format($debt->paid_amount,0,',','.') }}</td>
-                        <td style="padding:12px 14px;font-size:14px;font-weight:700;color:#be123c;">Rp {{ number_format($debt->remaining,0,',','.') }}</td>
-                        <td style="padding:12px 14px;">
+                        <td data-label="Hutang" style="padding:12px 14px;font-size:13.5px;font-weight:600;color:#0f172a;">Rp {{ number_format($debt->amount,0,',','.') }}</td>
+                        <td data-label="Sudah Bayar" style="padding:12px 14px;font-size:13px;color:#15803d;">Rp {{ number_format($debt->paid_amount,0,',','.') }}</td>
+                        <td data-label="Sisa" style="padding:12px 14px;font-size:14px;font-weight:700;color:#be123c;">Rp {{ number_format($debt->remaining,0,',','.') }}</td>
+                        <td data-label="Jatuh Tempo" style="padding:12px 14px;">
                             @if($debt->due_date)
                             <span style="font-size:12.5px;{{ $debt->isOverdue()?'color:#be123c;font-weight:600;':'color:#64748b;' }}">
                                 {{ $debt->isOverdue() ? '⚠ ' : '' }}{{ $debt->due_date->format('d M Y') }}
                             </span>
                             @else<span style="color:#94a3b8;font-size:13px;">—</span>@endif
                         </td>
-                        <td style="padding:12px 14px;">
+                        <td data-label="Aksi" style="padding:12px 14px;">
                             <button onclick="openPayModal({{ $debt->id }},'{{ addslashes($debt->customer_name) }}',{{ $debt->remaining }})"
                                 style="font-size:12.5px;font-weight:500;padding:6px 12px;border-radius:8px;background:#0F6E56;color:#fff;border:none;cursor:pointer;">
                                 Bayar
@@ -91,7 +91,7 @@
                         </td>
                     </tr>
                     @empty
-                    <tr><td colspan="6" style="padding:50px;text-align:center;color:#94a3b8;font-size:13.5px;">Tidak ada hutang aktif. 🎉</td></tr>
+                    <tr><td data-empty colspan="6" style="padding:50px;text-align:center;color:#94a3b8;font-size:13.5px;">Tidak ada hutang aktif. 🎉</td></tr>
                     @endforelse
                     </tbody>
                 </table>

@@ -117,7 +117,7 @@
         <div style="padding:16px 20px;border-bottom:1px solid #f8fafc;">
             <p style="font-size:14px;font-weight:600;color:#0f172a;">Daftar Transaksi</p>
         </div>
-        <div class="overflow-x-auto">
+        <div class="table-responsive overflow-x-auto">
             <table style="width:100%;border-collapse:collapse;min-width:400px;">
                 <thead>
                     <tr style="background:#f8fafc;border-bottom:1px solid #f1f5f9;">
@@ -130,17 +130,17 @@
                 <tbody>
                     @forelse($transactions as $t)
                     <tr style="border-bottom:1px solid #f8fafc;transition:background 0.1s;" onmouseover="this.style.background='#fafafa'" onmouseout="this.style.background='#fff'">
-                        <td style="padding:11px 16px;">
+                        <td data-label="Invoice" style="padding:11px 16px;">
                             <p style="font-size:13px;font-weight:500;color:#0f172a;">{{ $t->invoice_no }}</p>
                             <p style="font-size:11.5px;color:#94a3b8;">{{ $t->created_at->format('d M, H:i') }}</p>
                         </td>
-                        <td style="padding:11px 16px;">
+                        <td data-label="Metode" style="padding:11px 16px;">
                             <span style="font-size:11.5px;font-weight:500;padding:3px 8px;border-radius:99px;{{ $t->payment_method==='cash'?'background:#f0fdf4;color:#15803d;':($t->payment_method==='qris'?'background:#eff6ff;color:#1d4ed8;':'background:#f5f3ff;color:#6d28d9;') }}">
                                 {{ strtoupper($t->payment_method) }}
                             </span>
                         </td>
-                        <td style="padding:11px 16px;text-align:right;font-size:13px;font-weight:700;color:#0f172a;">Rp {{ number_format($t->total,0,',','.') }}</td>
-                        <td style="padding:11px 16px;text-align:right;">
+                        <td data-label="Total" style="padding:11px 16px;text-align:right;font-size:13px;font-weight:700;color:#0f172a;">Rp {{ number_format($t->total,0,',','.') }}</td>
+                        <td data-label="Aksi" style="padding:11px 16px;text-align:right;">
                             @php
                                 $trxData = [
                                     'id' => $t->id,
@@ -159,7 +159,7 @@
                         </td>
                     </tr>
                     @empty
-                    <tr><td colspan="4" style="padding:40px 16px;text-align:center;font-size:13.5px;color:#94a3b8;">Tidak ada transaksi.</td></tr>
+                    <tr><td data-empty colspan="4" style="padding:40px 16px;text-align:center;font-size:13.5px;color:#94a3b8;">Tidak ada transaksi.</td></tr>
                     @endforelse
                 </tbody>
             </table>

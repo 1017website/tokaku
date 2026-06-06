@@ -75,7 +75,7 @@
         <p style="font-size:14px;font-weight:600;color:#0f172a;">Transaksi Terbaru (Semua Tenant)</p>
         <a href="{{ route('superadmin.laporan') }}" style="font-size:12px;color:#0F6E56;font-weight:500;text-decoration:none;">Lihat semua</a>
     </div>
-    <div class="overflow-x-auto">
+    <div class="table-responsive overflow-x-auto">
         <table style="width:100%;border-collapse:collapse;min-width:500px;">
             <thead><tr style="background:#f8fafc;border-bottom:1px solid #f1f5f9;">
                 <th style="text-align:left;font-size:11px;font-weight:600;color:#64748b;padding:10px 18px;text-transform:uppercase;">Invoice</th>
@@ -87,11 +87,11 @@
             <tbody>
             @foreach($recentTransactions as $t)
             <tr style="border-bottom:1px solid #f8fafc;transition:background 0.1s;" onmouseover="this.style.background='#fafafa'" onmouseout="this.style.background='#fff'">
-                <td style="padding:12px 18px;font-size:13px;font-weight:500;color:#0f172a;">{{ $t->invoice_no }}</td>
-                <td style="padding:12px 18px;font-size:13px;color:#374151;">{{ $t->user->tenant->name ?? '—' }}</td>
-                <td style="padding:12px 18px;font-size:13px;color:#64748b;">{{ $t->user->name }}</td>
-                <td style="padding:12px 18px;text-align:right;font-size:13px;font-weight:700;color:#0f172a;">Rp {{ number_format($t->total,0,',','.') }}</td>
-                <td style="padding:12px 18px;font-size:12.5px;color:#64748b;">{{ $t->created_at->diffForHumans() }}</td>
+                <td data-label="Invoice" style="padding:12px 18px;font-size:13px;font-weight:500;color:#0f172a;">{{ $t->invoice_no }}</td>
+                <td data-label="Tenant" style="padding:12px 18px;font-size:13px;color:#374151;">{{ $t->user->tenant->name ?? '—' }}</td>
+                <td data-label="Kasir" style="padding:12px 18px;font-size:13px;color:#64748b;">{{ $t->user->name }}</td>
+                <td data-label="Total" style="padding:12px 18px;text-align:right;font-size:13px;font-weight:700;color:#0f172a;">Rp {{ number_format($t->total,0,',','.') }}</td>
+                <td data-label="Waktu" style="padding:12px 18px;font-size:12.5px;color:#64748b;">{{ $t->created_at->diffForHumans() }}</td>
             </tr>
             @endforeach
             </tbody>

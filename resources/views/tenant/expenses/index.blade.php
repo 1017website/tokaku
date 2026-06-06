@@ -42,20 +42,20 @@
             <div><label class="form-label">Kategori</label><select name="category" class="form-input"><option value="">Semua</option>@foreach($categories as $cat)<option value="{{ $cat }}" {{ request('category')===$cat?'selected':'' }}>{{ $cat }}</option>@endforeach</select></div>
             <button class="btn-secondary">Filter</button>
         </form>
-        <div class="overflow-x-auto">
+        <div class="table-responsive overflow-x-auto">
             <table style="width:100%;border-collapse:collapse;min-width:640px;">
                 <thead><tr style="background:#f8fafc;"><th style="text-align:left;padding:11px 18px;font-size:11px;color:#64748b;text-transform:uppercase;">Tanggal</th><th style="text-align:left;padding:11px 18px;font-size:11px;color:#64748b;text-transform:uppercase;">Kategori</th><th style="text-align:left;padding:11px 18px;font-size:11px;color:#64748b;text-transform:uppercase;">Keterangan</th><th style="text-align:right;padding:11px 18px;font-size:11px;color:#64748b;text-transform:uppercase;">Nominal</th><th style="text-align:center;padding:11px 18px;font-size:11px;color:#64748b;text-transform:uppercase;">Aksi</th></tr></thead>
                 <tbody>
                 @forelse($expenses as $expense)
                     <tr style="border-bottom:1px solid #f8fafc;">
-                        <td style="padding:13px 18px;font-size:13px;color:#334155;">{{ $expense->expense_date->format('d M Y') }}</td>
-                        <td style="padding:13px 18px;"><span style="font-size:12px;background:#f8fafc;border-radius:999px;padding:5px 9px;color:#334155;font-weight:700;">{{ $expense->category }}</span></td>
-                        <td style="padding:13px 18px;font-size:13px;color:#64748b;">{{ $expense->description ?? '-' }}</td>
-                        <td style="padding:13px 18px;text-align:right;font-size:13.5px;font-weight:800;color:#be123c;">Rp {{ number_format($expense->amount,0,',','.') }}</td>
-                        <td style="padding:13px 18px;text-align:center;"><form method="POST" action="{{ route('tenant.expenses.destroy', $expense) }}" onsubmit="return confirm('Hapus pengeluaran ini?')">@csrf @method('DELETE')<button style="border:none;background:none;color:#f43f5e;font-weight:700;font-size:12px;cursor:pointer;">Hapus</button></form></td>
+                        <td data-label="Tanggal" style="padding:13px 18px;font-size:13px;color:#334155;">{{ $expense->expense_date->format('d M Y') }}</td>
+                        <td data-label="Kategori" style="padding:13px 18px;"><span style="font-size:12px;background:#f8fafc;border-radius:999px;padding:5px 9px;color:#334155;font-weight:700;">{{ $expense->category }}</span></td>
+                        <td data-label="Keterangan" style="padding:13px 18px;font-size:13px;color:#64748b;">{{ $expense->description ?? '-' }}</td>
+                        <td data-label="Nominal" style="padding:13px 18px;text-align:right;font-size:13.5px;font-weight:800;color:#be123c;">Rp {{ number_format($expense->amount,0,',','.') }}</td>
+                        <td data-label="Aksi" style="padding:13px 18px;text-align:center;"><form method="POST" action="{{ route('tenant.expenses.destroy', $expense) }}" onsubmit="return confirm('Hapus pengeluaran ini?')">@csrf @method('DELETE')<button style="border:none;background:none;color:#f43f5e;font-weight:700;font-size:12px;cursor:pointer;">Hapus</button></form></td>
                     </tr>
                 @empty
-                    <tr><td colspan="5" style="padding:45px;text-align:center;color:#94a3b8;font-size:13px;">Belum ada pengeluaran.</td></tr>
+                    <tr><td data-empty colspan="5" style="padding:45px;text-align:center;color:#94a3b8;font-size:13px;">Belum ada pengeluaran.</td></tr>
                 @endforelse
                 </tbody>
             </table>
