@@ -13,6 +13,31 @@
 @section('content')
 
 <div style="background:#fff;border-radius:16px;border:1px solid #f1f5f9;box-shadow:0 1px 3px rgba(0,0,0,0.04);overflow:hidden;">
+
+    {{-- Search --}}
+    <div style="padding:14px 18px;border-bottom:1px solid #f8fafc;">
+        <input type="text" id="searchInput" placeholder="Cari produk..."
+            style="width:100%;max-width:320px;border:1.5px solid #e2e8f0;border-radius:10px;padding:9px 14px;font-size:13.5px;font-family:Inter,sans-serif;outline:none;background:#fafafa;box-sizing:border-box;"
+            onfocus="this.style.borderColor='#0F6E56';this.style.background='#fff';"
+            onblur="this.style.borderColor='#e2e8f0';this.style.background='#fafafa';">
+    </div>
+
+    {{-- Filter kategori --}}
+    @if($categories->isNotEmpty())
+    <div style="padding:12px 18px;border-bottom:1px solid #f8fafc;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+        <button type="button" class="cat-pill" data-cat="all"
+            style="border:1.5px solid #0F6E56;background:#0F6E56;color:#fff;border-radius:99px;padding:6px 16px;font-size:12.5px;font-weight:600;font-family:Inter,sans-serif;cursor:pointer;transition:all 0.15s;">
+            Semua Produk
+        </button>
+        @foreach($categories as $cat)
+        <button type="button" class="cat-pill" data-cat="{{ $cat->id }}"
+            style="border:1.5px solid #e2e8f0;background:#fff;color:#374151;border-radius:99px;padding:6px 16px;font-size:12.5px;font-weight:500;font-family:Inter,sans-serif;cursor:pointer;transition:all 0.15s;">
+            {{ $cat->name }}
+        </button>
+        @endforeach
+    </div>
+    @endif
+
     <div style="padding:14px 18px;border-bottom:1px solid #f8fafc;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
         <p style="font-size:13.5px;color:#64748b;">Diurutkan dari stok terkecil. Klik <strong style="color:#0f172a;">Kelola</strong> untuk ubah stok.</p>
         <div style="display:flex;align-items:center;gap:8px;">
@@ -40,7 +65,7 @@
                         ? 'background:#fff8f8;'
                         : ($product->isLowStock() ? 'background:#fffdf0;' : '');
                 @endphp
-                <tr style="border-bottom:1px solid #f8fafc;{{ $rowBg }}transition:opacity 0.1s;">
+                <tr class="product-row" data-name="{{ strtolower($product->name) }}" data-category="{{ $product->category_id ?? '' }}" style="border-bottom:1px solid #f8fafc;{{ $rowBg }}transition:opacity 0.1s;">
 
                     <td data-label="Produk" style="padding:13px 20px;">
                         <a href="{{ route('tenant.stok.show', $product) }}" style="font-size:13.5px;font-weight:600;color:#0f172a;text-decoration:none;">{{ $product->name }}</a>
@@ -88,10 +113,8 @@
         </table>
     </div>
 
-    @if($products->hasPages())
-    <div style="padding:14px 20px;border-top:1px solid #f8fafc;">{{ $products->links() }}</div>
-    @endif
-</div>
+    </div>
+
 
 {{-- Modal Ubah Stok --}}
 <div id="stockModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);align-items:center;justify-content:center;z-index:50;padding:16px;">
@@ -176,6 +199,41 @@
 
 @push('scripts')
 <script>
+/* Filter pencarian + kategori (selaras halaman Produk) */
+(function () {
+    var search = document.getElementById('searchInput');
+    var pills  = document.querySelectorAll('.cat-pill');
+    var activeCat = 'all';
+
+    function applyFilter() {
+        var q = (search.value || '').toLowerCase();
+        document.querySelectorAll('.product-row').forEach(function (row) {
+            var matchName = row.dataset.name.includes(q);
+            var matchCat  = activeCat === 'all' || row.dataset.category === activeCat;
+            row.style.display = (matchName && matchCat) ? '' : 'none';
+        });
+    }
+
+    if (search) search.addEventListener('input', applyFilter);
+
+    pills.forEach(function (pill) {
+        pill.addEventListener('click', function () {
+            activeCat = pill.dataset.cat;
+            pills.forEach(function (p) {
+                p.style.border = '1.5px solid #e2e8f0';
+                p.style.background = '#fff';
+                p.style.color = '#374151';
+                p.style.fontWeight = '500';
+            });
+            pill.style.border = '1.5px solid #0F6E56';
+            pill.style.background = '#0F6E56';
+            pill.style.color = '#fff';
+            pill.style.fontWeight = '600';
+            applyFilter();
+        });
+    });
+})();
+
 var currentStock = 0;
 var typeColors = {
     restock:    { clr:'#15803d', bg:'#f0fdf4' },

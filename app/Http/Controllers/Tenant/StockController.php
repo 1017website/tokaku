@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Tenant;
 
 use App\Http\Controllers\Controller;
+use App\Models\Category;
 use App\Models\Product;
 use App\Models\StockLog;
 use Illuminate\Http\Request;
@@ -15,9 +16,13 @@ class StockController extends Controller
     {
         $products = Product::with('category')
             ->orderBy('stock')
-            ->paginate(20);
+            ->get();
 
-        return view('tenant.stok.index', compact('products'));
+        $categories = Category::whereHas('products')
+            ->orderBy('name')
+            ->get();
+
+        return view('tenant.stok.index', compact('products', 'categories'));
     }
 
 

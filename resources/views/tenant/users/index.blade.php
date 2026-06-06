@@ -161,14 +161,14 @@
                             </form>
 
                             {{-- Atur Akses --}}
-                            <button onclick='showAccessModal(@json($user->id), @json($user->name), @json($user->role), @json(array_values((array) $user->permissions)))'
+                            <button type="button" onclick='showAccessModal(@json($user->id), @json($user->name), @json($user->role), @json(array_values((array) $user->permissions)))'
                                 style="font-size:12px;font-weight:500;padding:6px 12px;border-radius:8px;border:1.5px solid #bbf7d2;cursor:pointer;font-family:Inter,sans-serif;background:#fff;color:#15803d;transition:all 0.15s;"
                                 onmouseover="this.style.background='#f0fdf6'" onmouseout="this.style.background='#fff'">
                                 Atur Akses
                             </button>
 
                             {{-- Reset Password --}}
-                            <button onclick="showResetModal({{ $user->id }}, '{{ addslashes($user->name) }}')"
+                            <button type="button" onclick="showResetModal({{ $user->id }}, '{{ addslashes($user->name) }}')"
                                 style="font-size:12px;font-weight:500;padding:6px 12px;border-radius:8px;border:1.5px solid #e2e8f0;cursor:pointer;font-family:Inter,sans-serif;background:#fff;color:#374151;transition:all 0.15s;"
                                 onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='#fff'">
                                 Reset Password
@@ -274,7 +274,7 @@
 <script>
 function showResetModal(userId, name) {
     document.getElementById('resetModalName').textContent = 'Ganti password untuk: ' + name;
-    document.getElementById('resetForm').action = '/users/' + userId + '/reset-password';
+    document.getElementById('resetForm').action = '{{ route('tenant.users.reset-password', ['user' => '__ID__']) }}'.replace('__ID__', userId);
     document.getElementById('resetModal').style.display = 'flex';
 }
 function closeResetModal() {
@@ -284,7 +284,7 @@ function closeResetModal() {
 
 function showAccessModal(userId, name, role, perms) {
     document.getElementById('accessModalName').textContent = 'Atur akses untuk: ' + name;
-    document.getElementById('accessForm').action = '/users/' + userId + '/permissions';
+    document.getElementById('accessForm').action = '{{ route('tenant.users.permissions', ['user' => '__ID__']) }}'.replace('__ID__', userId);
     document.getElementById('accessRole').value = role === 'admin' ? 'admin' : 'cashier';
     document.querySelectorAll('.access-perm').forEach(function (cb) {
         cb.checked = Array.isArray(perms) && perms.includes(cb.value);
