@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Tenant;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rules\Password;
 
 class ProfileController extends Controller
 {
@@ -47,5 +49,39 @@ class ProfileController extends Controller
         $tenant->update($validated);
 
         return back()->with('success', 'Profil toko berhasil diperbarui.');
+    }
+
+    /**
+     * Halaman ganti password untuk user yang sedang login.
+     */
+    public function editPassword()
+    {
+        return view('tenant.profil.password');
+    }
+
+    /**
+     * Proses ganti password sendiri.
+     */
+    public function updatePassword(Request $request)
+    {
+        $request->validate([
+            'current_password' => 'required',
+            'password'         => ['required', 'confirmed', Password::min(6)],
+        ], [
+            'current_password.required' => 'Password saat ini wajib diisi.',
+            'password.required'         => 'Password baru wajib diisi.',
+            'password.confirmed'        => 'Konfirmasi password baru tidak cocok.',
+            'password.min'              => 'Password baru minimal 6 karakter.',
+        ]);
+
+        $user = auth()->user();
+
+        if (! Hash::check($request->current_password, $user->password)) {
+            return back()->withErrors(['current_password' => 'Password saat ini salah.']);
+        }
+
+        $user->update(['password' => $request->password]);
+
+        return back()->with('success', 'Password berhasil diganti.');
     }
 }

@@ -130,6 +130,10 @@ Route::middleware(['auth', 'tenant', 'subscription'])->group(function () {
         Route::put('/profil', [ProfileController::class, 'update'])->name('tenant.profil.update');
     });
 
+    // Ganti password sendiri — boleh diakses semua role yang login (owner/admin/kasir)
+    Route::get('/ganti-password',  [ProfileController::class, 'editPassword'])->name('tenant.password.edit');
+    Route::put('/ganti-password',  [ProfileController::class, 'updatePassword'])->name('tenant.password.update');
+
     Route::get('/subscription/expired', fn() => view('tenant.subscription.expired'))->name('tenant.subscription.expired');
 });
 

@@ -17,7 +17,7 @@
     @endif
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -32,8 +32,8 @@
             --border:    #D4EAE2;
             --white:     #FFFFFF;
             --cream:     #FAF9F6;
-            --serif:     'Instrument Serif', Georgia, serif;
-            --sans:      'DM Sans', system-ui, sans-serif;
+            --serif:     'Space Grotesk', system-ui, sans-serif;
+            --sans:      'Sora', system-ui, sans-serif;
         }
 
         html { scroll-behavior: smooth; }
@@ -62,7 +62,7 @@
             width: 34px; height: 34px; background: var(--green); border-radius: 10px;
             display: flex; align-items: center; justify-content: center;
         }
-        .nav-logo-text { font-family: var(--serif); font-size: 22px; color: var(--green); letter-spacing: -0.3px; }
+        .nav-logo-text { font-family: var(--serif); font-size: 21px; font-weight: 700; color: var(--green); letter-spacing: -0.5px; }
         .nav-links { display: flex; align-items: center; gap: 32px; }
         .nav-links a { font-size: 14px; font-weight: 500; color: var(--ink-mid); text-decoration: none; transition: color 0.15s; }
         .nav-links a:hover { color: var(--green); }
@@ -100,9 +100,9 @@
         .hero-badge-dot { width: 6px; height: 6px; background: var(--green); border-radius: 50%; animation: pulse 2s infinite; }
         .hero h1 {
             font-family: var(--serif);
-            font-size: clamp(42px, 7vw, 80px);
-            font-weight: 400; line-height: 1.1;
-            color: var(--ink); letter-spacing: -1.5px;
+            font-size: clamp(40px, 6.5vw, 72px);
+            font-weight: 600; line-height: 1.08;
+            color: var(--ink); letter-spacing: -2px;
             max-width: 800px; margin-bottom: 22px;
             animation: fadeUp 0.6s 0.1s ease both;
         }
@@ -205,11 +205,11 @@
             color: var(--green); margin-bottom: 16px;
         }
         .section-title {
-            font-family: var(--serif); font-size: clamp(32px, 5vw, 52px);
-            font-weight: 400; line-height: 1.15; letter-spacing: -0.8px;
+            font-family: var(--serif); font-size: clamp(30px, 4.5vw, 46px);
+            font-weight: 600; line-height: 1.15; letter-spacing: -1.2px;
             color: var(--ink); max-width: 560px; margin-bottom: 16px;
         }
-        .section-title em { color: var(--green); font-style: italic; }
+        .section-title em { color: var(--green); font-style: normal; }
         .section-sub { font-size: 16px; color: var(--muted); line-height: 1.7; max-width: 480px; margin-bottom: 48px; }
 
         /* ── FEATURES ── */
@@ -249,7 +249,7 @@
         }
         .step:hover { background: rgba(255,255,255,0.07); }
         .step-num {
-            font-family: var(--serif); font-size: 52px; font-weight: 400;
+            font-family: var(--serif); font-size: 50px; font-weight: 700;
             color: rgba(255,255,255,0.06); position: absolute; top: 16px; right: 20px;
             line-height: 1;
         }
@@ -279,7 +279,7 @@
         .pricing-name { font-size: 16px; font-weight: 600; color: var(--ink); margin-bottom: 8px; }
         .pricing-card.featured .pricing-name { color: rgba(255,255,255,0.8); }
         .pricing-price {
-            font-family: var(--serif); font-size: 44px; font-weight: 400;
+            font-family: var(--serif); font-size: 42px; font-weight: 600;
             color: var(--ink); line-height: 1; margin-bottom: 4px; letter-spacing: -1px;
         }
         .pricing-card.featured .pricing-price { color: var(--white); }
@@ -342,8 +342,8 @@
         }
         .cta-tag { color: rgba(255,255,255,0.6); font-size: 12px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 16px; }
         .cta-title {
-            font-family: var(--serif); font-size: clamp(32px, 5vw, 56px);
-            color: var(--white); font-weight: 400; letter-spacing: -1px; margin-bottom: 16px;
+            font-family: var(--serif); font-size: clamp(30px, 4.5vw, 50px);
+            color: var(--white); font-weight: 600; letter-spacing: -1.5px; margin-bottom: 16px;
         }
         .cta-sub { font-size: 16px; color: rgba(255,255,255,0.7); margin-bottom: 36px; max-width: 440px; margin-left: auto; margin-right: auto; }
         .btn-cta-white {
@@ -363,7 +363,7 @@
         .footer-brand { }
         .footer-logo { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
         .footer-logo-mark { width: 32px; height: 32px; background: var(--green); border-radius: 8px; display: flex; align-items: center; justify-content: center; }
-        .footer-logo-text { font-family: var(--serif); font-size: 20px; color: var(--white); }
+        .footer-logo-text { font-family: var(--serif); font-size: 19px; font-weight: 700; color: var(--white); }
         .footer-desc { font-size: 14px; color: #5A7A70; line-height: 1.7; max-width: 220px; }
         .footer-col h4 { font-size: 12px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; color: #5A7A70; margin-bottom: 16px; }
         .footer-col a { display: block; font-size: 14px; color: #4A6A60; text-decoration: none; margin-bottom: 10px; transition: color 0.15s; }
