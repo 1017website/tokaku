@@ -22,8 +22,8 @@
 .select-customer{width:100%;border:1.5px solid #e2e8f0;border-radius:10px;padding:9px 12px;font-size:13px;font-family:Inter,sans-serif;background:#fafafa;outline:none}
 /* Tablet landscape (1025-1280px): rapatkan keranjang & perkecil kartu agar muat lebih banyak kolom */
 @media(min-width:1025px) and (max-width:1280px){.pos-wrap{grid-template-columns:minmax(0,1fr) 300px;gap:14px}.product-grid{grid-template-columns:repeat(auto-fill,minmax(125px,1fr));gap:10px;padding:12px}.product-card{min-height:154px;padding:10px}.product-img{height:58px}}
-@media(max-width:1024px){.pos-wrap{grid-template-columns:1fr}.cart-sticky{position:relative;max-height:none}.product-grid{max-height:none;grid-template-columns:repeat(auto-fill,minmax(130px,1fr))}}
-@media(max-width:640px){.product-grid{grid-template-columns:repeat(2,1fr);padding:12px}.pos-wrap{gap:12px}.cat-btn{padding:8px 14px}}
+@media(max-width:1024px){.pos-wrap{grid-template-columns:1fr}.cart-sticky{position:relative;max-height:none}.product-grid{max-height:none;grid-template-columns:repeat(auto-fill,minmax(130px,1fr))}.price-row{flex-direction:column;align-items:flex-start;gap:2px}.price-row .stock-label{margin-top:1px}}
+@media(max-width:640px){.product-grid{grid-template-columns:repeat(2,1fr);padding:12px}.pos-wrap{gap:12px}.cat-btn{padding:8px 14px}.product-card{min-height:170px}}
 </style>
 @endpush
 
