@@ -118,8 +118,8 @@ Route::middleware(['auth', 'tenant', 'subscription'])->group(function () {
         Route::get('/{shift}',    [ShiftController::class, 'show'])->name('show');
     });
 
-    // Gudang Bahan Baku (owner & admin) — pembukuan stok bahan
-    Route::middleware('role:owner,admin')->prefix('bahan')->name('tenant.bahan.')->group(function () {
+    // Gudang Bahan Baku — pembukuan stok bahan (akses via permission)
+    Route::middleware('permission:bahan')->prefix('bahan')->name('tenant.bahan.')->group(function () {
         Route::get('/',                  [RawMaterialController::class, 'index'])->name('index');
         Route::post('/',                 [RawMaterialController::class, 'store'])->name('store');
         Route::put('/{bahan}',           [RawMaterialController::class, 'update'])->name('update');

@@ -382,6 +382,15 @@
                     Shift Kasir
                 </a>
                 @endif
+                @if(auth()->user()->hasAccess('bahan'))
+                <a href="{{ route('tenant.bahan.index') }}"
+                    class="sidebar-link {{ request()->routeIs('tenant.bahan.*') ? 'active' : '' }}">
+                    <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                    </svg>
+                    Gudang Bahan
+                </a>
+                @endif
 
                 @if(auth()->user()->isAdmin())
                     <a href="{{ route('tenant.users.index') }}"
@@ -391,13 +400,6 @@
                                 d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
                         </svg>
                         Tim Toko
-                    </a>
-                    <a href="{{ route('tenant.bahan.index') }}"
-                        class="sidebar-link {{ request()->routeIs('tenant.bahan.*') ? 'active' : '' }}">
-                        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                        </svg>
-                        Gudang Bahan
                     </a>
                     <div style="padding-top:12px;">
                         <p

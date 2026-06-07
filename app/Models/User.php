@@ -92,6 +92,7 @@ class User extends Authenticatable
             'pengeluaran' => 'tenant.expenses.index',
             'hutang'      => 'tenant.hutang.index',
             'shift'       => 'tenant.shift.index',
+            'bahan'       => 'tenant.bahan.index',
         ];
 
         foreach ($map as $module => $routeName) {

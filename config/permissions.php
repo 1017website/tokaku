@@ -20,11 +20,12 @@ return [
         'pengeluaran'=> 'Pengeluaran',
         'hutang'     => 'Hutang Piutang',
         'shift'      => 'Shift Kasir',
+        'bahan'      => 'Gudang Bahan',
     ],
 
     // Default permission saat membuat user baru per role bawaan.
     'defaults' => [
-        'admin'   => ['kasir', 'produk', 'kategori', 'laporan', 'stok', 'pelanggan', 'promo', 'pengeluaran', 'hutang', 'shift'],
+        'admin'   => ['kasir', 'produk', 'kategori', 'laporan', 'stok', 'pelanggan', 'promo', 'pengeluaran', 'hutang', 'shift', 'bahan'],
         'cashier' => ['kasir', 'pelanggan', 'shift'],
     ],
 ];
