@@ -173,11 +173,23 @@
 
     // ---- Jalur Android: RawBT ----
     function cetakRawBT(){
-        setStatus('Mengirim ke RawBT...');
-        // RawBT membaca data mentah dari URL via intent rawbt:
-        var url = ESCPOS_URL + '?format=raw';
-        window.location.href = 'rawbt:' + new URL(url, window.location.origin).href;
-        setTimeout(function(){ setStatus('Jika tidak tercetak, pastikan app RawBT terpasang & printer terhubung.'); }, 1500);
+        setStatus('Menyiapkan struk...');
+        // Kirim data ESC/POS (base64) LANGSUNG ke RawBT, bukan URL-nya,
+        // agar yang tercetak adalah struk, bukan teks alamat URL.
+        fetch(ESCPOS_URL)
+            .then(function(r){ return r.json(); })
+            .then(function(data){
+                setStatus('Mengirim ke RawBT...');
+                var intent = 'rawbt:base64,' + data.base64;
+                // Fallback mode URL hanya bila data terlalu panjang utk intent.
+                if (intent.length > 7500) {
+                    window.location.href = 'rawbt:' + new URL(ESCPOS_URL + '?format=raw', window.location.origin).href;
+                } else {
+                    window.location.href = intent;
+                }
+                setTimeout(function(){ setStatus('Jika tidak tercetak, buka RawBT lalu pilih printer Bluetooth (bukan Emulator).'); }, 1500);
+            })
+            .catch(function(err){ console.error(err); setStatus('Gagal menyiapkan struk.'); });
     }
 
     // ---- Jalur PC: QZ Tray ----
