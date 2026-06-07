@@ -17,13 +17,26 @@ class ReceiptEscposService
     private const ESC = "\x1B";
     private const GS  = "\x1D";
 
-    public function build(Transaction $transaction, array $appSettings = []): string
+    /**
+     * Perintah buka laci kasir (drawer kick): ESC p m t1 t2.
+     * m=0 -> pin 2 (paling umum). t1=25, t2=250 -> durasi pulse aman.
+     * Dikirim di awal cetak agar laci terbuka bersamaan keluarnya struk.
+     */
+    private const DRAWER_KICK = self::ESC . "p\x00\x19\xFA";
+
+    public function build(Transaction $transaction, array $appSettings = [], bool $openDrawer = false): string
     {
         $t      = $transaction;
         $tenant = $t->user->tenant ?? null;
         $appName = $appSettings['app_name'] ?? 'Tokaku';
 
         $out  = self::ESC . "@";          // init printer
+
+        // Buka laci hanya untuk pembayaran tunai (lunas).
+        if ($openDrawer && $t->payment_method === 'cash' && $t->payment_status !== 'debt') {
+            $out .= self::DRAWER_KICK;
+        }
+
         $out .= self::ESC . "t\x00";      // charset PC437 (aman untuk ASCII)
 
         // ---- Logo dinonaktifkan (uncomment untuk mengaktifkan kembali) ----

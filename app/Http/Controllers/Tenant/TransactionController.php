@@ -164,7 +164,10 @@ class TransactionController extends Controller {
             ->where('tenant_id', app('currentTenant')->id)->findOrFail($id);
 
         $appSettings = ['app_name' => \App\Models\AppSetting::getValue('app_name', 'Tokaku')];
-        $raw = app(ReceiptEscposService::class)->build($transaction, $appSettings);
+
+        // Buka laci default aktif; bisa dimatikan via ?drawer=0
+        $openDrawer = $request->query('drawer', '1') !== '0';
+        $raw = app(ReceiptEscposService::class)->build($transaction, $appSettings, $openDrawer);
 
         if ($request->query('format') === 'raw') {
             return response($raw, 200, ['Content-Type' => 'application/octet-stream']);
