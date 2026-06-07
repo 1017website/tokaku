@@ -30,7 +30,15 @@ class PromoController extends Controller {
             'min_qty.required_if'  => 'Jumlah beli (qty) wajib diisi.',
             'free_qty.required_if' => 'Jumlah gratis (qty) wajib diisi.',
         ]);
-        Promo::create(array_merge($request->only('name','code','type','value','min_qty','free_qty','min_transaction','max_discount','product_id','starts_at','ends_at'), [
+        $data = $request->only('name','code','type','value','min_qty','free_qty','min_transaction','max_discount','product_id','starts_at','ends_at');
+
+        // Kolom NOT NULL di DB — pastikan tidak null walau input kosong
+        // (ConvertEmptyStringsToNull mengubah input kosong jadi null).
+        $data['value']    = $data['value'] ?? 0;
+        $data['min_qty']  = $data['min_qty'] ?? 1;
+        $data['free_qty'] = $data['free_qty'] ?? 0;
+
+        Promo::create(array_merge($data, [
             'tenant_id' => app('currentTenant')->id,
         ]));
         return back()->with('success', 'Promo berhasil dibuat.');
