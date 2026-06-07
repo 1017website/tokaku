@@ -46,13 +46,15 @@ class UserController extends Controller
             return back()->withErrors(['email' => 'Email / Username ini sudah dipakai di toko Anda.'])->withInput();
         }
 
-        // Batas jumlah user per tenant (termasuk owner)
-        $maxUsers = (int) config('tokaku.max_users', 3);
-        $currentCount = User::where('tenant_id', $tenant->id)->count();
+        // Batas jumlah ANGGOTA TIM di luar owner (admin/kasir).
+        $maxMembers = (int) config('tokaku.max_users', 3);
+        $memberCount = User::where('tenant_id', $tenant->id)
+            ->where('role', '!=', 'owner')
+            ->count();
 
-        if ($currentCount >= $maxUsers) {
+        if ($memberCount >= $maxMembers) {
             return back()
-                ->withErrors(['email' => "Maksimal {$maxUsers} user per toko (termasuk owner). Hapus atau nonaktifkan user lain terlebih dahulu."])
+                ->withErrors(['email' => "Maksimal {$maxMembers} anggota tim di luar owner. Hapus atau nonaktifkan anggota lain terlebih dahulu."])
                 ->withInput();
         }
 

@@ -10,14 +10,14 @@
     <div>
         <div style="background:#fff;border-radius:16px;border:1px solid #f1f5f9;box-shadow:0 1px 3px rgba(0,0,0,0.04);padding:22px;">
             @php
-                $maxUsers = (int) config('tokaku.max_users', 3);
-                $usedSlot = $users->count();
-                $slotPenuh = $usedSlot >= $maxUsers;
+                $maxMembers = (int) config('tokaku.max_users', 3);
+                $usedSlot = $users->where('role', '!=', 'owner')->count();
+                $slotPenuh = $usedSlot >= $maxMembers;
             @endphp
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
                 <p style="font-size:14px;font-weight:600;color:#0f172a;">Tambah Anggota Tim</p>
                 <span style="font-size:11.5px;font-weight:500;padding:3px 10px;border-radius:99px;{{ $slotPenuh ? 'background:#fff1f2;color:#be123c;' : 'background:#f0fdf6;color:#0F6E56;' }}">
-                    {{ $usedSlot }}/{{ $maxUsers }} slot
+                    {{ $usedSlot }}/{{ $maxMembers }} anggota
                 </span>
             </div>
 
@@ -29,7 +29,7 @@
 
             @if($slotPenuh)
             <div style="background:#fffbeb;border:1px solid #fde68a;color:#92400e;font-size:13px;border-radius:10px;padding:12px 14px;line-height:1.5;">
-                Slot user sudah penuh ({{ $maxUsers }} termasuk owner). Hapus atau nonaktifkan anggota lain untuk menambah user baru.
+                Slot anggota tim sudah penuh ({{ $maxMembers }} di luar owner). Hapus atau nonaktifkan anggota lain untuk menambah anggota baru.
             </div>
             @else
             <form method="POST" action="{{ route('tenant.users.store') }}" style="display:flex;flex-direction:column;gap:13px;">
