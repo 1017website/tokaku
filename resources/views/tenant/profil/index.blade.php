@@ -58,6 +58,20 @@
                         </div>
                     </div>
 
+                    <div style="padding:16px 0;border-top:1px solid #f8fafc;">
+                        <p style="font-size:13px;font-weight:600;color:#0f172a;margin-bottom:12px;">Mode Cetak Struk</p>
+                        <div>
+                            <label class="form-label">Jenis Perangkat Kasir</label>
+                            @php $pm = old('print_mode', $tenant->print_mode ?? 'auto'); @endphp
+                            <select name="print_mode" class="form-input">
+                                <option value="auto" {{ $pm==='auto' ? 'selected' : '' }}>Otomatis (deteksi sendiri)</option>
+                                <option value="rawbt" {{ $pm==='rawbt' ? 'selected' : '' }}>HP / Tablet Android (RawBT)</option>
+                                <option value="qz" {{ $pm==='qz' ? 'selected' : '' }}>Komputer / PC (QZ Tray)</option>
+                            </select>
+                            <p style="font-size:12px;color:#94a3b8;margin-top:6px;line-height:1.5;">Pilih sesuai perangkat yang dipakai kasir. Pilih <b>HP / Tablet Android</b> bila cetak lewat aplikasi RawBT, atau <b>Komputer / PC</b> bila lewat QZ Tray. Berlaku untuk semua kasir di toko ini.</p>
+                        </div>
+                    </div>
+
                     <div>
                         <label class="form-label">Logo Toko</label>
                         @if($tenant->logo_path)

@@ -149,6 +149,8 @@
     // Deteksi mode printer (sama dgn halaman kasir). Tablet ber-UA desktop
     // tetap terdeteksi via dukungan layar sentuh; preferensi manual menang.
     function detectPrinterMode(){
+        var storeMode = @json(optional(optional($transaction->user)->tenant)->print_mode ?? 'auto');
+        if (storeMode === 'rawbt' || storeMode === 'qz') return storeMode;
         try {
             var pref = localStorage.getItem('tokaku_print_mode');
             if (pref === 'rawbt' || pref === 'qz') return pref;

@@ -27,6 +27,7 @@ class ProfileController extends Controller
             'address' => 'nullable|string|max:500',
             'tax_rate' => 'nullable|numeric|min:0|max:100',
             'tax_name' => 'nullable|string|max:50',
+            'print_mode' => 'nullable|in:auto,rawbt,qz',
             'initial_capital' => 'nullable|numeric|min:0',
             'logo' => 'nullable|image|mimes:jpg,jpeg,png,webp,svg|max:2048',
         ]);
@@ -34,6 +35,7 @@ class ProfileController extends Controller
         $validated['tax_enabled'] = $request->boolean('tax_enabled');
         $validated['tax_rate'] = $request->tax_rate ?? 11;
         $validated['tax_name'] = $request->tax_name ?? 'PPN';
+        $validated['print_mode'] = $request->print_mode ?? 'auto';
         $validated['initial_capital'] = $request->initial_capital ?? 0;
 
         if ($request->hasFile('logo')) {

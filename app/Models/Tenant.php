@@ -23,6 +23,7 @@ class Tenant extends Model
         'tax_enabled',
         'tax_rate',
         'tax_name',
+        'print_mode',
         'initial_capital',
     ];
 

@@ -183,25 +183,33 @@ renderCart();
 // terdeteksi salah. Kombinasikan: UA mobile/tablet + dukungan layar sentuh.
 // Kasir juga bisa memaksa mode lewat preferensi tersimpan (localStorage).
 function detectPrinterMode(){
-    // Preferensi manual menang (di-set lewat tombol pilih mode).
+    // 1) Setting toko (ditentukan owner di Pengaturan Toko) paling menentukan.
+    var storeMode = @json($currentTenant->print_mode ?? 'auto');
+    if (storeMode === 'rawbt' || storeMode === 'qz') return storeMode;
+
+    // 2) Preferensi manual per-perangkat (bila toko diset 'auto').
     try {
         var pref = localStorage.getItem('tokaku_print_mode');
         if (pref === 'rawbt' || pref === 'qz') return pref;
     } catch(e){}
 
+    // 3) Deteksi otomatis.
     var ua = navigator.userAgent || '';
     var isDesktopOS = /Windows NT|Macintosh|CrOS|Linux x86/i.test(ua);
     var isMobileUA  = /Android|iPhone|iPad|iPod|Mobile|Tablet|Touch/i.test(ua);
     var isTouch     = (navigator.maxTouchPoints || 0) > 0 || ('ontouchstart' in window);
 
-    // Anggap RawBT (Android/tablet) bila: UA mobile, ATAU perangkat sentuh
-    // yang bukan OS desktop biasa.
     if (isMobileUA) return 'rawbt';
     if (isTouch && !isDesktopOS) return 'rawbt';
     return 'qz';
 }
-// Siklus mode: Auto -> RawBT (Android/Tablet) -> QZ Tray (PC) -> Auto.
+// Siklus mode manual per-perangkat (hanya berlaku bila toko diset 'auto').
 function togglePrinterMode(){
+    var storeMode = @json($currentTenant->print_mode ?? 'auto');
+    if (storeMode === 'rawbt' || storeMode === 'qz') {
+        setCetakStatus('Mode printer dikunci oleh Pengaturan Toko.');
+        return;
+    }
     var cur = 'auto';
     try { cur = localStorage.getItem('tokaku_print_mode') || 'auto'; } catch(e){}
     var next = cur === 'auto' ? 'rawbt' : (cur === 'rawbt' ? 'qz' : 'auto');
@@ -214,6 +222,9 @@ function togglePrinterMode(){
 function refreshPrinterModeLabel(){
     var btn = document.getElementById('modePrinterBtn');
     if (!btn) return;
+    var storeMode = @json($currentTenant->print_mode ?? 'auto');
+    if (storeMode === 'rawbt') { btn.textContent = 'RawBT (diatur toko)'; btn.style.cursor='default'; return; }
+    if (storeMode === 'qz')    { btn.textContent = 'QZ Tray (diatur toko)'; btn.style.cursor='default'; return; }
     var pref = 'auto';
     try { pref = localStorage.getItem('tokaku_print_mode') || 'auto'; } catch(e){}
     btn.textContent = pref === 'rawbt' ? 'RawBT (Android/Tablet)'
