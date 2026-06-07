@@ -127,13 +127,29 @@
             .sidebar-desktop {
                 transform: translateX(-100%);
                 position: fixed;
+                top: 0;
+                left: 0;
                 z-index: 40;
-                height: 100vh;
+                height: 100vh;          /* fallback browser lama */
+                height: 100dvh;         /* ikuti area layar terlihat (tablet/HP) */
+                max-height: 100dvh;
+                overflow-y: auto;        /* seluruh sidebar bisa di-scroll bila layar pendek */
+                -webkit-overflow-scrolling: touch;
                 transition: transform 0.25s ease;
             }
 
             .sidebar-desktop.open {
                 transform: translateX(0);
+            }
+
+            /* Pastikan footer (tombol Keluar) tidak ikut ke-scroll keluar:
+               nav boleh menyusut, footer selalu menempel di bawah area sidebar. */
+            .sidebar-desktop > nav {
+                flex: 1 1 auto;
+                min-height: 0;
+            }
+            .sidebar-desktop > .sidebar-footer {
+                flex: 0 0 auto;
             }
         }
 
@@ -392,7 +408,7 @@
                 </a>
                 @endif
 
-                @if(auth()->user()->isAdmin())
+                @if(auth()->user()->isOwner())
                     <a href="{{ route('tenant.users.index') }}"
                         class="sidebar-link {{ request()->routeIs('tenant.users.*') ? 'active' : '' }}">
                         <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -426,7 +442,7 @@
                 @endif
             </nav>
 
-            <div class="px-3 py-3 border-t border-gray-100">
+            <div class="sidebar-footer px-3 py-3 border-t border-gray-100">
                 <div class="flex items-center gap-3 px-3 py-2 rounded-xl">
                     <div
                         style="width:32px;height:32px;background:#dcfce9;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;">

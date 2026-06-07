@@ -128,8 +128,8 @@ Route::middleware(['auth', 'tenant', 'subscription'])->group(function () {
         Route::delete('/{bahan}',        [RawMaterialController::class, 'destroy'])->name('destroy');
     });
 
-    // Owner & Admin only
-    Route::middleware('role:owner,admin')->prefix('users')->name('tenant.users.')->group(function () {
+    // Owner only — kelola tim, langganan & pengaturan toko
+    Route::middleware('role:owner')->prefix('users')->name('tenant.users.')->group(function () {
         Route::get('/',                      [UserController::class, 'index'])->name('index');
         Route::post('/',                     [UserController::class, 'store'])->name('store');
         Route::put('/{user}/toggle',         [UserController::class, 'toggleActive'])->name('toggle');
@@ -137,7 +137,7 @@ Route::middleware(['auth', 'tenant', 'subscription'])->group(function () {
         Route::put('/{user}/reset-password', [UserController::class, 'resetPassword'])->name('reset-password');
         Route::delete('/{user}',             [UserController::class, 'destroy'])->name('destroy');
     });
-    Route::middleware('role:owner,admin')->group(function () {
+    Route::middleware('role:owner')->group(function () {
         Route::get('/profil', [ProfileController::class, 'index'])->name('tenant.profil');
         Route::put('/profil', [ProfileController::class, 'update'])->name('tenant.profil.update');
     });
