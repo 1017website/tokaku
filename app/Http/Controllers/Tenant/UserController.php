@@ -27,11 +27,14 @@ class UserController extends Controller
 
         $request->validate([
             'name'          => 'required|string|max:255',
-            'email'         => 'required|email',
+            'email'         => 'required|string|max:255|not_regex:/\s/',
             'role'          => 'required|in:admin,cashier',
             'password'      => ['required', 'confirmed', Password::min(8)],
             'permissions'   => 'nullable|array',
             'permissions.*' => 'in:' . implode(',', $modules),
+        ], [
+            'email.required'  => 'Email / Username wajib diisi.',
+            'email.not_regex' => 'Email / Username tidak boleh mengandung spasi.',
         ]);
 
         // Cek email unik per tenant
@@ -40,7 +43,7 @@ class UserController extends Controller
             ->exists();
 
         if ($exists) {
-            return back()->withErrors(['email' => 'Email ini sudah dipakai di toko Anda.'])->withInput();
+            return back()->withErrors(['email' => 'Email / Username ini sudah dipakai di toko Anda.'])->withInput();
         }
 
         // Batas jumlah user per tenant (termasuk owner)

@@ -106,12 +106,12 @@
                 @csrf
 
                 <div style="margin-bottom:16px;">
-                    <label style="display:block;font-size:13px;font-weight:500;color:#374151;margin-bottom:6px;">Email</label>
+                    <label style="display:block;font-size:13px;font-weight:500;color:#374151;margin-bottom:6px;">Email / Username</label>
                     <div style="position:relative;">
                         <div style="position:absolute;left:14px;top:50%;transform:translateY(-50%);pointer-events:none;">
                             <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="#9ca3af" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
                         </div>
-                        <input type="email" name="email" value="{{ old('email') }}" autofocus placeholder="email@toko.com"
+                        <input type="text" name="email" value="{{ old('email') }}" autofocus placeholder="nama@tokokamu.com"
                             style="width:100%;border:1.5px solid #e2e8f0;border-radius:12px;padding:11px 14px 11px 40px;font-size:14px;font-family:Inter,sans-serif;outline:none;background:#fafafa;color:#0f172a;transition:all 0.15s;box-sizing:border-box;"
                             onfocus="this.style.borderColor='#0F6E56';this.style.boxShadow='0 0 0 3px rgba(15,110,86,0.1)';this.style.background='#fff';"
                             onblur="this.style.borderColor='#e2e8f0';this.style.boxShadow='none';this.style.background='#fafafa';">

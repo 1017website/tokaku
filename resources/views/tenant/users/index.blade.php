@@ -43,10 +43,10 @@
                         onblur="this.style.borderColor='#e2e8f0';this.style.background='#fafafa';">
                 </div>
                 <div>
-                    <label style="display:block;font-size:12.5px;font-weight:500;color:#374151;margin-bottom:5px;">Email *</label>
-                    <input type="email" name="email" value="{{ old('email') }}" required
+                    <label style="display:block;font-size:12.5px;font-weight:500;color:#374151;margin-bottom:5px;">Email / Username *</label>
+                    <input type="text" name="email" value="{{ old('email') }}" required
                         style="width:100%;border:1.5px solid #e2e8f0;border-radius:10px;padding:10px 14px;font-size:13.5px;font-family:Inter,sans-serif;outline:none;background:#fafafa;box-sizing:border-box;"
-                        placeholder="kasir@email.com"
+                        placeholder="nama@tokokamu.com"
                         onfocus="this.style.borderColor='#0F6E56';this.style.background='#fff';"
                         onblur="this.style.borderColor='#e2e8f0';this.style.background='#fafafa';">
                 </div>

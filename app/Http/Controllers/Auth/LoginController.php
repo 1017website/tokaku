@@ -16,18 +16,17 @@ class LoginController extends Controller
     public function login(Request $request)
     {
         $request->validate([
-            'email'    => 'required|email',
+            'email'    => 'required|string',
             'password' => 'required',
         ], [
-            'email.required'    => 'Email wajib diisi.',
-            'email.email'       => 'Format email tidak valid.',
+            'email.required'    => 'Email / Username wajib diisi.',
             'password.required' => 'Password wajib diisi.',
         ]);
 
         $remember = $request->boolean('remember');
 
-        // Coba login — tidak filter tenant_id di sini
-        // Superadmin punya tenant_id null, tetap bisa login
+        // Login cocokkan kolom 'email' (bisa berisi email atau username).
+        // Superadmin punya tenant_id null, tetap bisa login.
         if (!Auth::attempt([
             'email'     => $request->email,
             'password'  => $request->password,
@@ -35,7 +34,7 @@ class LoginController extends Controller
         ], $remember)) {
             return back()
                 ->withInput($request->only('email'))
-                ->withErrors(['email' => 'Email atau password salah, atau akun tidak aktif.']);
+                ->withErrors(['email' => 'Email/Username atau password salah, atau akun tidak aktif.']);
         }
 
         $request->session()->regenerate();
