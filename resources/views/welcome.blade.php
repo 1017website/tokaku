@@ -456,7 +456,7 @@
         <p>Kelola kasir, stok, laporan, dan tim toko dalam satu platform yang simpel — cocok untuk UMKM F&B, retail, dan jasa.</p>
         <div class="hero-actions">
             <a href="{{ route('register') }}" class="btn-hero">
-                Coba Gratis 14 Hari
+                Coba Gratis 7 Hari
                 <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
             </a>
             <a href="#fitur" class="btn-ghost">
@@ -590,7 +590,7 @@
     <div class="fade-in" style="text-align:center;margin-bottom:48px;">
         <div class="section-tag" style="justify-content:center;">Harga</div>
         <h2 class="section-title" style="margin:0 auto 16px;text-align:center;">Harga yang <em>transparan</em></h2>
-        <p class="section-sub" style="margin:0 auto;text-align:center;">Semua paket dapat fitur lengkap. Pilih durasi, makin lama makin hemat. Coba gratis 14 hari tanpa kartu kredit.</p>
+        <p class="section-sub" style="margin:0 auto;text-align:center;">Semua paket dapat fitur lengkap. Pilih durasi, makin lama makin hemat. Coba gratis 7 hari tanpa kartu kredit.</p>
     </div>
 
     @php
@@ -676,7 +676,7 @@
 <section class="cta-section">
     <p class="cta-tag">Mulai Sekarang</p>
     <h2 class="cta-title">Siap bawa tokomu<br>ke level berikutnya?</h2>
-    <p class="cta-sub">Daftar gratis, tidak perlu kartu kredit. Trial 14 hari penuh tanpa batas fitur.</p>
+    <p class="cta-sub">Daftar gratis, tidak perlu kartu kredit. Trial 7 hari penuh tanpa batas fitur.</p>
     <a href="{{ route('register') }}" class="btn-cta-white">
         Mulai Gratis Sekarang
         <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>

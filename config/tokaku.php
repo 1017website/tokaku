@@ -8,5 +8,5 @@ return [
     'max_users' => env('TOKAKU_MAX_USERS', 3),
 
     // Durasi default masa trial (hari) saat tenant baru dibuat.
-    'trial_days' => env('TOKAKU_TRIAL_DAYS', 14),
+    'trial_days' => env('TOKAKU_TRIAL_DAYS', 7),
 ];

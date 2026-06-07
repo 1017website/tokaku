@@ -50,7 +50,9 @@
     </div>
     <div style="grid-column:1/-1;">
         <label class="form-label">Foto Produk</label>
-        <input type="file" name="photo" accept="image/*" class="form-input" style="padding:8px 14px;cursor:pointer;">
+        <input type="file" name="photo" accept="image/*" class="form-input" style="padding:8px 14px;cursor:pointer;"
+            onchange="if(this.files[0] && this.files[0].size > 512000){ alert('Ukuran gambar maksimal 500KB.'); this.value=''; }">
+        <p style="font-size:11.5px;color:#94a3b8;margin-top:4px;">Format gambar (JPG/PNG), maksimal 500KB</p>
     </div>
     @if($isEdit)
     <div style="grid-column:1/-1;display:flex;align-items:center;gap:8px;">

@@ -45,7 +45,10 @@ class ProductController extends Controller
             'cost_price'      => 'nullable|numeric|min:0',
             'stock'           => 'required|integer|min:0',
             'low_stock_alert' => 'nullable|integer|min:0',
-            'photo'           => 'nullable|image|max:2048',
+            'photo'           => 'nullable|image|max:500',
+        ], [
+            'photo.max'   => 'Ukuran gambar maksimal 500KB.',
+            'photo.image' => 'File harus berupa gambar.',
         ]);
 
         if ($request->hasFile('photo')) {
@@ -103,8 +106,11 @@ class ProductController extends Controller
             'cost_price'      => 'nullable|numeric|min:0',
             'stock'           => 'required|integer|min:0',
             'low_stock_alert' => 'nullable|integer|min:0',
-            'photo'           => 'nullable|image|max:2048',
+            'photo'           => 'nullable|image|max:500',
             'is_active'       => 'boolean',
+        ], [
+            'photo.max'   => 'Ukuran gambar maksimal 500KB.',
+            'photo.image' => 'File harus berupa gambar.',
         ]);
 
         if ($request->hasFile('photo')) {
