@@ -64,6 +64,7 @@ class ReceiptEscposService
 
         // ---- Meta ----
         $out .= $this->twoCol('Invoice', $t->invoice_no);
+        if (!empty($t->table_no)) { $out .= $this->twoCol('No. Meja', $t->table_no); }
         $out .= $this->twoCol('Kasir', $t->user->name ?? '-');
         $out .= $this->twoCol('Waktu', $t->created_at->format('d/m/y H:i'));
         $out .= $this->line();
@@ -224,6 +225,7 @@ class ReceiptEscposService
         if (!empty($tenant->phone))   { $lines[] = $tenant->phone; }
         $lines[] = '--------------------------------';
         $lines[] = 'Invoice : ' . $t->invoice_no;
+        if (!empty($t->table_no)) { $lines[] = 'Meja    : ' . $t->table_no; }
         $lines[] = 'Kasir   : ' . ($t->user->name ?? '-');
         $lines[] = 'Waktu   : ' . $t->created_at->format('d/m/y H:i');
         $lines[] = '--------------------------------';

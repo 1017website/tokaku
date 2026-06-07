@@ -90,6 +90,9 @@
     <hr class="divider">
 
     <div class="row"><span>Invoice</span><span>{{ $transaction->invoice_no }}</span></div>
+    @if($transaction->table_no)
+    <div class="row"><span>No. Meja</span><span>{{ $transaction->table_no }}</span></div>
+    @endif
     <div class="row"><span>Kasir</span><span>{{ $transaction->user->name }}</span></div>
     <div class="row"><span>Waktu</span><span>{{ $transaction->created_at->format('d/m/y H:i') }}</span></div>
 

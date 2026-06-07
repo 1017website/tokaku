@@ -20,8 +20,19 @@ class TransactionController extends Controller {
 
     public function index() {
         $tenant  = app('currentTenant');
-        $products = Product::active()->with('category')->orderBy('name')->get();
-        $categories = Category::whereHas('products', fn($q) => $q->active())->orderBy('name')->get();
+
+        // ID kategori yang sedang berlaku (regular selalu lolos; promo/bundling cek masa berlaku).
+        $availableCategoryIds = Category::available()->pluck('id');
+
+        // Produk yang boleh dijual: tanpa kategori, ATAU kategorinya sedang berlaku.
+        $products = Product::active()->with('category')
+            ->where(fn($q) => $q->whereNull('category_id')->orWhereIn('category_id', $availableCategoryIds))
+            ->orderBy('name')->get();
+
+        // Tab kategori: hanya yang berlaku & punya produk aktif.
+        $categories = Category::available()
+            ->whereHas('products', fn($q) => $q->active())
+            ->orderBy('name')->get();
         $customers = Customer::where('tenant_id', $tenant->id)->where('is_active', true)->orderBy('name')->get();
         $topProductIds = TransactionItem::select('product_id', DB::raw('SUM(quantity) as total_qty'))
             ->whereNotNull('product_id')
@@ -30,7 +41,10 @@ class TransactionController extends Controller {
             ->orderByDesc('total_qty')
             ->limit(12)
             ->pluck('product_id');
-        $topProducts = Product::active()->with('category')->whereIn('id', $topProductIds)->get()->sortBy(function ($product) use ($topProductIds) {
+        $topProducts = Product::active()->with('category')
+            ->whereIn('id', $topProductIds)
+            ->where(fn($q) => $q->whereNull('category_id')->orWhereIn('category_id', $availableCategoryIds))
+            ->get()->sortBy(function ($product) use ($topProductIds) {
             return $topProductIds->search($product->id);
         })->values();
         $promos   = Promo::where('tenant_id', $tenant->id)->where('is_active', true)->get()->filter(fn($p)=>$p->isValid());
@@ -56,6 +70,7 @@ class TransactionController extends Controller {
             'customer_id'    => 'nullable|exists:customers,id',
             'customer_name'  => 'nullable|string|max:255',  // hutang tanpa data pelanggan
             'customer_phone' => 'nullable|string|max:20',
+            'table_no'       => 'nullable|string|max:20',
             'tax_rate'       => 'nullable|numeric|min:0|max:100',
             'notes'          => 'nullable|string|max:255',
         ]);
@@ -78,7 +93,11 @@ class TransactionController extends Controller {
             $items    = [];
 
             foreach ($request->items as $item) {
-                $product = Product::findOrFail($item['id']);
+                $product = Product::with('category')->findOrFail($item['id']);
+                // Tolak produk dari kategori promo/bundling yang sudah lewat masa berlaku.
+                if ($product->category && !$product->category->isAvailable()) {
+                    throw new \Exception("Kategori \"{$product->category->name}\" sudah tidak berlaku. Muat ulang halaman kasir.");
+                }
                 if ($product->stock < $item['qty']) throw new \Exception("Stok {$product->name} tidak mencukupi.");
                 $itemSubtotal = $product->price * $item['qty'];
                 $subtotal    += $itemSubtotal;
@@ -120,6 +139,7 @@ class TransactionController extends Controller {
                 'shift_id'       => $shift?->id,
                 'promo_id'       => $promoId,
                 'invoice_no'     => Transaction::generateInvoiceNo($tenant->id),
+                'table_no'       => $request->table_no ?: null,
                 'subtotal'       => $subtotal,
                 'discount'       => $discount,
                 'tax'            => $tax,

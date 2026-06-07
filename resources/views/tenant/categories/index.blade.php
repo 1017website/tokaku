@@ -8,14 +8,33 @@
     <div>
         <div style="background:#fff;border-radius:16px;border:1px solid #f1f5f9;box-shadow:0 1px 3px rgba(0,0,0,0.04);padding:22px;">
             <p style="font-size:14px;font-weight:600;color:#0f172a;margin-bottom:16px;">Tambah Kategori</p>
-            <form method="POST" action="{{ route('tenant.categories.store') }}">
+            <form method="POST" action="{{ route('tenant.categories.store') }}" style="display:flex;flex-direction:column;gap:12px;">
                 @csrf
                 @if($errors->any())
-                <div style="background:#fff1f2;border:1px solid #fecdd3;color:#be123c;font-size:13px;border-radius:10px;padding:10px 14px;margin-bottom:12px;">{{ $errors->first() }}</div>
+                <div style="background:#fff1f2;border:1px solid #fecdd3;color:#be123c;font-size:13px;border-radius:10px;padding:10px 14px;">{{ $errors->first() }}</div>
                 @endif
-                <div style="margin-bottom:12px;">
+                <div>
                     <label class="form-label">Nama Kategori</label>
                     <input type="text" name="name" value="{{ old('name') }}" required class="form-input" placeholder="contoh: Makanan">
+                </div>
+                <div>
+                    <label class="form-label">Tipe Kategori</label>
+                    <select name="type" id="addType" class="form-input" style="cursor:pointer;" onchange="toggleAddPeriod()">
+                        <option value="regular" {{ old('type','regular')=='regular'?'selected':'' }}>Regular</option>
+                        <option value="promo" {{ old('type')=='promo'?'selected':'' }}>Promo</option>
+                        <option value="bundling" {{ old('type')=='bundling'?'selected':'' }}>Bundling</option>
+                    </select>
+                </div>
+                <div id="addPeriod" style="display:none;flex-direction:column;gap:12px;">
+                    <div>
+                        <label class="form-label">Berlaku Dari <span style="color:#94a3b8;font-weight:400;">(opsional)</span></label>
+                        <input type="datetime-local" name="starts_at" value="{{ old('starts_at') }}" class="form-input">
+                    </div>
+                    <div>
+                        <label class="form-label">Berlaku Sampai <span style="color:#94a3b8;font-weight:400;">(opsional)</span></label>
+                        <input type="datetime-local" name="ends_at" value="{{ old('ends_at') }}" class="form-input">
+                    </div>
+                    <p style="font-size:11.5px;color:#94a3b8;margin-top:-4px;">Kosongkan untuk tanpa batas waktu. Setelah lewat masa berlaku, kategori tidak muncul di kasir.</p>
                 </div>
                 <button type="submit" class="btn-primary" style="width:100%;justify-content:center;">Tambah</button>
             </form>
@@ -32,8 +51,23 @@
                     {{-- Tampilan baca --}}
                     <div id="cat-view-{{ $cat->id }}" style="display:flex;align-items:center;justify-content:space-between;">
                         <div>
-                            <p style="font-size:14px;font-weight:500;color:#0f172a;">{{ $cat->name }}</p>
-                            <p style="font-size:12px;color:#94a3b8;margin-top:2px;">{{ $cat->products_count }} produk</p>
+                            <div style="display:flex;align-items:center;gap:8px;">
+                                <p style="font-size:14px;font-weight:500;color:#0f172a;">{{ $cat->name }}</p>
+                                @if($cat->type === 'promo')
+                                <span style="font-size:10.5px;font-weight:600;background:#fef3f2;color:#be123c;padding:2px 8px;border-radius:99px;">Promo</span>
+                                @elseif($cat->type === 'bundling')
+                                <span style="font-size:10.5px;font-weight:600;background:#eff6ff;color:#1d4ed8;padding:2px 8px;border-radius:99px;">Bundling</span>
+                                @endif
+                                @if($cat->type !== 'regular' && !$cat->isAvailable())
+                                <span style="font-size:10.5px;font-weight:600;background:#f8fafc;color:#94a3b8;padding:2px 8px;border-radius:99px;">Kadaluarsa</span>
+                                @endif
+                            </div>
+                            <div style="display:flex;align-items:center;gap:10px;margin-top:3px;">
+                                <p style="font-size:12px;color:#94a3b8;">{{ $cat->products_count }} produk</p>
+                                @if($cat->type !== 'regular' && ($cat->starts_at || $cat->ends_at))
+                                <span style="font-size:12px;color:#94a3b8;">{{ $cat->starts_at?->format('d M Y') ?? '∞' }} — {{ $cat->ends_at?->format('d M Y') ?? '∞' }}</span>
+                                @endif
+                            </div>
                         </div>
                         <div style="display:flex;align-items:center;gap:16px;">
                             <button type="button" onclick="toggleCatEdit({{ $cat->id }})" style="font-size:13px;color:#0F6E56;font-weight:500;background:none;border:none;cursor:pointer;font-family:Inter,sans-serif;">Edit</button>
@@ -44,11 +78,22 @@
                         </div>
                     </div>
                     {{-- Form edit (tersembunyi) --}}
-                    <form id="cat-edit-{{ $cat->id }}" method="POST" action="{{ route('tenant.categories.update',$cat) }}" style="display:none;align-items:center;gap:10px;">
+                    <form id="cat-edit-{{ $cat->id }}" method="POST" action="{{ route('tenant.categories.update',$cat) }}" style="display:none;flex-direction:column;gap:10px;margin-top:4px;">
                         @csrf @method('PUT')
-                        <input type="text" name="name" value="{{ $cat->name }}" required class="form-input" style="flex:1;" placeholder="Nama kategori">
-                        <button type="submit" class="btn-primary" style="padding:8px 16px;">Simpan</button>
-                        <button type="button" onclick="toggleCatEdit({{ $cat->id }})" style="font-size:13px;color:#64748b;font-weight:500;background:none;border:none;cursor:pointer;font-family:Inter,sans-serif;">Batal</button>
+                        <input type="text" name="name" value="{{ $cat->name }}" required class="form-input" placeholder="Nama kategori">
+                        <select name="type" id="edit-type-{{ $cat->id }}" class="form-input" style="cursor:pointer;" onchange="toggleEditPeriod({{ $cat->id }})">
+                            <option value="regular" {{ $cat->type=='regular'?'selected':'' }}>Regular</option>
+                            <option value="promo" {{ $cat->type=='promo'?'selected':'' }}>Promo</option>
+                            <option value="bundling" {{ $cat->type=='bundling'?'selected':'' }}>Bundling</option>
+                        </select>
+                        <div id="edit-period-{{ $cat->id }}" style="display:{{ $cat->type=='regular'?'none':'flex' }};flex-direction:column;gap:10px;">
+                            <input type="datetime-local" name="starts_at" value="{{ $cat->starts_at?->format('Y-m-d\TH:i') }}" class="form-input" placeholder="Berlaku dari">
+                            <input type="datetime-local" name="ends_at" value="{{ $cat->ends_at?->format('Y-m-d\TH:i') }}" class="form-input" placeholder="Berlaku sampai">
+                        </div>
+                        <div style="display:flex;align-items:center;gap:10px;">
+                            <button type="submit" class="btn-primary" style="padding:8px 16px;">Simpan</button>
+                            <button type="button" onclick="toggleCatEdit({{ $cat->id }})" style="font-size:13px;color:#64748b;font-weight:500;background:none;border:none;cursor:pointer;font-family:Inter,sans-serif;">Batal</button>
+                        </div>
                     </form>
                 </div>
                 @empty
@@ -60,6 +105,14 @@
 </div>
 
 <script>
+function toggleAddPeriod() {
+    var t = document.getElementById('addType').value;
+    document.getElementById('addPeriod').style.display = t === 'regular' ? 'none' : 'flex';
+}
+function toggleEditPeriod(id) {
+    var t = document.getElementById('edit-type-' + id).value;
+    document.getElementById('edit-period-' + id).style.display = t === 'regular' ? 'none' : 'flex';
+}
 function toggleCatEdit(id) {
     var view = document.getElementById('cat-view-' + id);
     var edit = document.getElementById('cat-edit-' + id);
@@ -68,5 +121,6 @@ function toggleCatEdit(id) {
     edit.style.display = isEditing ? 'none' : 'flex';
     if (!isEditing) edit.querySelector('input[name="name"]').focus();
 }
+document.addEventListener('DOMContentLoaded', toggleAddPeriod);
 </script>
 @endsection

@@ -16,6 +16,7 @@ class Transaction extends Model
         'shift_id',
         'promo_id',
         'invoice_no',
+        'table_no',
         'subtotal',
         'discount',
         'tax',

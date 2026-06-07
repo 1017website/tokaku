@@ -36,6 +36,12 @@
             <span class="key">Invoice</span>
             <span>{{ $transaction->invoice_no }}</span>
         </div>
+        @if($transaction->table_no)
+        <div class="meta-row">
+            <span class="key">No. Meja</span>
+            <span>{{ $transaction->table_no }}</span>
+        </div>
+        @endif
         <div class="meta-row">
             <span class="key">Kasir</span>
             <span>{{ $transaction->user->name }}</span>

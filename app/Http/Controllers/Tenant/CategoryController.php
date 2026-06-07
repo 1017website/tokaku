@@ -17,22 +17,18 @@ class CategoryController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
-            'name' => 'required|string|max:100',
-        ]);
+        $data = $this->validateData($request);
 
-        Category::create(['name' => $request->name]);
+        Category::create($data);
 
         return back()->with('success', 'Kategori berhasil ditambahkan.');
     }
 
     public function update(Request $request, Category $category)
     {
-        $request->validate([
-            'name' => 'required|string|max:100',
-        ]);
+        $data = $this->validateData($request);
 
-        $category->update(['name' => $request->name]);
+        $category->update($data);
 
         return back()->with('success', 'Kategori berhasil diperbarui.');
     }
@@ -46,6 +42,29 @@ class CategoryController extends Controller
         $category->delete();
 
         return back()->with('success', 'Kategori berhasil dihapus.');
+    }
+
+    /**
+     * Validasi + normalisasi. Masa berlaku hanya untuk promo/bundling;
+     * untuk regular kita kosongkan agar konsisten.
+     */
+    protected function validateData(Request $request): array
+    {
+        $validated = $request->validate([
+            'name'      => 'required|string|max:100',
+            'type'      => 'required|in:regular,promo,bundling',
+            'starts_at' => 'nullable|date',
+            'ends_at'   => 'nullable|date|after_or_equal:starts_at',
+        ], [
+            'ends_at.after_or_equal' => 'Tanggal berakhir tidak boleh sebelum tanggal mulai.',
+        ]);
+
+        if ($validated['type'] === 'regular') {
+            $validated['starts_at'] = null;
+            $validated['ends_at'] = null;
+        }
+
+        return $validated;
     }
 
     public function create() { return view('tenant.categories.index'); }
