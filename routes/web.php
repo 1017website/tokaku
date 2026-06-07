@@ -184,6 +184,10 @@ Route::middleware(['auth','role:superadmin'])->prefix('superadmin')->name('super
     Route::delete('/harga/{plan}',       [PricingController::class, 'destroy'])->name('pricing.destroy');
     Route::get('/settings', [SuperAdminController::class, 'settings'])->name('settings');
     Route::put('/settings', [SuperAdminController::class, 'updateSettings'])->name('settings.update');
+
+    // Ganti password akun super admin
+    Route::get('/ganti-password', [SuperAdminController::class, 'editPassword'])->name('password.edit');
+    Route::put('/ganti-password', [SuperAdminController::class, 'updatePassword'])->name('password.update');
     Route::get('/maintenance', [SuperAdminController::class, 'maintenance'])->name('maintenance');
     Route::post('/maintenance/migrate', [SuperAdminController::class, 'runMigrate'])->name('maintenance.migrate');
     Route::post('/maintenance/storage-link', [SuperAdminController::class, 'runStorageLink'])->name('maintenance.storage-link');

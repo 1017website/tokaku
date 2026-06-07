@@ -121,7 +121,7 @@
     </nav>
 
     <div style="padding:10px;border-top:1px solid #f1f5f9;">
-        <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;" class="hover:bg-gray-50 group">
+        <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;margin-bottom:8px;">
             <div style="width:32px;height:32px;background:#dcfce9;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
                 <span style="color:#0F6E56;font-size:12px;font-weight:700;">{{ strtoupper(substr(auth()->user()->name,0,2)) }}</span>
             </div>
@@ -129,9 +129,16 @@
                 <p style="font-size:13px;font-weight:500;color:#111827;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ auth()->user()->name }}</p>
                 <p style="font-size:11px;color:#9ca3af;">Super Admin</p>
             </div>
-            <form method="POST" action="{{ route('logout') }}">@csrf
-                <button type="submit" style="background:none;border:none;cursor:pointer;color:#d1d5db;" onmouseover="this.style.color='#f43f5e'" onmouseout="this.style.color='#d1d5db'">
+        </div>
+        <div style="display:flex;gap:8px;">
+            <a href="{{ route('superadmin.password.edit') }}" style="flex:1;display:inline-flex;align-items:center;justify-content:center;gap:6px;background:#fff;color:#374151;font-size:13px;font-weight:500;padding:8px 10px;border-radius:10px;border:1.5px solid #e2e8f0;text-decoration:none;{{ request()->routeIs('superadmin.password.edit')?'border-color:#0F6E56;color:#0F6E56;':'' }}">
+                <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
+                Password
+            </a>
+            <form method="POST" action="{{ route('logout') }}" style="flex:1;">@csrf
+                <button type="submit" style="width:100%;display:inline-flex;align-items:center;justify-content:center;gap:6px;background:#fff1f2;color:#f43f5e;font-size:13px;font-weight:500;padding:8px 10px;border-radius:10px;border:1.5px solid #fecdd3;cursor:pointer;font-family:Inter,sans-serif;">
                     <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                    Keluar
                 </button>
             </form>
         </div>

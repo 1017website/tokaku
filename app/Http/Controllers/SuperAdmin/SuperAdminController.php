@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Models\AppSetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rules\Password;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Artisan;
@@ -501,6 +502,37 @@ class SuperAdminController extends Controller
         } catch (Throwable $e) {
             return back()->with('error', 'Gagal menjalankan optimize:clear: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Halaman ganti password untuk akun Super Admin.
+     */
+    public function editPassword()
+    {
+        return view('superadmin.password');
+    }
+
+    public function updatePassword(Request $request)
+    {
+        $request->validate([
+            'current_password' => 'required',
+            'password'         => ['required', 'confirmed', Password::min(6)],
+        ], [
+            'current_password.required' => 'Password saat ini wajib diisi.',
+            'password.required'         => 'Password baru wajib diisi.',
+            'password.confirmed'        => 'Konfirmasi password baru tidak cocok.',
+            'password.min'              => 'Password baru minimal 6 karakter.',
+        ]);
+
+        $user = auth()->user();
+
+        if (! Hash::check($request->current_password, $user->password)) {
+            return back()->withErrors(['current_password' => 'Password saat ini salah.']);
+        }
+
+        $user->update(['password' => $request->password]);
+
+        return back()->with('success', 'Password berhasil diganti.');
     }
 
 }
