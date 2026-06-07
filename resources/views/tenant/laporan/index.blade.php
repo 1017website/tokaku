@@ -156,6 +156,8 @@
                                 ];
                             @endphp
                             <button type="button" onclick='showTrxDetail(@json($trxData))' style="font-size:12.5px;color:#0F6E56;font-weight:600;background:none;border:none;cursor:pointer;padding:0;">Detail</button>
+                            <span style="color:#e2e8f0;margin:0 6px;">|</span>
+                            <a href="{{ route('tenant.kasir.struk', $t->id) }}" target="_blank" rel="noopener" style="font-size:12.5px;color:#0F6E56;font-weight:600;text-decoration:none;">Cetak Ulang</a>
                         </td>
                     </tr>
                     @empty

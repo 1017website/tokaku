@@ -120,7 +120,7 @@
 <div id="modalStruk" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);align-items:center;justify-content:center;z-index:60;padding:16px;">
     <div style="background:#fff;border-radius:20px;width:100%;max-width:360px;padding:28px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.15);">
         <h3 style="font-size:17px;font-weight:800;color:#0f172a;">Transaksi Berhasil!</h3><p id="modalInvoice" style="font-size:13px;color:#64748b;margin:8px 0 18px;"></p>
-        <div style="display:flex;flex-direction:column;gap:8px;"><button id="btnCetakLangsung" onclick="cetakLangsungKasir()" class="btn-primary" style="justify-content:center;">Cetak Struk</button><button onclick="kirimWaKasir()" class="btn-secondary" style="justify-content:center;background:#dcfce7;color:#15803d;border-color:#bbf7d0;">Kirim Struk ke WhatsApp</button><a id="btnStruk" target="_blank" class="btn-secondary" style="justify-content:center;">Buka Struk (Browser)</a><a id="btnPdf" target="_blank" class="btn-secondary" style="justify-content:center;">Download PDF</a><button onclick="closeModal()" class="btn-secondary" style="justify-content:center;">Tutup</button><p id="cetakStatusKasir" style="font-size:12px;color:#64748b;margin-top:4px;"></p></div>
+        <div style="display:flex;flex-direction:column;gap:8px;"><button id="btnCetakLangsung" onclick="cetakLangsungKasir()" class="btn-primary" style="justify-content:center;">Cetak Struk</button><button onclick="kirimWaKasir()" class="btn-secondary" style="justify-content:center;background:#dcfce7;color:#15803d;border-color:#bbf7d0;">Kirim Struk ke WhatsApp</button><a id="btnStruk" target="_blank" class="btn-secondary" style="justify-content:center;">Buka Struk (Browser)</a><a id="btnPdf" target="_blank" class="btn-secondary" style="justify-content:center;">Download PDF</a><button onclick="closeModal()" class="btn-secondary" style="justify-content:center;">Tutup</button><p id="cetakStatusKasir" style="font-size:12px;color:#64748b;margin-top:4px;"></p><div style="display:flex;align-items:center;justify-content:center;gap:8px;font-size:11.5px;color:#94a3b8;margin-top:2px;"><span>Mode printer:</span><button type="button" id="modePrinterBtn" onclick="togglePrinterMode()" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:4px 10px;font-size:11.5px;font-weight:700;color:#334155;cursor:pointer;font-family:Inter,sans-serif;">Auto</button></div></div>
     </div>
 </div>
 @endsection
@@ -177,15 +177,57 @@ document.getElementById('modalStruk').addEventListener('click', function(e){ if(
 if (window.jQuery && jQuery.fn.select2) { jQuery('#customerSelect').select2({ width: '100%', placeholder: 'Pilih pelanggan', allowClear: true }); }
 renderCart();
 
-// ===== Cetak Langsung ESC/POS (QZ Tray untuk PC, RawBT untuk Android) =====
-var IS_ANDROID = /Android/i.test(navigator.userAgent);
+// ===== Cetak Langsung ESC/POS (QZ Tray untuk PC, RawBT untuk Android/Tablet) =====
+// Deteksi perangkat tidak hanya andalkan string "Android" di user-agent,
+// karena sebagian tablet (mis. Advan) memakai UA mode desktop sehingga
+// terdeteksi salah. Kombinasikan: UA mobile/tablet + dukungan layar sentuh.
+// Kasir juga bisa memaksa mode lewat preferensi tersimpan (localStorage).
+function detectPrinterMode(){
+    // Preferensi manual menang (di-set lewat tombol pilih mode).
+    try {
+        var pref = localStorage.getItem('tokaku_print_mode');
+        if (pref === 'rawbt' || pref === 'qz') return pref;
+    } catch(e){}
+
+    var ua = navigator.userAgent || '';
+    var isDesktopOS = /Windows NT|Macintosh|CrOS|Linux x86/i.test(ua);
+    var isMobileUA  = /Android|iPhone|iPad|iPod|Mobile|Tablet|Touch/i.test(ua);
+    var isTouch     = (navigator.maxTouchPoints || 0) > 0 || ('ontouchstart' in window);
+
+    // Anggap RawBT (Android/tablet) bila: UA mobile, ATAU perangkat sentuh
+    // yang bukan OS desktop biasa.
+    if (isMobileUA) return 'rawbt';
+    if (isTouch && !isDesktopOS) return 'rawbt';
+    return 'qz';
+}
+// Siklus mode: Auto -> RawBT (Android/Tablet) -> QZ Tray (PC) -> Auto.
+function togglePrinterMode(){
+    var cur = 'auto';
+    try { cur = localStorage.getItem('tokaku_print_mode') || 'auto'; } catch(e){}
+    var next = cur === 'auto' ? 'rawbt' : (cur === 'rawbt' ? 'qz' : 'auto');
+    try {
+        if (next === 'auto') localStorage.removeItem('tokaku_print_mode');
+        else localStorage.setItem('tokaku_print_mode', next);
+    } catch(e){}
+    refreshPrinterModeLabel();
+}
+function refreshPrinterModeLabel(){
+    var btn = document.getElementById('modePrinterBtn');
+    if (!btn) return;
+    var pref = 'auto';
+    try { pref = localStorage.getItem('tokaku_print_mode') || 'auto'; } catch(e){}
+    btn.textContent = pref === 'rawbt' ? 'RawBT (Android/Tablet)'
+                    : pref === 'qz'    ? 'QZ Tray (PC)'
+                    : 'Auto (' + (detectPrinterMode() === 'rawbt' ? 'RawBT' : 'QZ') + ')';
+}
+document.addEventListener('DOMContentLoaded', refreshPrinterModeLabel);
 function setCetakStatus(m){ var el=document.getElementById('cetakStatusKasir'); if(el) el.textContent=m||''; }
 
 function cetakLangsungKasir(){
     var id = window.lastTransactionId;
     if(!id){ setCetakStatus('Transaksi tidak ditemukan.'); return; }
     var escposUrl = '/kasir/'+id+'/escpos';
-    if (IS_ANDROID) {
+    if (detectPrinterMode() === 'rawbt') {
         // Ambil data ESC/POS (base64), lalu kirim LANGSUNG ke RawBT via skema
         // base64. Tidak mengirim URL, sehingga alamat sumber tidak ikut tercetak.
         setCetakStatus('Menyiapkan struk...');

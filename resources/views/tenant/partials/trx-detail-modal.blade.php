@@ -10,6 +10,11 @@
         </div>
         <div id="trxModalItems" style="margin:14px 0;border-top:1px solid #f1f5f9;"></div>
         <div id="trxModalSummary" style="border-top:1px solid #f1f5f9;padding-top:12px;display:flex;flex-direction:column;gap:6px;"></div>
+        <a id="trxModalReprint" href="#" target="_blank" rel="noopener"
+           style="display:flex;align-items:center;justify-content:center;gap:7px;margin-top:18px;background:#0F6E56;color:#fff;font-weight:600;font-size:13.5px;text-decoration:none;border-radius:11px;padding:11px;font-family:system-ui,sans-serif;">
+            <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+            Cetak Ulang Struk
+        </a>
     </div>
 </div>
 
@@ -35,6 +40,12 @@ function showTrxDetail(t){
     if(t.tax > 0) s += '<div style="display:flex;justify-content:space-between;font-size:13px;color:#64748b;"><span>Pajak</span><b style="color:#0f172a;">'+fmtRp(t.tax)+'</b></div>';
     s += '<div style="display:flex;justify-content:space-between;font-size:15px;border-top:1px solid #e2e8f0;padding-top:8px;margin-top:2px;"><b style="color:#0f172a;">Total</b><b style="color:#0F6E56;">'+fmtRp(t.total)+'</b></div>';
     document.getElementById('trxModalSummary').innerHTML = s;
+
+    // Set tujuan tombol cetak ulang -> halaman struk transaksi ini.
+    var reprint = document.getElementById('trxModalReprint');
+    if (reprint && t.id) {
+        reprint.href = '{{ url('kasir') }}/' + t.id + '/struk';
+    }
 
     document.getElementById('trxDetailModal').style.display = 'flex';
 }

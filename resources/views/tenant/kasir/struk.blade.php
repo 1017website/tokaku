@@ -145,13 +145,28 @@
 <script src="https://cdn.jsdelivr.net/npm/qz-tray@2.2.4/qz-tray.js"></script>
 <script>
     var ESCPOS_URL = "{{ route('tenant.kasir.escpos', $transaction->id) }}";
-    var IS_ANDROID = /Android/i.test(navigator.userAgent);
+
+    // Deteksi mode printer (sama dgn halaman kasir). Tablet ber-UA desktop
+    // tetap terdeteksi via dukungan layar sentuh; preferensi manual menang.
+    function detectPrinterMode(){
+        try {
+            var pref = localStorage.getItem('tokaku_print_mode');
+            if (pref === 'rawbt' || pref === 'qz') return pref;
+        } catch(e){}
+        var ua = navigator.userAgent || '';
+        var isDesktopOS = /Windows NT|Macintosh|CrOS|Linux x86/i.test(ua);
+        var isMobileUA  = /Android|iPhone|iPad|iPod|Mobile|Tablet|Touch/i.test(ua);
+        var isTouch     = (navigator.maxTouchPoints || 0) > 0 || ('ontouchstart' in window);
+        if (isMobileUA) return 'rawbt';
+        if (isTouch && !isDesktopOS) return 'rawbt';
+        return 'qz';
+    }
 
     function setStatus(msg){ document.getElementById('cetakStatus').textContent = msg || ''; }
 
-    // Deteksi device: Android -> RawBT, selain itu -> QZ Tray (PC)
+    // Auto: RawBT untuk Android/Tablet, QZ Tray untuk PC.
     function cetakLangsung(){
-        if (IS_ANDROID) { cetakRawBT(); } else { cetakQZ(); }
+        if (detectPrinterMode() === 'rawbt') { cetakRawBT(); } else { cetakQZ(); }
     }
 
     // ---- Jalur Android: RawBT ----
