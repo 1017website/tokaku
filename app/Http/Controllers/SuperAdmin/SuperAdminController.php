@@ -505,6 +505,59 @@ class SuperAdminController extends Controller
     }
 
     /**
+     * Semua user dikelompokkan per tenant: owner sebagai baris utama,
+     * sub-akun (admin/kasir) bisa di-expand. Superadmin ditampilkan terpisah.
+     */
+    public function users(Request $request)
+    {
+        $search = trim((string) $request->input('search'));
+
+        $allUsers = User::with('tenant')
+            ->orderByRaw("FIELD(role,'owner','admin','cashier','superadmin')")
+            ->orderBy('name')
+            ->get();
+
+        $totalUser = $allUsers->count();
+
+        // Pisahkan superadmin (tanpa tenant) dari user tenant biasa
+        $superadmins = $allUsers->where('role', 'superadmin');
+        $tenantUsers = $allUsers->whereNotNull('tenant_id');
+
+        // Kelompokkan per tenant
+        $groups = $tenantUsers->groupBy('tenant_id')->map(function ($members) {
+            $owner = $members->firstWhere('role', 'owner') ?? $members->first();
+            $subs  = $members->where('id', '!=', $owner->id)->values();
+            return [
+                'tenant' => $members->first()->tenant,
+                'owner'  => $owner,
+                'subs'   => $subs,
+            ];
+        })->values();
+
+        // Filter pencarian: cocokkan nama/email owner ATAU sub-akun.
+        // Jika cocok di sub-akun, grup tetap tampil & ditandai auto-expand.
+        if ($search !== '') {
+            $needle = mb_strtolower($search);
+            $match = function ($u) use ($needle) {
+                return str_contains(mb_strtolower($u->name), $needle)
+                    || str_contains(mb_strtolower((string) $u->email), $needle);
+            };
+
+            $groups = $groups->filter(function ($g) use ($match) {
+                return $match($g['owner']) || $g['subs']->contains($match);
+            })->map(function ($g) use ($match) {
+                // tandai auto-expand bila yang cocok adalah sub-akun, bukan owner
+                $g['matched_sub'] = !$match($g['owner']) && $g['subs']->contains($match);
+                return $g;
+            })->values();
+
+            $superadmins = $superadmins->filter($match)->values();
+        }
+
+        return view('superadmin.users', compact('groups', 'superadmins', 'totalUser', 'search'));
+    }
+
+    /**
      * Halaman ganti password untuk akun Super Admin.
      */
     public function editPassword()
