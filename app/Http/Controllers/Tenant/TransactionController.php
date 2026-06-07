@@ -88,8 +88,23 @@ class TransactionController extends Controller {
             }
 
             $discount      = $request->discount ?? 0;
+            $promoId       = null;
+
+            // Promo OTOMATIS dihitung di server berdasarkan isi keranjang.
+            // Hasil promo dipakai jika lebih besar dari diskon manual yang dikirim,
+            // sehingga nilai promo tidak bisa dimanipulasi dari client.
+            $promoItems = array_map(function ($it) {
+                return ['id' => (int) $it['product_id'], 'qty' => (int) $it['quantity'], 'price' => (float) $it['unit_price']];
+            }, $items);
+
+            $best = app(\App\Services\PromoService::class)->bestPromo($promoItems, $tenant->id);
+            if ($best['discount'] > 0 && $best['discount'] >= $discount) {
+                $discount = $best['discount'];
+                $promoId  = $best['promo_id'];
+            }
+
             $taxRate       = $request->tax_rate ?? 0;
-            $afterDiscount = $subtotal - $discount;
+            $afterDiscount = max(0, $subtotal - $discount);
             $tax           = $taxRate > 0 ? round($afterDiscount * $taxRate / 100) : 0;
             $total         = $afterDiscount + $tax;
             $paymentStatus = $request->payment_status ?? 'paid';
@@ -103,7 +118,7 @@ class TransactionController extends Controller {
                 'user_id'        => auth()->id(),
                 'customer_id'    => $request->customer_id,
                 'shift_id'       => $shift?->id,
-                'promo_id'       => $request->promo_id,
+                'promo_id'       => $promoId,
                 'invoice_no'     => Transaction::generateInvoiceNo($tenant->id),
                 'subtotal'       => $subtotal,
                 'discount'       => $discount,

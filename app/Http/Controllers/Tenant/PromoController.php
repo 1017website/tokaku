@@ -17,12 +17,18 @@ class PromoController extends Controller {
             'name'            => 'required|string|max:255',
             'code'            => 'nullable|string|max:50',
             'type'            => 'required|in:percent,fixed,buyxgety',
-            'value'           => 'required|numeric|min:0',
+            'value'           => 'required_if:type,percent,fixed|nullable|numeric|min:0',
+            'min_qty'         => 'required_if:type,buyxgety|nullable|integer|min:1',
+            'free_qty'        => 'required_if:type,buyxgety|nullable|integer|min:1',
             'min_transaction' => 'nullable|integer|min:0',
             'max_discount'    => 'nullable|integer|min:0',
             'product_id'      => 'nullable|exists:products,id',
             'starts_at'       => 'nullable|date',
             'ends_at'         => 'nullable|date|after_or_equal:starts_at',
+        ], [
+            'value.required_if'    => 'Nilai diskon wajib diisi.',
+            'min_qty.required_if'  => 'Jumlah beli (qty) wajib diisi.',
+            'free_qty.required_if' => 'Jumlah gratis (qty) wajib diisi.',
         ]);
         Promo::create(array_merge($request->only('name','code','type','value','min_qty','free_qty','min_transaction','max_discount','product_id','starts_at','ends_at'), [
             'tenant_id' => app('currentTenant')->id,
@@ -42,22 +48,28 @@ class PromoController extends Controller {
         return back()->with('success', 'Promo dihapus.');
     }
 
-    // API — hitung diskon untuk kasir
-    public function calculate(Request $request) {
+    // API — hitung promo OTOMATIS untuk kasir berdasarkan isi keranjang.
+    // Menerima items: [{id, qty, price}], mengembalikan promo terbaik.
+    public function calculate(Request $request, \App\Services\PromoService $promoService) {
         $tenantId = app('currentTenant')->id;
-        $subtotal = (int)$request->subtotal;
-        $code     = $request->code;
+        $items = $request->input('items', []);
 
-        $promo = Promo::where('tenant_id', $tenantId)
-            ->where('is_active', true)
-            ->when($code, fn($q) => $q->where('code', $code))
-            ->get()
-            ->filter(fn($p) => $p->isValid())
-            ->first();
+        if (empty($items) || !is_array($items)) {
+            return response()->json(['discount' => 0, 'promo_id' => null, 'message' => 'Keranjang kosong.']);
+        }
 
-        if (!$promo) return response()->json(['discount'=>0,'message'=>'Promo tidak ditemukan atau sudah tidak berlaku.']);
+        $best = $promoService->bestPromo($items, $tenantId);
 
-        $discount = $promo->calculateDiscount($subtotal);
-        return response()->json(['discount'=>$discount,'promo_id'=>$promo->id,'promo_name'=>$promo->name,'message'=>"Promo \"{$promo->name}\" diterapkan."]);
+        if (!$best['promo_id']) {
+            return response()->json(['discount' => 0, 'promo_id' => null, 'message' => 'Tidak ada promo yang berlaku.']);
+        }
+
+        return response()->json([
+            'discount'   => $best['discount'],
+            'promo_id'   => $best['promo_id'],
+            'promo_name' => $best['promo_name'],
+            'label'      => $best['label'],
+            'message'    => "Promo \"{$best['promo_name']}\" diterapkan.",
+        ]);
     }
 }

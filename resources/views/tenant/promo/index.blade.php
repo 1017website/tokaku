@@ -26,11 +26,32 @@
                     <select name="type" id="promoType" class="form-input" style="cursor:pointer;" onchange="updatePromoFields()">
                         <option value="percent" {{ old('type')=='percent'?'selected':'' }}>Persen (%)</option>
                         <option value="fixed" {{ old('type')=='fixed'?'selected':'' }}>Nominal (Rp)</option>
+                        <option value="buyxgety" {{ old('type')=='buyxgety'?'selected':'' }}>Beli X Gratis Y (B1G1)</option>
                     </select>
                 </div>
-                <div>
+                <div id="valueWrap">
                     <label class="form-label" id="valueLabel">Nilai Diskon (%)</label>
-                    <input type="number" name="value" value="{{ old('value') }}" required min="0" class="form-input" placeholder="10">
+                    <input type="number" name="value" id="valueInput" value="{{ old('value') }}" min="0" class="form-input" placeholder="10">
+                </div>
+                <div id="bxgyWrap" style="display:none;grid-template-columns:1fr 1fr;gap:12px;">
+                    <div>
+                        <label class="form-label">Beli (qty) *</label>
+                        <input type="number" name="min_qty" id="minQtyInput" value="{{ old('min_qty',1) }}" min="1" class="form-input" placeholder="1">
+                    </div>
+                    <div>
+                        <label class="form-label">Gratis (qty) *</label>
+                        <input type="number" name="free_qty" id="freeQtyInput" value="{{ old('free_qty',1) }}" min="1" class="form-input" placeholder="1">
+                    </div>
+                    <div style="grid-column:1/-1;">
+                        <label class="form-label">Produk <span style="color:#94a3b8;font-weight:400;">(kosongkan = semua produk)</span></label>
+                        <select name="product_id" class="form-input" style="cursor:pointer;">
+                            <option value="">Semua produk</option>
+                            @foreach($products as $p)
+                                <option value="{{ $p->id }}" {{ old('product_id')==$p->id?'selected':'' }}>{{ $p->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <p style="grid-column:1/-1;font-size:11.5px;color:#94a3b8;margin-top:-4px;">Contoh: Beli 1 Gratis 1 → pelanggan beli 2, bayar 1. Item gratis = produk yang sama.</p>
                 </div>
                 <div>
                     <label class="form-label">Min. Transaksi (Rp)</label>
@@ -117,7 +138,25 @@
 <script>
 function updatePromoFields() {
     var t = document.getElementById('promoType').value;
-    document.getElementById('valueLabel').textContent = t === 'percent' ? 'Nilai Diskon (%)' : 'Nilai Diskon (Rp)';
+    var isBxgy = t === 'buyxgety';
+    var valueWrap = document.getElementById('valueWrap');
+    var bxgyWrap = document.getElementById('bxgyWrap');
+    var valueInput = document.getElementById('valueInput');
+    var minQty = document.getElementById('minQtyInput');
+    var freeQty = document.getElementById('freeQtyInput');
+
+    valueWrap.style.display = isBxgy ? 'none' : 'block';
+    bxgyWrap.style.display = isBxgy ? 'grid' : 'none';
+
+    // value wajib hanya untuk percent/fixed; min_qty & free_qty wajib untuk bxgy
+    valueInput.required = !isBxgy;
+    minQty.required = isBxgy;
+    freeQty.required = isBxgy;
+
+    if (!isBxgy) {
+        document.getElementById('valueLabel').textContent = t === 'percent' ? 'Nilai Diskon (%)' : 'Nilai Diskon (Rp)';
+    }
 }
+document.addEventListener('DOMContentLoaded', updatePromoFields);
 </script>
 @endpush

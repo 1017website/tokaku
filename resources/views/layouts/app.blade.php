@@ -271,9 +271,9 @@
                         </div>
                     @endif
                     <div class="leading-tight">
-                        <p style="font-size:15px;font-weight:700;color:#0F6E56;letter-spacing:-0.3px;">{{ $appSettings['app_name'] ?? 'Tokaku' }}</p>
-                        <p style="font-size:11px;color:#9ca3af;margin-top:1px;" class="truncate max-w-[110px]">
-                            {{ $currentTenant->name ?? '' }}
+                        <p style="font-size:15px;font-weight:700;color:#0F6E56;letter-spacing:-0.3px;" class="truncate max-w-[130px]">{{ $currentTenant->name ?? ($appSettings['app_name'] ?? 'Tokaku') }}</p>
+                        <p style="font-size:11px;color:#9ca3af;margin-top:1px;">
+                            by {{ $appSettings['app_name'] ?? 'Tokaku' }}
                         </p>
                     </div>
                 </div>
