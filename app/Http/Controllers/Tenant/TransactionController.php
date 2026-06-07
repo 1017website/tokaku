@@ -30,8 +30,10 @@ class TransactionController extends Controller {
             ->orderBy('name')->get();
 
         // Tab kategori: hanya yang berlaku & punya produk aktif.
+        // Urutan: promo & bundling (spesial) dulu, lalu regular — masing-masing per nama.
         $categories = Category::available()
             ->whereHas('products', fn($q) => $q->active())
+            ->orderByRaw("CASE WHEN type = 'regular' THEN 1 ELSE 0 END")
             ->orderBy('name')->get();
         $customers = Customer::where('tenant_id', $tenant->id)->where('is_active', true)->orderBy('name')->get();
         $topProductIds = TransactionItem::select('product_id', DB::raw('SUM(quantity) as total_qty'))

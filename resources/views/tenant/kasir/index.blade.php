@@ -8,9 +8,11 @@
 <style>
 .pos-wrap{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:18px;min-height:calc(100vh - 170px)}
 .pos-panel{background:#fff;border:1px solid #eef2f7;border-radius:18px;box-shadow:0 1px 3px rgba(15,23,42,.04)}
-.category-tabs{display:flex;gap:10px;overflow-x:auto;padding:12px 2px 2px;scrollbar-width:thin}
-.cat-btn{white-space:nowrap;border:1.5px solid #e2e8f0;background:#fff;color:#334155;padding:9px 18px;border-radius:999px;font-size:13px;font-weight:700;cursor:pointer;font-family:Inter,sans-serif}
+.category-tabs{display:flex;gap:14px;overflow-x:auto;overflow-y:visible;padding:14px 4px 4px;scrollbar-width:thin}
+.cat-btn{position:relative;white-space:nowrap;border:1.5px solid #e2e8f0;background:#fff;color:#334155;padding:11px 18px 9px;border-radius:999px;font-size:13px;font-weight:700;cursor:pointer;font-family:Inter,sans-serif}
 .cat-btn.active{background:#0F6E56;border-color:#0F6E56;color:#fff}
+.cat-ico{position:absolute;top:3px;right:3px;width:18px;height:18px;display:inline-flex;align-items:center;justify-content:center;border-radius:99px;background:#fff;border:1.5px solid #e2e8f0;box-shadow:0 1px 2px rgba(0,0,0,.1);z-index:1}
+.cat-btn.has-ico{padding-right:28px}
 .product-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;overflow:auto;padding:16px;max-height:calc(100vh - 285px)}
 .product-card{background:#fff;border:1.5px solid #edf2f7;border-radius:16px;padding:12px 12px 14px;text-align:left;cursor:pointer;min-height:152px;transition:.15s;font-family:Inter,sans-serif;min-width:0;display:flex;flex-direction:column;position:relative}
 .product-card .pc-name{flex:1}
@@ -46,10 +48,20 @@
             <input type="text" id="searchProduct" placeholder="Cari nama produk..." class="form-input">
             <div class="category-tabs" id="categoryTabs">
                 @if(isset($topProducts) && $topProducts->count())
-                    <button type="button" class="cat-btn active" data-category="top">Top Order</button>
+                    <button type="button" class="cat-btn has-ico active" data-category="top">
+                        <span class="cat-ico"><svg width="12" height="12" viewBox="0 0 24 24" fill="#facc15" stroke="#eab308" stroke-width="1"><path d="M12 2l2.9 6.26L22 9.27l-5 4.87L18.18 22 12 18.56 5.82 22 7 14.14l-5-4.87 7.1-1.01L12 2z"/></svg></span>
+                        Top Order
+                    </button>
                 @endif
                 @foreach($categories as $category)
-                    <button type="button" class="cat-btn" data-category="cat-{{ $category->id }}">{{ $category->name }}</button>
+                    <button type="button" class="cat-btn {{ in_array($category->type, ['promo','bundling']) ? 'has-ico' : '' }}" data-category="cat-{{ $category->id }}">
+                        @if($category->type === 'promo')
+                            <span class="cat-ico"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#e11d48" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg></span>
+                        @elseif($category->type === 'bundling')
+                            <span class="cat-ico"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg></span>
+                        @endif
+                        {{ $category->name }}
+                    </button>
                 @endforeach
                 <button type="button" class="cat-btn {{ (isset($topProducts) && $topProducts->count()) ? '' : 'active' }}" data-category="all">Semua Produk</button>
             </div>
