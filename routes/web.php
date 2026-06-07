@@ -14,6 +14,7 @@ use App\Http\Controllers\Tenant\PromoController;
 use App\Http\Controllers\Tenant\DebtController;
 use App\Http\Controllers\Tenant\ShiftController;
 use App\Http\Controllers\Tenant\ExpenseController;
+use App\Http\Controllers\Tenant\RawMaterialController;
 use App\Http\Controllers\SuperAdmin\SuperAdminController;
 use App\Http\Controllers\SuperAdmin\PricingController;
 use Illuminate\Support\Facades\Route;
@@ -115,6 +116,16 @@ Route::middleware(['auth', 'tenant', 'subscription'])->group(function () {
         Route::post('/buka',      [ShiftController::class, 'open'])->name('open');
         Route::post('/{shift}/tutup', [ShiftController::class, 'close'])->name('close');
         Route::get('/{shift}',    [ShiftController::class, 'show'])->name('show');
+    });
+
+    // Gudang Bahan Baku (owner & admin) — pembukuan stok bahan
+    Route::middleware('role:owner,admin')->prefix('bahan')->name('tenant.bahan.')->group(function () {
+        Route::get('/',                  [RawMaterialController::class, 'index'])->name('index');
+        Route::post('/',                 [RawMaterialController::class, 'store'])->name('store');
+        Route::put('/{bahan}',           [RawMaterialController::class, 'update'])->name('update');
+        Route::post('/{bahan}/adjust',   [RawMaterialController::class, 'adjust'])->name('adjust');
+        Route::get('/{bahan}/riwayat',   [RawMaterialController::class, 'history'])->name('history');
+        Route::delete('/{bahan}',        [RawMaterialController::class, 'destroy'])->name('destroy');
     });
 
     // Owner & Admin only

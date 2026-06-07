@@ -392,6 +392,13 @@
                         </svg>
                         Tim Toko
                     </a>
+                    <a href="{{ route('tenant.bahan.index') }}"
+                        class="sidebar-link {{ request()->routeIs('tenant.bahan.*') ? 'active' : '' }}">
+                        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                        </svg>
+                        Gudang Bahan
+                    </a>
                     <div style="padding-top:12px;">
                         <p
                             style="font-size:10.5px;font-weight:600;color:#9ca3af;letter-spacing:0.8px;text-transform:uppercase;padding:0 14px;margin-bottom:6px;">
