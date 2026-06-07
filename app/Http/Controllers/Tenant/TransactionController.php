@@ -64,7 +64,15 @@ class TransactionController extends Controller {
         $invoiceNo = null;
         $stocks = [];
 
-        DB::transaction(function () use ($request, &$transactionId, &$invoiceNo, &$stocks) {
+        // Retry ringan: bila dua kasir proses bersamaan, invoice_no bisa kembar
+        // dan kena unique(tenant_id, invoice_no). Ulangi maksimal 5x agar nomor
+        // ter-generate ulang. Error lain (mis. stok kurang) tetap dilempar.
+        $attempt = 0;
+        do {
+            $attempt++;
+            $stocks = [];
+            try {
+                DB::transaction(function () use ($request, &$transactionId, &$invoiceNo, &$stocks) {
             $tenant   = app('currentTenant');
             $subtotal = 0;
             $items    = [];
@@ -136,6 +144,17 @@ class TransactionController extends Controller {
             $transactionId = $transaction->id;
             $invoiceNo = $transaction->invoice_no;
         });
+
+                break; // sukses, keluar dari loop retry
+            } catch (\Illuminate\Database\QueryException $e) {
+                // 23000 = integrity constraint violation (duplicate invoice_no).
+                // Ulangi selama belum mencapai batas; selain itu lempar ulang.
+                if ($e->getCode() === '23000' && $attempt < 5) {
+                    continue;
+                }
+                throw $e;
+            }
+        } while ($attempt < 5);
 
         return response()->json(['success'=>true,'transaction_id'=>$transactionId,'invoice_no'=>$invoiceNo,'stocks'=>$stocks,'message'=>'Transaksi berhasil.']);
     }
