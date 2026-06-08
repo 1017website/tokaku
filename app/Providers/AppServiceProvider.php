@@ -6,6 +6,7 @@ use Illuminate\Support\ServiceProvider;
 use App\Models\AppSetting;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Pagination\Paginator;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -22,6 +23,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Pagination bertema putih-hijau (berlaku global di semua menu).
+        Paginator::defaultView('vendor.pagination.tokaku');
+
         View::composer('*', function ($view) {
             $appSettings = [
                 'app_name'         => 'Tokaku',
@@ -38,6 +42,9 @@ class AppServiceProvider extends ServiceProvider
                 'google_analytics_id'  => null, // G-XXXXXXXXXX
                 'meta_pixel_id'        => null, // 15-16 digit
                 'gtm_id'               => null, // GTM-XXXXXXX
+                // Floating WhatsApp (landing page)
+                'whatsapp_float'       => null, // nomor format 62xxx
+                'whatsapp_float_text'  => 'Halo, saya tertarik dengan Tokaku.',
             ];
 
             try {

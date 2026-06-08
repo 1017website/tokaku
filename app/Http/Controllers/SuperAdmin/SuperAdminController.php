@@ -386,6 +386,7 @@ class SuperAdminController extends Controller
             'seo_title', 'seo_description', 'seo_keywords', 'seo_og_image',
             'google_ads_id', 'google_analytics_id', 'meta_pixel_id', 'gtm_id',
             'bank_name', 'bank_account_no', 'bank_account_name',
+            'whatsapp_float', 'whatsapp_float_text',
         ];
 
         $settings = [];
@@ -417,11 +418,15 @@ class SuperAdminController extends Controller
             'bank_name'           => 'nullable|string|max:50',
             'bank_account_no'     => 'nullable|string|max:50',
             'bank_account_name'   => 'nullable|string|max:100',
+            // Floating WhatsApp
+            'whatsapp_float'      => ['nullable', 'string', 'max:20', 'regex:/^[0-9]+$/'],
+            'whatsapp_float_text' => 'nullable|string|max:255',
         ], [
             'google_ads_id.regex'       => 'Format Google Ads ID harus AW-XXXXXXXXX.',
             'google_analytics_id.regex' => 'Format Google Analytics ID harus G-XXXXXXXXXX.',
             'gtm_id.regex'              => 'Format GTM ID harus GTM-XXXXXXX.',
             'meta_pixel_id.regex'       => 'Meta Pixel ID hanya boleh berisi angka.',
+            'whatsapp_float.regex'      => 'Nomor WhatsApp hanya boleh angka, contoh: 6281234567890.',
         ]);
 
         AppSetting::setValue('app_name', $validated['app_name']);
@@ -450,6 +455,7 @@ class SuperAdminController extends Controller
             'seo_title', 'seo_description', 'seo_keywords',
             'google_ads_id', 'google_analytics_id', 'meta_pixel_id', 'gtm_id',
             'bank_name', 'bank_account_no', 'bank_account_name',
+            'whatsapp_float', 'whatsapp_float_text',
         ];
 
         foreach ($textKeys as $key) {

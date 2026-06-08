@@ -185,6 +185,23 @@
             </div>
         </div>
 
+        {{-- ════════ Floating WhatsApp (Landing Page) ════════ --}}
+        <div style="background:#fff;border-radius:14px;border:1px solid #f1f5f9;padding:20px;margin-bottom:16px;">
+            <p style="{{ $secTitle }}">Tombol WhatsApp Mengambang</p>
+            <p style="font-size:12.5px;color:#64748b;margin:-6px 0 14px;">Tombol WhatsApp di pojok kanan bawah halaman utama. Kosongkan nomor untuk menyembunyikan.</p>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;">
+                <div>
+                    <label class="form-label">Nomor WhatsApp</label>
+                    <input type="text" name="whatsapp_float" value="{{ old('whatsapp_float', $settings['whatsapp_float'] ?? '') }}" class="form-input" placeholder="6281234567890">
+                    <p style="font-size:11.5px;color:#94a3b8;margin:6px 0 0;">Format internasional tanpa "+" atau "0" di depan. Contoh: 6281234567890.</p>
+                </div>
+                <div>
+                    <label class="form-label">Pesan Otomatis</label>
+                    <input type="text" name="whatsapp_float_text" value="{{ old('whatsapp_float_text', $settings['whatsapp_float_text'] ?? '') }}" class="form-input" placeholder="Halo, saya tertarik dengan Tokaku.">
+                </div>
+            </div>
+        </div>
+
         <div style="display:flex;justify-content:flex-end;padding-bottom:20px;">
             <button type="submit" class="btn-primary">Simpan Perubahan</button>
         </div>
