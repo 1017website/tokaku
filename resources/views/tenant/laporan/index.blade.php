@@ -129,9 +129,14 @@
                 </thead>
                 <tbody>
                     @forelse($transactions as $t)
-                    <tr style="border-bottom:1px solid #f8fafc;transition:background 0.1s;" onmouseover="this.style.background='#fafafa'" onmouseout="this.style.background='#fff'">
+                    <tr style="border-bottom:1px solid #f8fafc;{{ $t->isCancelled() ? 'background:#fff7f7;' : '' }}">
                         <td data-label="Invoice" style="padding:11px 16px;">
-                            <p style="font-size:13px;font-weight:500;color:#0f172a;">{{ $t->invoice_no }}</p>
+                            <p style="font-size:13px;font-weight:500;color:#0f172a;">
+                                {{ $t->invoice_no }}
+                                @if($t->isCancelled())
+                                    <span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:99px;background:#fee2e2;color:#b91c1c;margin-left:6px;vertical-align:middle;">DIBATALKAN</span>
+                                @endif
+                            </p>
                             <p style="font-size:11.5px;color:#94a3b8;">{{ $t->created_at->format('d M, H:i') }}</p>
                         </td>
                         <td data-label="Metode" style="padding:11px 16px;">
@@ -158,6 +163,14 @@
                             <button type="button" onclick='showTrxDetail(@json($trxData))' style="font-size:12.5px;color:#0F6E56;font-weight:600;background:none;border:none;cursor:pointer;padding:0;">Detail</button>
                             <span style="color:#e2e8f0;margin:0 6px;">|</span>
                             <a href="{{ route('tenant.kasir.struk', $t->id) }}" target="_blank" rel="noopener" style="font-size:12.5px;color:#0F6E56;font-weight:600;text-decoration:none;">Cetak Ulang</a>
+                            @if(auth()->user()->isAdmin() && !$t->isCancelled())
+                                <span style="color:#e2e8f0;margin:0 6px;">|</span>
+                                <form method="POST" action="{{ route('tenant.laporan.cancel', $t->id) }}" style="display:inline;" onsubmit="return confirmCancel(this, '{{ $t->invoice_no }}')">
+                                    @csrf
+                                    <input type="hidden" name="reason" value="">
+                                    <button type="submit" style="font-size:12.5px;color:#dc2626;font-weight:600;background:none;border:none;cursor:pointer;padding:0;">Batalkan</button>
+                                </form>
+                            @endif
                         </td>
                     </tr>
                     @empty
@@ -224,5 +237,12 @@ new Chart(ctx, {
         }
     }
 });
+
+function confirmCancel(form, invoice) {
+    const reason = prompt('Batalkan transaksi ' + invoice + '?\n\nStok akan dikembalikan & transaksi tidak dihitung di laporan.\n\nAlasan (opsional):');
+    if (reason === null) return false; // user menekan Batal
+    form.querySelector('input[name="reason"]').value = reason;
+    return true;
+}
 </script>
 @endpush

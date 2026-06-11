@@ -36,6 +36,7 @@ class TransactionsExport implements
     {
         return Transaction::with(['user', 'items'])
             ->where('tenant_id', $this->tenantId)
+            ->where('status', '!=', 'cancelled')
             ->whereBetween('created_at', [
                 $this->startDate . ' 00:00:00',
                 $this->endDate   . ' 23:59:59',

@@ -63,6 +63,7 @@ Route::middleware(['auth', 'tenant', 'subscription'])->group(function () {
     Route::prefix('laporan')->name('tenant.laporan.')->middleware('permission:laporan')->group(function () {
         Route::get('/',       [TransactionController::class, 'laporan'])->name('index');
         Route::get('/export', [TransactionController::class, 'export'])->name('export');
+        Route::post('/{id}/cancel', [TransactionController::class, 'cancel'])->name('cancel');
     });
 
     // Stok

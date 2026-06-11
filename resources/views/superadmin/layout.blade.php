@@ -25,7 +25,7 @@
         .form-input:focus{border-color:#0F6E56;box-shadow:0 0 0 3px rgba(15,110,86,0.1);background:#fff;}
         .mobile-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:30;}
         .mobile-overlay.open{display:block;}
-        @media(max-width:1023px){.sa-sidebar{transform:translateX(-100%);position:fixed;z-index:40;height:100vh;transition:transform 0.25s ease;}.sa-sidebar.open{transform:translateX(0);}}
+        @media(max-width:1023px){.sa-sidebar{transform:translateX(-100%);position:fixed;top:0;left:0;z-index:40;height:100vh;height:100dvh;transition:transform 0.25s ease;display:flex;flex-direction:column;}.sa-sidebar.open{transform:translateX(0);}.sa-sidebar>nav{flex:1 1 auto;min-height:0;overflow-y:auto;}}
         /* Responsive table -> card di layar <640px (atribut data-label per <td>) */
         @media(max-width:639px){
             .table-responsive{overflow-x:visible !important;}

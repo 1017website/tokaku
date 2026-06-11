@@ -20,15 +20,16 @@ class DashboardController extends Controller
         $tenant = app('currentTenant');
         $tenantId = $tenant->id;
 
-        $todayRevenue = Transaction::today()->sum('total');
-        $todayCount = Transaction::today()->count();
-        $monthRevenue = Transaction::thisMonth()->sum('total');
-        $monthCount = Transaction::thisMonth()->count();
+        $todayRevenue = Transaction::notCancelled()->today()->sum('total');
+        $todayCount = Transaction::notCancelled()->today()->count();
+        $monthRevenue = Transaction::notCancelled()->thisMonth()->sum('total');
+        $monthCount = Transaction::notCancelled()->thisMonth()->count();
 
         $profitQuery = TransactionItem::query()
             ->join('transactions', 'transaction_items.transaction_id', '=', 'transactions.id')
             ->leftJoin('products', 'transaction_items.product_id', '=', 'products.id')
-            ->where('transactions.tenant_id', $tenantId);
+            ->where('transactions.tenant_id', $tenantId)
+            ->where('transactions.status', '!=', 'cancelled');
 
         $todayGrossProfit = (clone $profitQuery)
             ->whereDate('transactions.created_at', today())
@@ -45,11 +46,12 @@ class DashboardController extends Controller
 
         $weeklyData = collect(range(6,0))->map(function ($days) use ($tenantId) {
             $date = now()->subDays($days)->toDateString();
-            $revenue = Transaction::whereDate('created_at', $date)->sum('total');
+            $revenue = Transaction::notCancelled()->whereDate('created_at', $date)->sum('total');
             $grossProfit = TransactionItem::query()
                 ->join('transactions', 'transaction_items.transaction_id', '=', 'transactions.id')
                 ->leftJoin('products', 'transaction_items.product_id', '=', 'products.id')
                 ->where('transactions.tenant_id', $tenantId)
+                ->where('transactions.status', '!=', 'cancelled')
                 ->whereDate('transactions.created_at', $date)
                 ->sum(DB::raw('(transaction_items.unit_price - COALESCE(products.cost_price,0)) * transaction_items.quantity'));
             $expense = Expense::whereDate('expense_date', $date)->sum('amount');

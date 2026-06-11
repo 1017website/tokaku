@@ -8,6 +8,7 @@ use App\Models\Debt;
 use App\Models\Promo;
 use App\Models\Product;
 use App\Models\Shift;
+use App\Models\StockLog;
 use App\Models\Transaction;
 use App\Models\TransactionItem;
 use App\Services\ReceiptEscposService;
@@ -196,6 +197,75 @@ class TransactionController extends Controller {
         return response()->json(['success'=>true,'transaction_id'=>$transactionId,'invoice_no'=>$invoiceNo,'stocks'=>$stocks,'message'=>'Transaksi berhasil.']);
     }
 
+    /**
+     * Batalkan transaksi. Hanya owner & admin.
+     * Mengembalikan stok produk, mencatat StockLog, membatalkan hutang terkait,
+     * dan mengoreksi statistik pelanggan. Transaksi yang dibatalkan dikeluarkan
+     * dari laporan & omzet.
+     */
+    public function cancel(int $id, Request $request) {
+        if (!auth()->user()->isAdmin()) {
+            abort(403, 'Hanya owner & admin yang dapat membatalkan transaksi.');
+        }
+
+        $request->validate([
+            'reason' => 'nullable|string|max:255',
+        ]);
+
+        $transaction = Transaction::with('items')
+            ->where('tenant_id', app('currentTenant')->id)->findOrFail($id);
+
+        if ($transaction->isCancelled()) {
+            return back()->with('error', 'Transaksi ini sudah dibatalkan sebelumnya.');
+        }
+
+        DB::transaction(function () use ($transaction, $request) {
+            // Kembalikan stok tiap produk + catat jejak.
+            foreach ($transaction->items as $item) {
+                if (!$item->product_id) continue;
+
+                $product = Product::withoutGlobalScopes()->find($item->product_id);
+                if (!$product) continue;
+
+                $qtyBefore = $product->stock;
+                $product->increment('stock', $item->quantity);
+
+                StockLog::create([
+                    'product_id' => $product->id,
+                    'user_id'    => auth()->id(),
+                    'qty_before' => $qtyBefore,
+                    'qty_change' => $item->quantity,
+                    'qty_after'  => $qtyBefore + $item->quantity,
+                    'type'       => 'cancel',
+                    'note'       => "Pembatalan transaksi {$transaction->invoice_no}",
+                ]);
+            }
+
+            // Koreksi statistik pelanggan.
+            if ($transaction->customer_id) {
+                $customer = Customer::find($transaction->customer_id);
+                if ($customer) {
+                    $customer->decrement('total_transactions');
+                    $customer->decrement('total_spent', $transaction->total);
+                }
+            }
+
+            // Hapus hutang terkait (beserta riwayat pembayarannya via cascade).
+            if ($debt = $transaction->debt) {
+                $debt->delete();
+            }
+
+            $transaction->update([
+                'status'        => 'cancelled',
+                'cancelled_at'  => now(),
+                'cancelled_by'  => auth()->id(),
+                'cancel_reason' => $request->reason,
+            ]);
+        });
+
+        return back()->with('success', "Transaksi {$transaction->invoice_no} berhasil dibatalkan & stok dikembalikan.");
+    }
+
     public function struk(int $id) {
         $transaction = Transaction::with(['items','user','user.tenant','customer'])
             ->where('tenant_id', app('currentTenant')->id)->findOrFail($id);
@@ -269,18 +339,22 @@ class TransactionController extends Controller {
             ->where('tenant_id', $tenantId)
             ->whereBetween('created_at',[$startDate.' 00:00:00',$endDate.' 23:59:59']);
 
-        $transactions      = (clone $query)->orderByDesc('created_at')->paginate(20);
-        $totalRevenue      = (clone $query)->sum('total');
-        $totalDiscount     = (clone $query)->sum('discount');
-        $totalTax          = (clone $query)->sum('tax');
-        $totalTransactions = (clone $query)->count();
-        $totalDebt         = (clone $query)->where('payment_status','debt')->count();
+        // List menampilkan semua transaksi (termasuk yang dibatalkan, ditandai badge).
+        $transactions = (clone $query)->orderByDesc('created_at')->paginate(20);
 
-        $byPayment   = (clone $query)->selectRaw('payment_method, COUNT(*) as count, SUM(total) as total')->groupBy('payment_method')->get();
+        // Agregat omzet/laporan HANYA dari transaksi yang tidak dibatalkan.
+        $valid = (clone $query)->notCancelled();
+        $totalRevenue      = (clone $valid)->sum('total');
+        $totalDiscount     = (clone $valid)->sum('discount');
+        $totalTax          = (clone $valid)->sum('tax');
+        $totalTransactions = (clone $valid)->count();
+        $totalDebt         = (clone $valid)->where('payment_status','debt')->count();
+
+        $byPayment   = (clone $valid)->selectRaw('payment_method, COUNT(*) as count, SUM(total) as total')->groupBy('payment_method')->get();
         $topProducts = TransactionItem::select('product_name',DB::raw('SUM(quantity) as total_qty'),DB::raw('SUM(subtotal) as total_revenue'))
-            ->whereHas('transaction',fn($q)=>$q->where('tenant_id',$tenantId)->whereBetween('created_at',[$startDate.' 00:00:00',$endDate.' 23:59:59']))
+            ->whereHas('transaction',fn($q)=>$q->where('tenant_id',$tenantId)->where('status','!=','cancelled')->whereBetween('created_at',[$startDate.' 00:00:00',$endDate.' 23:59:59']))
             ->groupBy('product_name')->orderByDesc('total_qty')->limit(10)->get();
-        $dailyRevenue = (clone $query)->selectRaw('DATE(created_at) as date, SUM(total) as total, COUNT(*) as count')->groupBy('date')->orderBy('date')->get();
+        $dailyRevenue = (clone $valid)->selectRaw('DATE(created_at) as date, SUM(total) as total, COUNT(*) as count')->groupBy('date')->orderBy('date')->get();
 
         return view('tenant.laporan.index', compact('transactions','totalRevenue','totalDiscount','totalTax','totalTransactions','totalDebt','byPayment','topProducts','dailyRevenue','startDate','endDate'));
     }

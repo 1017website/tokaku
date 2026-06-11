@@ -26,6 +26,10 @@ class Transaction extends Model
         'change_amount',
         'payment_method',
         'payment_status',
+        'status',
+        'cancelled_at',
+        'cancelled_by',
+        'cancel_reason',
         'notes',
     ];
 
@@ -37,6 +41,7 @@ class Transaction extends Model
         'total'         => 'decimal:2',
         'paid_amount'   => 'decimal:2',
         'change_amount' => 'decimal:2',
+        'cancelled_at'  => 'datetime',
     ];
 
     public function user()
@@ -57,6 +62,21 @@ class Transaction extends Model
     public function promo()
     {
         return $this->belongsTo(Promo::class);
+    }
+
+    public function canceller()
+    {
+        return $this->belongsTo(User::class, 'cancelled_by');
+    }
+
+    public function isCancelled(): bool
+    {
+        return $this->status === 'cancelled';
+    }
+
+    public function scopeNotCancelled($query)
+    {
+        return $query->where('status', '!=', 'cancelled');
     }
 
     public function items()
