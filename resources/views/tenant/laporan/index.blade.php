@@ -114,8 +114,21 @@
 
     {{-- Transaksi Terbaru --}}
     <div style="background:#fff;border-radius:16px;border:1px solid #f1f5f9;box-shadow:0 1px 3px rgba(0,0,0,0.04);overflow:hidden;">
-        <div style="padding:16px 20px;border-bottom:1px solid #f8fafc;">
+        <div style="padding:16px 20px;border-bottom:1px solid #f8fafc;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;">
             <p style="font-size:14px;font-weight:600;color:#0f172a;">Daftar Transaksi</p>
+            <form method="GET" style="display:flex;align-items:center;gap:6px;">
+                <input type="hidden" name="start_date" value="{{ $startDate }}">
+                <input type="hidden" name="end_date" value="{{ $endDate }}">
+                <div style="position:relative;">
+                    <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="#94a3b8" stroke-width="2" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z"/></svg>
+                    <input type="text" name="q" value="{{ $search }}" placeholder="Cari invoice / pelanggan"
+                        style="border:1.5px solid #e2e8f0;border-radius:10px;padding:8px 12px 8px 32px;font-size:13px;font-family:Inter,sans-serif;outline:none;width:230px;max-width:60vw;background:#fafafa;">
+                </div>
+                <button type="submit" style="background:#0F6E56;color:#fff;font-size:13px;font-weight:500;padding:8px 14px;border-radius:10px;border:none;cursor:pointer;font-family:Inter,sans-serif;">Cari</button>
+                @if($search !== '')
+                    <a href="{{ route('tenant.laporan.index', ['start_date'=>$startDate,'end_date'=>$endDate]) }}" style="font-size:13px;color:#94a3b8;text-decoration:none;padding:8px 4px;">Reset</a>
+                @endif
+            </form>
         </div>
         <div class="table-responsive overflow-x-auto">
             <table style="width:100%;border-collapse:collapse;min-width:400px;">
@@ -178,7 +191,7 @@
                         </td>
                     </tr>
                     @empty
-                    <tr><td data-empty colspan="4" style="padding:40px 16px;text-align:center;font-size:13.5px;color:#94a3b8;">Tidak ada transaksi.</td></tr>
+                    <tr><td data-empty colspan="4" style="padding:40px 16px;text-align:center;font-size:13.5px;color:#94a3b8;">{{ $search !== '' ? "Tidak ada transaksi cocok dengan \"{$search}\"." : 'Tidak ada transaksi.' }}</td></tr>
                     @endforelse
                 </tbody>
             </table>

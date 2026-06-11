@@ -333,14 +333,22 @@ class TransactionController extends Controller {
     public function laporan(Request $request) {
         $startDate = $request->start_date ?? now()->startOfMonth()->toDateString();
         $endDate   = $request->end_date   ?? now()->toDateString();
+        $search    = trim((string) $request->q);
         $tenantId  = app('currentTenant')->id;
 
         $query = Transaction::with(['items','user','customer','canceller'])
             ->where('tenant_id', $tenantId)
             ->whereBetween('created_at',[$startDate.' 00:00:00',$endDate.' 23:59:59']);
 
-        // List menampilkan semua transaksi (termasuk yang dibatalkan, ditandai badge).
-        $transactions = (clone $query)->orderByDesc('created_at')->paginate(20);
+        // List transaksi — boleh difilter pencarian (invoice / nama pelanggan).
+        $listQuery = (clone $query);
+        if ($search !== '') {
+            $listQuery->where(function ($q) use ($search) {
+                $q->where('invoice_no', 'like', "%{$search}%")
+                  ->orWhereHas('customer', fn($c) => $c->where('name', 'like', "%{$search}%"));
+            });
+        }
+        $transactions = $listQuery->orderByDesc('created_at')->paginate(20)->appends($request->query());
 
         // Agregat omzet/laporan HANYA dari transaksi yang tidak dibatalkan.
         $valid = (clone $query)->notCancelled();
@@ -356,7 +364,7 @@ class TransactionController extends Controller {
             ->groupBy('product_name')->orderByDesc('total_qty')->limit(10)->get();
         $dailyRevenue = (clone $valid)->selectRaw('DATE(created_at) as date, SUM(total) as total, COUNT(*) as count')->groupBy('date')->orderBy('date')->get();
 
-        return view('tenant.laporan.index', compact('transactions','totalRevenue','totalDiscount','totalTax','totalTransactions','totalDebt','byPayment','topProducts','dailyRevenue','startDate','endDate'));
+        return view('tenant.laporan.index', compact('transactions','totalRevenue','totalDiscount','totalTax','totalTransactions','totalDebt','byPayment','topProducts','dailyRevenue','startDate','endDate','search'));
     }
 
     public function export(Request $request) {
