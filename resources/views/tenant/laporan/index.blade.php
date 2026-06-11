@@ -158,6 +158,10 @@
                                     'tax' => (float) $t->tax,
                                     'total' => (float) $t->total,
                                     'items' => $t->items->map(fn($i) => ['name'=>$i->product_name,'price'=>(float)$i->unit_price,'qty'=>$i->quantity,'subtotal'=>(float)$i->subtotal]),
+                                    'cancelled' => $t->isCancelled(),
+                                    'cancel_reason' => $t->cancel_reason,
+                                    'cancelled_at' => $t->cancelled_at?->format('d M Y, H:i'),
+                                    'cancelled_by' => $t->canceller->name ?? null,
                                 ];
                             @endphp
                             <button type="button" onclick='showTrxDetail(@json($trxData))' style="font-size:12.5px;color:#0F6E56;font-weight:600;background:none;border:none;cursor:pointer;padding:0;">Detail</button>

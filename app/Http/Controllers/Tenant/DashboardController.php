@@ -70,7 +70,7 @@ class DashboardController extends Controller
         $capitalProgress = $initialCapital > 0 ? min(100, round(($totalNetProfit / $initialCapital) * 100, 1)) : 0;
 
         $lowStockProducts = Product::active()->lowStock()->with('category')->orderBy('stock')->limit(5)->get();
-        $recentTransactions = Transaction::with('user')->orderByDesc('created_at')->limit(5)->get();
+        $recentTransactions = Transaction::with('user')->notCancelled()->orderByDesc('created_at')->limit(5)->get();
 
         return view('tenant.dashboard.index', compact(
             'tenant','todayRevenue','todayCount','monthRevenue','monthCount','todayGrossProfit','monthGrossProfit','todayNetProfit','monthNetProfit','monthExpenses','weeklyData','initialCapital','totalNetProfit','capitalProgress','lowStockProducts','recentTransactions'

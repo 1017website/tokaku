@@ -5,8 +5,14 @@
             <div>
                 <h3 style="font-size:16px;font-weight:700;color:#0f172a;" id="trxModalInvoice">Invoice</h3>
                 <p style="font-size:12.5px;color:#64748b;" id="trxModalMeta"></p>
+                <span id="trxModalBadge" style="display:none;font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px;background:#fee2e2;color:#b91c1c;margin-top:6px;">DIBATALKAN</span>
             </div>
             <button onclick="closeTrxDetail()" style="background:none;border:none;font-size:20px;color:#94a3b8;cursor:pointer;line-height:1;">&times;</button>
+        </div>
+        <div id="trxModalCancelBox" style="display:none;margin:14px 0 0;background:#fff7f7;border:1px solid #fecaca;border-radius:12px;padding:12px 14px;">
+            <p style="font-size:11px;font-weight:700;color:#b91c1c;text-transform:uppercase;letter-spacing:.3px;margin-bottom:4px;">Transaksi Dibatalkan</p>
+            <p id="trxModalCancelReason" style="font-size:13px;color:#7f1d1d;"></p>
+            <p id="trxModalCancelMeta" style="font-size:11.5px;color:#9ca3af;margin-top:4px;"></p>
         </div>
         <div id="trxModalItems" style="margin:14px 0;border-top:1px solid #f1f5f9;"></div>
         <div id="trxModalSummary" style="border-top:1px solid #f1f5f9;padding-top:12px;display:flex;flex-direction:column;gap:6px;"></div>
@@ -41,10 +47,33 @@ function showTrxDetail(t){
     s += '<div style="display:flex;justify-content:space-between;font-size:15px;border-top:1px solid #e2e8f0;padding-top:8px;margin-top:2px;"><b style="color:#0f172a;">Total</b><b style="color:#0F6E56;">'+fmtRp(t.total)+'</b></div>';
     document.getElementById('trxModalSummary').innerHTML = s;
 
+    // Tampilkan info pembatalan bila transaksi dibatalkan.
+    var badge = document.getElementById('trxModalBadge');
+    var cancelBox = document.getElementById('trxModalCancelBox');
+    if (t.cancelled) {
+        badge.style.display = 'inline-block';
+        cancelBox.style.display = 'block';
+        document.getElementById('trxModalCancelReason').textContent =
+            (t.cancel_reason && t.cancel_reason.trim()) ? t.cancel_reason : 'Tanpa alasan.';
+        var cm = [];
+        if (t.cancelled_by) cm.push('Oleh ' + t.cancelled_by);
+        if (t.cancelled_at) cm.push(t.cancelled_at);
+        document.getElementById('trxModalCancelMeta').textContent = cm.join(' · ');
+    } else {
+        badge.style.display = 'none';
+        cancelBox.style.display = 'none';
+    }
+
     // Set tujuan tombol cetak ulang -> halaman struk transaksi ini.
+    // Sembunyikan untuk transaksi yang dibatalkan.
     var reprint = document.getElementById('trxModalReprint');
-    if (reprint && t.id) {
-        reprint.href = '{{ url('kasir') }}/' + t.id + '/struk';
+    if (reprint) {
+        if (t.cancelled) {
+            reprint.style.display = 'none';
+        } else {
+            reprint.style.display = 'flex';
+            if (t.id) reprint.href = '{{ url('kasir') }}/' + t.id + '/struk';
+        }
     }
 
     document.getElementById('trxDetailModal').style.display = 'flex';

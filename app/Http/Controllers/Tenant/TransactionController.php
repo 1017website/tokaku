@@ -335,7 +335,7 @@ class TransactionController extends Controller {
         $endDate   = $request->end_date   ?? now()->toDateString();
         $tenantId  = app('currentTenant')->id;
 
-        $query = Transaction::with(['items','user','customer'])
+        $query = Transaction::with(['items','user','customer','canceller'])
             ->where('tenant_id', $tenantId)
             ->whereBetween('created_at',[$startDate.' 00:00:00',$endDate.' 23:59:59']);
 
