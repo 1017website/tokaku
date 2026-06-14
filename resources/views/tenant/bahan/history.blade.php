@@ -21,6 +21,10 @@
                 <th style="text-align:left;padding:11px 18px;font-size:11px;color:#64748b;text-transform:uppercase;">Jenis</th>
                 <th style="text-align:right;padding:11px 18px;font-size:11px;color:#64748b;text-transform:uppercase;">Perubahan</th>
                 <th style="text-align:right;padding:11px 18px;font-size:11px;color:#64748b;text-transform:uppercase;">Sisa</th>
+                @if(auth()->user()->isOwner())
+                <th style="text-align:right;padding:11px 18px;font-size:11px;color:#64748b;text-transform:uppercase;">Harga</th>
+                <th style="text-align:right;padding:11px 18px;font-size:11px;color:#64748b;text-transform:uppercase;">Nilai</th>
+                @endif
                 <th style="text-align:left;padding:11px 18px;font-size:11px;color:#64748b;text-transform:uppercase;">Oleh</th>
                 <th style="text-align:left;padding:11px 18px;font-size:11px;color:#64748b;text-transform:uppercase;">Catatan</th>
             </tr></thead>
@@ -39,11 +43,15 @@
                         {{ $log->qty_change > 0 ? '+' : '' }}{{ $log->qty_change }}
                     </td>
                     <td data-label="Sisa" style="padding:13px 18px;text-align:right;font-size:13px;color:#334155;">{{ $log->qty_after }}</td>
+                    @if(auth()->user()->isOwner())
+                    <td data-label="Harga" style="padding:13px 18px;text-align:right;font-size:13px;color:#64748b;">{{ \App\Models\RawMaterial::rupiah($log->price) }}</td>
+                    <td data-label="Nilai" style="padding:13px 18px;text-align:right;font-size:13px;font-weight:700;color:{{ $log->qty_change >= 0 ? '#0F6E56' : '#be123c' }};">{{ \App\Models\RawMaterial::rupiah($log->value) }}</td>
+                    @endif
                     <td data-label="Oleh" style="padding:13px 18px;font-size:13px;color:#64748b;">{{ $log->user->name ?? '-' }}</td>
                     <td data-label="Catatan" style="padding:13px 18px;font-size:13px;color:#64748b;">{{ $log->note ?? '-' }}</td>
                 </tr>
             @empty
-                <tr><td data-empty colspan="6" style="padding:45px;text-align:center;color:#94a3b8;font-size:13px;">Belum ada riwayat.</td></tr>
+                <tr><td data-empty colspan="{{ auth()->user()->isOwner() ? 8 : 6 }}" style="padding:45px;text-align:center;color:#94a3b8;font-size:13px;">Belum ada riwayat.</td></tr>
             @endforelse
             </tbody>
         </table>

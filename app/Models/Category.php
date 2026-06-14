@@ -9,9 +9,10 @@ class Category extends Model
 {
     use BelongsToTenant;
 
-    protected $fillable = ['tenant_id', 'name', 'type', 'starts_at', 'ends_at'];
+    protected $fillable = ['tenant_id', 'name', 'is_active', 'type', 'starts_at', 'ends_at'];
 
     protected $casts = [
+        'is_active' => 'boolean',
         'starts_at' => 'datetime',
         'ends_at'   => 'datetime',
     ];
@@ -21,6 +22,11 @@ class Category extends Model
         return $this->hasMany(Product::class);
     }
 
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', true);
+    }
+
     /**
      * Apakah kategori sedang berlaku (bisa dipilih di kasir).
      * - regular: selalu berlaku.
@@ -28,6 +34,10 @@ class Category extends Model
      */
     public function isAvailable(): bool
     {
+        if (!$this->is_active) {
+            return false;
+        }
+
         if ($this->type === 'regular') {
             return true;
         }
@@ -50,7 +60,7 @@ class Category extends Model
     {
         $now = now();
 
-        return $query->where(function ($q) use ($now) {
+        return $query->where('is_active', true)->where(function ($q) use ($now) {
             $q->where('type', 'regular')
                 ->orWhere(function ($q2) use ($now) {
                     $q2->whereIn('type', ['promo', 'bundling'])

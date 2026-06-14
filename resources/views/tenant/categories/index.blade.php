@@ -43,7 +43,17 @@
     <div class="sm:col-span-2">
         <div style="background:#fff;border-radius:16px;border:1px solid #f1f5f9;box-shadow:0 1px 3px rgba(0,0,0,0.04);overflow:hidden;">
             <div style="padding:16px 20px;border-bottom:1px solid #f8fafc;">
-                <p style="font-size:14px;font-weight:600;color:#0f172a;">Daftar Kategori ({{ $categories->count() }})</p>
+                <p style="font-size:14px;font-weight:600;color:#0f172a;margin-bottom:12px;">Daftar Kategori ({{ $categories->count() }})</p>
+                <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                    @php $statusTabs = ['active' => 'Aktif', 'inactive' => 'Nonaktif', 'all' => 'Semua']; @endphp
+                    @foreach($statusTabs as $key => $label)
+                        @php $on = ($status ?? 'active') === $key; @endphp
+                        <a href="{{ route('tenant.categories.index', ['status' => $key]) }}"
+                            style="border:1.5px solid {{ $on ? '#0F6E56' : '#e2e8f0' }};background:{{ $on ? '#0F6E56' : '#fff' }};color:{{ $on ? '#fff' : '#374151' }};border-radius:99px;padding:6px 16px;font-size:12.5px;font-weight:{{ $on ? '600' : '500' }};text-decoration:none;transition:all 0.15s;">
+                            {{ $label }}
+                        </a>
+                    @endforeach
+                </div>
             </div>
             <div>
                 @forelse($categories as $cat)
@@ -58,9 +68,12 @@
                                 @elseif($cat->type === 'bundling')
                                 <span style="font-size:10.5px;font-weight:600;background:#eff6ff;color:#1d4ed8;padding:2px 8px;border-radius:99px;">Bundling</span>
                                 @endif
-                                @if($cat->type !== 'regular' && !$cat->isAvailable())
+                                @if($cat->is_active && $cat->type !== 'regular' && !$cat->isAvailable())
                                 <span style="font-size:10.5px;font-weight:600;background:#f8fafc;color:#94a3b8;padding:2px 8px;border-radius:99px;">Kadaluarsa</span>
                                 @endif
+                                @unless($cat->is_active)
+                                <span style="font-size:10.5px;font-weight:600;background:#fef2f2;color:#b91c1c;padding:2px 8px;border-radius:99px;">Nonaktif</span>
+                                @endunless
                             </div>
                             <div style="display:flex;align-items:center;gap:10px;margin-top:3px;">
                                 <p style="font-size:12px;color:#94a3b8;">{{ $cat->products_count }} produk</p>
@@ -70,11 +83,18 @@
                             </div>
                         </div>
                         <div style="display:flex;align-items:center;gap:16px;">
+                            @if($cat->is_active)
                             <button type="button" onclick="toggleCatEdit({{ $cat->id }})" style="font-size:13px;color:#0F6E56;font-weight:500;background:none;border:none;cursor:pointer;font-family:Inter,sans-serif;">Edit</button>
-                            <form method="POST" action="{{ route('tenant.categories.destroy',$cat) }}" onsubmit="return confirm('Hapus kategori ini?')">
+                            <form method="POST" action="{{ route('tenant.categories.destroy',$cat) }}" onsubmit="return confirm('Nonaktifkan kategori ini? Produk & riwayat tetap aman, kategori hanya disembunyikan dari kasir.')">
                                 @csrf @method('DELETE')
-                                <button type="submit" style="font-size:13px;color:#f43f5e;font-weight:500;background:none;border:none;cursor:pointer;font-family:Inter,sans-serif;">Hapus</button>
+                                <button type="submit" style="font-size:13px;color:#f43f5e;font-weight:500;background:none;border:none;cursor:pointer;font-family:Inter,sans-serif;">Nonaktifkan</button>
                             </form>
+                            @else
+                            <form method="POST" action="{{ route('tenant.categories.activate',$cat) }}">
+                                @csrf @method('PUT')
+                                <button type="submit" style="font-size:13px;color:#0F6E56;font-weight:600;background:none;border:none;cursor:pointer;font-family:Inter,sans-serif;">Aktifkan</button>
+                            </form>
+                            @endif
                         </div>
                     </div>
                     {{-- Form edit (tersembunyi) --}}

@@ -26,7 +26,25 @@ class RawMaterialController extends Controller
         $lowStock    = RawMaterial::active()->whereColumn('stock', '<=', 'low_stock_alert')->where('low_stock_alert', '>', 0)->count();
         $units       = RawMaterial::units();
 
-        return view('tenant.bahan.index', compact('materials', 'totalItems', 'lowStock', 'units'));
+        // Summary pergerakan HARI INI: qty & nilai (rupiah) masuk vs keluar.
+        $today = RawMaterialLog::query()
+            ->whereDate('created_at', today())
+            ->selectRaw("
+                COALESCE(SUM(CASE WHEN qty_change > 0 THEN qty_change ELSE 0 END), 0) AS qty_in,
+                COALESCE(SUM(CASE WHEN qty_change < 0 THEN -qty_change ELSE 0 END), 0) AS qty_out,
+                COALESCE(SUM(CASE WHEN qty_change > 0 THEN qty_change * price ELSE 0 END), 0) AS value_in,
+                COALESCE(SUM(CASE WHEN qty_change < 0 THEN -qty_change * price ELSE 0 END), 0) AS value_out
+            ")
+            ->first();
+
+        $summary = [
+            'qty_in'    => (int) ($today->qty_in ?? 0),
+            'qty_out'   => (int) ($today->qty_out ?? 0),
+            'value_in'  => (float) ($today->value_in ?? 0),
+            'value_out' => (float) ($today->value_out ?? 0),
+        ];
+
+        return view('tenant.bahan.index', compact('materials', 'totalItems', 'lowStock', 'units', 'summary'));
     }
 
     public function store(Request $request)
@@ -34,6 +52,7 @@ class RawMaterialController extends Controller
         $validated = $request->validate([
             'name'            => 'required|string|max:255',
             'unit'            => 'required|string|max:30',
+            'price'           => 'nullable|numeric|min:0',
             'stock'           => 'required|integer|min:0',
             'low_stock_alert' => 'nullable|integer|min:0',
             'note'            => 'nullable|string|max:255',
@@ -43,6 +62,7 @@ class RawMaterialController extends Controller
             $material = RawMaterial::create([
                 'name'            => $validated['name'],
                 'unit'            => $validated['unit'],
+                'price'           => $validated['price'] ?? 0,
                 'stock'           => $validated['stock'],
                 'low_stock_alert' => $validated['low_stock_alert'] ?? 0,
                 'note'            => $validated['note'] ?? null,
@@ -56,6 +76,7 @@ class RawMaterialController extends Controller
                     'qty_before'      => 0,
                     'qty_change'      => $material->stock,
                     'qty_after'       => $material->stock,
+                    'price'           => $material->price,
                     'type'            => 'in',
                     'note'            => 'Stok awal',
                 ]);
@@ -72,6 +93,7 @@ class RawMaterialController extends Controller
         $validated = $request->validate([
             'name'            => 'required|string|max:255',
             'unit'            => 'required|string|max:30',
+            'price'           => 'nullable|numeric|min:0',
             'low_stock_alert' => 'nullable|integer|min:0',
             'note'            => 'nullable|string|max:255',
             'is_active'       => 'nullable|boolean',
@@ -81,6 +103,7 @@ class RawMaterialController extends Controller
         $bahan->update([
             'name'            => $validated['name'],
             'unit'            => $validated['unit'],
+            'price'           => $validated['price'] ?? 0,
             'low_stock_alert' => $validated['low_stock_alert'] ?? 0,
             'note'            => $validated['note'] ?? null,
             'is_active'       => $request->boolean('is_active', true),
@@ -98,9 +121,10 @@ class RawMaterialController extends Controller
         abort_if($bahan->tenant_id != app('currentTenant')->id, 403);
 
         $validated = $request->validate([
-            'type' => 'required|in:in,out,adjustment',
-            'qty'  => 'required|integer|min:0',
-            'note' => 'nullable|string|max:255',
+            'type'  => 'required|in:in,out,adjustment',
+            'qty'   => 'required|integer|min:0',
+            'price' => 'nullable|numeric|min:0',
+            'note'  => 'nullable|string|max:255',
         ]);
 
         // Untuk in/out, qty minimal 1 (0 tidak bermakna).
@@ -108,7 +132,7 @@ class RawMaterialController extends Controller
             return back()->withErrors(['qty' => 'Jumlah minimal 1.'])->withInput();
         }
 
-        DB::transaction(function () use ($validated, $bahan) {
+        DB::transaction(function () use ($validated, $request, $bahan) {
             $material = RawMaterial::where('id', $bahan->id)->lockForUpdate()->first();
 
             $before = $material->stock;
@@ -125,7 +149,15 @@ class RawMaterialController extends Controller
                 throw new \Exception('Stok tidak boleh kurang dari 0.');
             }
 
-            $material->update(['stock' => $after]);
+            // Harga satuan untuk log: pakai input bila ada, jika tidak ambil harga master.
+            $price = $request->filled('price') ? (float) $validated['price'] : (float) $material->price;
+
+            $updates = ['stock' => $after];
+            // Stok masuk dengan harga baru → perbarui harga acuan master.
+            if ($validated['type'] === 'in' && $request->filled('price')) {
+                $updates['price'] = $price;
+            }
+            $material->update($updates);
 
             RawMaterialLog::create([
                 'raw_material_id' => $material->id,
@@ -133,6 +165,7 @@ class RawMaterialController extends Controller
                 'qty_before'      => $before,
                 'qty_change'      => $change,
                 'qty_after'       => $after,
+                'price'           => $price,
                 'type'            => $validated['type'],
                 'note'            => $validated['note'] ?? null,
             ]);

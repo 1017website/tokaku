@@ -8,11 +8,17 @@ use Illuminate\Http\Request;
 
 class CategoryController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $categories = Category::withCount('products')->orderBy('name')->get();
+        $status = $request->query('status', 'active'); // active | inactive | all
 
-        return view('tenant.categories.index', compact('categories'));
+        $categories = Category::withCount('products')
+            ->when($status === 'active',   fn($q) => $q->where('is_active', true))
+            ->when($status === 'inactive', fn($q) => $q->where('is_active', false))
+            ->orderBy('name')
+            ->get();
+
+        return view('tenant.categories.index', compact('categories', 'status'));
     }
 
     public function store(Request $request)
@@ -33,15 +39,27 @@ class CategoryController extends Controller
         return back()->with('success', 'Kategori berhasil diperbarui.');
     }
 
+    /**
+     * "Hapus" = nonaktifkan kategori (soft), bukan menghapus row.
+     * Produk & riwayat transaksi tetap utuh; kategori nonaktif tidak
+     * muncul di kasir dan tab Aktif. Bisa diaktifkan kembali.
+     */
     public function destroy(Category $category)
     {
-        if ($category->products()->count() > 0) {
-            return back()->with('error', 'Kategori tidak bisa dihapus karena masih memiliki produk.');
-        }
+        abort_if($category->tenant_id != app('currentTenant')->id, 403);
 
-        $category->delete();
+        $category->update(['is_active' => false]);
 
-        return back()->with('success', 'Kategori berhasil dihapus.');
+        return back()->with('success', 'Kategori berhasil dinonaktifkan.');
+    }
+
+    public function activate(Category $category)
+    {
+        abort_if($category->tenant_id != app('currentTenant')->id, 403);
+
+        $category->update(['is_active' => true]);
+
+        return back()->with('success', 'Kategori berhasil diaktifkan kembali.');
     }
 
     /**

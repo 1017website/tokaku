@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Tenant;
 use App\Http\Controllers\Controller;
 use App\Models\Expense;
 use App\Models\Product;
+use App\Models\RawMaterialLog;
 use App\Models\Transaction;
 use App\Models\TransactionItem;
 use Illuminate\Support\Facades\DB;
@@ -72,8 +73,26 @@ class DashboardController extends Controller
         $lowStockProducts = Product::active()->lowStock()->with('category')->orderBy('stock')->limit(5)->get();
         $recentTransactions = Transaction::with('user')->notCancelled()->orderByDesc('created_at')->limit(5)->get();
 
+        // Ringkasan pergerakan bahan baku (gudang) hari ini — qty & nilai (rupiah).
+        $rmToday = RawMaterialLog::query()
+            ->whereDate('created_at', today())
+            ->selectRaw("
+                COALESCE(SUM(CASE WHEN qty_change < 0 THEN -qty_change ELSE 0 END), 0) AS qty_out,
+                COALESCE(SUM(CASE WHEN qty_change > 0 THEN qty_change ELSE 0 END), 0) AS qty_in,
+                COALESCE(SUM(CASE WHEN qty_change < 0 THEN -qty_change * price ELSE 0 END), 0) AS value_out,
+                COALESCE(SUM(CASE WHEN qty_change > 0 THEN qty_change * price ELSE 0 END), 0) AS value_in
+            ")
+            ->first();
+
+        $rawMaterialSummary = [
+            'qty_out'   => (int) ($rmToday->qty_out ?? 0),
+            'qty_in'    => (int) ($rmToday->qty_in ?? 0),
+            'value_out' => (float) ($rmToday->value_out ?? 0),
+            'value_in'  => (float) ($rmToday->value_in ?? 0),
+        ];
+
         return view('tenant.dashboard.index', compact(
-            'tenant','todayRevenue','todayCount','monthRevenue','monthCount','todayGrossProfit','monthGrossProfit','todayNetProfit','monthNetProfit','monthExpenses','weeklyData','initialCapital','totalNetProfit','capitalProgress','lowStockProducts','recentTransactions'
+            'tenant','todayRevenue','todayCount','monthRevenue','monthCount','todayGrossProfit','monthGrossProfit','todayNetProfit','monthNetProfit','monthExpenses','weeklyData','initialCapital','totalNetProfit','capitalProgress','lowStockProducts','recentTransactions','rawMaterialSummary'
         ));
     }
 }

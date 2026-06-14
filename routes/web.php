@@ -48,6 +48,7 @@ Route::middleware(['auth', 'tenant', 'subscription'])->group(function () {
     Route::resource('products', ProductController::class)->names('tenant.products')->middleware('permission:produk');
     Route::put('products/{product}/activate', [ProductController::class, 'activate'])->name('tenant.products.activate')->middleware('permission:produk');
     Route::resource('categories', CategoryController::class)->names('tenant.categories')->middleware('permission:kategori');
+    Route::put('categories/{category}/activate', [CategoryController::class, 'activate'])->name('tenant.categories.activate')->middleware('permission:kategori');
 
     // Kasir
     Route::prefix('kasir')->name('tenant.kasir.')->middleware('permission:kasir')->group(function () {

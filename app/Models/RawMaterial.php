@@ -13,6 +13,7 @@ class RawMaterial extends Model
         'tenant_id',
         'name',
         'unit',
+        'price',
         'stock',
         'low_stock_alert',
         'note',
@@ -20,6 +21,7 @@ class RawMaterial extends Model
     ];
 
     protected $casts = [
+        'price'           => 'decimal:2',
         'stock'           => 'integer',
         'low_stock_alert' => 'integer',
         'is_active'       => 'boolean',
@@ -28,6 +30,17 @@ class RawMaterial extends Model
     public function logs()
     {
         return $this->hasMany(RawMaterialLog::class);
+    }
+
+    /** Nilai persediaan saat ini (stok x harga satuan). */
+    public function stockValue(): float
+    {
+        return (float) $this->stock * (float) $this->price;
+    }
+
+    public static function rupiah($value): string
+    {
+        return 'Rp ' . number_format((float) $value, 0, ',', '.');
     }
 
     public function isLowStock(): bool

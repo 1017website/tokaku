@@ -30,7 +30,7 @@ class ProductController extends Controller
 
     public function create()
     {
-        $categories = Category::orderBy('name')->get();
+        $categories = Category::active()->orderBy('name')->get();
 
         return view('tenant.products.create', compact('categories'));
     }
@@ -89,7 +89,7 @@ class ProductController extends Controller
     public function edit(Product $product)
     {
         abort_if($product->tenant_id != app('currentTenant')->id, 403);
-        $categories = Category::orderBy('name')->get();
+        $categories = Category::active()->orderBy('name')->get();
 
         return view('tenant.products.edit', compact('product', 'categories'));
     }

@@ -58,6 +58,26 @@ $cards = [
     </div>
 </div>
 
+{{-- Ringkasan Gudang Bahan hari ini --}}
+<div style="background:#fff;border-radius:16px;border:1px solid #f1f5f9;box-shadow:0 1px 3px rgba(0,0,0,.04);padding:18px 20px;margin-bottom:24px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+        <p style="font-size:13.5px;font-weight:700;color:#0f172a;">Gudang Bahan Hari Ini · {{ now()->translatedFormat('d M Y') }}</p>
+        <a href="{{ route('tenant.bahan.index') }}" style="font-size:12px;color:#0F6E56;font-weight:600;text-decoration:none;">Buka gudang</a>
+    </div>
+    <div class="grid grid-cols-2 gap-3">
+        <div style="border:1px solid #f1f5f9;border-left:4px solid #be123c;border-radius:12px;padding:14px 16px;">
+            <p style="font-size:11.5px;color:#b91c1c;font-weight:700;">Bahan Keluar</p>
+            <p style="font-size:22px;font-weight:800;color:#be123c;margin-top:6px;">{{ number_format($rawMaterialSummary['qty_out'], 0, ',', '.') }} <span style="font-size:12px;color:#94a3b8;font-weight:700;">qty</span></p>
+            <p style="font-size:13px;font-weight:700;color:#334155;margin-top:2px;">{{ \App\Models\RawMaterial::rupiah($rawMaterialSummary['value_out']) }}</p>
+        </div>
+        <div style="border:1px solid #f1f5f9;border-left:4px solid #0F6E56;border-radius:12px;padding:14px 16px;">
+            <p style="font-size:11.5px;color:#085041;font-weight:700;">Bahan Masuk</p>
+            <p style="font-size:22px;font-weight:800;color:#0F6E56;margin-top:6px;">{{ number_format($rawMaterialSummary['qty_in'], 0, ',', '.') }} <span style="font-size:12px;color:#94a3b8;font-weight:700;">qty</span></p>
+            <p style="font-size:13px;font-weight:700;color:#334155;margin-top:2px;">{{ \App\Models\RawMaterial::rupiah($rawMaterialSummary['value_in']) }}</p>
+        </div>
+    </div>
+</div>
+
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
     <div style="background:#fff;border-radius:16px;border:1px solid #f1f5f9;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.04);">
         <div style="padding:16px 20px;border-bottom:1px solid #f8fafc;display:flex;justify-content:space-between;">

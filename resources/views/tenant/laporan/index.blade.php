@@ -86,7 +86,7 @@
     </div>
 </div>
 
-{{-- Produk Terlaris --}}
+{{-- Produk Terlaris + Semua Produk --}}
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
     <div style="background:#fff;border-radius:16px;border:1px solid #f1f5f9;box-shadow:0 1px 3px rgba(0,0,0,0.04);overflow:hidden;">
         <div style="padding:16px 20px;border-bottom:1px solid #f8fafc;">
@@ -112,7 +112,39 @@
         </div>
     </div>
 
-    {{-- Transaksi Terbaru --}}
+    {{-- Semua Produk Terjual (periode) --}}
+    <div style="background:#fff;border-radius:16px;border:1px solid #f1f5f9;box-shadow:0 1px 3px rgba(0,0,0,0.04);overflow:hidden;">
+        <div style="padding:16px 20px;border-bottom:1px solid #f8fafc;display:flex;align-items:center;justify-content:space-between;">
+            <p style="font-size:14px;font-weight:600;color:#0f172a;">Semua Produk Terjual</p>
+            <span style="font-size:11.5px;color:#94a3b8;">{{ $allProducts->count() }} produk</span>
+        </div>
+        <div class="table-responsive overflow-x-auto" style="max-height:420px;overflow-y:auto;">
+            <table style="width:100%;border-collapse:collapse;min-width:320px;">
+                <thead>
+                    <tr style="background:#f8fafc;border-bottom:1px solid #f1f5f9;position:sticky;top:0;">
+                        <th style="text-align:left;font-size:11px;font-weight:600;color:#64748b;padding:10px 20px;text-transform:uppercase;">Produk</th>
+                        <th style="text-align:right;font-size:11px;font-weight:600;color:#64748b;padding:10px 16px;text-transform:uppercase;">Qty</th>
+                        <th style="text-align:right;font-size:11px;font-weight:600;color:#64748b;padding:10px 20px;text-transform:uppercase;">Omzet</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($allProducts as $p)
+                    <tr style="border-bottom:1px solid #f8fafc;">
+                        <td data-label="Produk" style="padding:11px 20px;font-size:13px;font-weight:500;color:#0f172a;">{{ $p->product_name }}</td>
+                        <td data-label="Qty" style="padding:11px 16px;text-align:right;font-size:13px;font-weight:700;color:#0f172a;">{{ number_format($p->total_qty) }}</td>
+                        <td data-label="Omzet" style="padding:11px 20px;text-align:right;font-size:12.5px;color:#64748b;">Rp {{ number_format($p->total_revenue,0,',','.') }}</td>
+                    </tr>
+                    @empty
+                    <tr><td data-empty colspan="3" style="padding:40px 20px;text-align:center;font-size:14px;color:#94a3b8;">Tidak ada data produk.</td></tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{{-- Daftar Transaksi (full width) --}}
+<div class="mb-4">
     <div style="background:#fff;border-radius:16px;border:1px solid #f1f5f9;box-shadow:0 1px 3px rgba(0,0,0,0.04);overflow:hidden;">
         <div style="padding:16px 20px;border-bottom:1px solid #f8fafc;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;">
             <p style="font-size:14px;font-weight:600;color:#0f172a;">Daftar Transaksi</p>
@@ -131,7 +163,7 @@
             </form>
         </div>
         <div class="table-responsive overflow-x-auto">
-            <table style="width:100%;border-collapse:collapse;min-width:400px;">
+            <table style="width:100%;border-collapse:collapse;min-width:600px;">
                 <thead>
                     <tr style="background:#f8fafc;border-bottom:1px solid #f1f5f9;">
                         <th style="text-align:left;font-size:11px;font-weight:600;color:#64748b;padding:10px 16px;text-transform:uppercase;">Invoice</th>

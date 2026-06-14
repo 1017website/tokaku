@@ -362,9 +362,13 @@ class TransactionController extends Controller {
         $topProducts = TransactionItem::select('product_name',DB::raw('SUM(quantity) as total_qty'),DB::raw('SUM(subtotal) as total_revenue'))
             ->whereHas('transaction',fn($q)=>$q->where('tenant_id',$tenantId)->where('status','!=','cancelled')->whereBetween('created_at',[$startDate.' 00:00:00',$endDate.' 23:59:59']))
             ->groupBy('product_name')->orderByDesc('total_qty')->limit(10)->get();
+        // Semua produk terjual pada periode (tanpa batas) — diurut abjad untuk rekap lengkap.
+        $allProducts = TransactionItem::select('product_name',DB::raw('SUM(quantity) as total_qty'),DB::raw('SUM(subtotal) as total_revenue'))
+            ->whereHas('transaction',fn($q)=>$q->where('tenant_id',$tenantId)->where('status','!=','cancelled')->whereBetween('created_at',[$startDate.' 00:00:00',$endDate.' 23:59:59']))
+            ->groupBy('product_name')->orderBy('product_name')->get();
         $dailyRevenue = (clone $valid)->selectRaw('DATE(created_at) as date, SUM(total) as total, COUNT(*) as count')->groupBy('date')->orderBy('date')->get();
 
-        return view('tenant.laporan.index', compact('transactions','totalRevenue','totalDiscount','totalTax','totalTransactions','totalDebt','byPayment','topProducts','dailyRevenue','startDate','endDate','search'));
+        return view('tenant.laporan.index', compact('transactions','totalRevenue','totalDiscount','totalTax','totalTransactions','totalDebt','byPayment','topProducts','allProducts','dailyRevenue','startDate','endDate','search'));
     }
 
     public function export(Request $request) {
