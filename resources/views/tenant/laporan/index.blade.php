@@ -87,12 +87,12 @@
 </div>
 
 {{-- Produk Terlaris + Semua Produk --}}
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
-    <div style="background:#fff;border-radius:16px;border:1px solid #f1f5f9;box-shadow:0 1px 3px rgba(0,0,0,0.04);overflow:hidden;">
-        <div style="padding:16px 20px;border-bottom:1px solid #f8fafc;">
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4 items-stretch">
+    <div style="background:#fff;border-radius:16px;border:1px solid #f1f5f9;box-shadow:0 1px 3px rgba(0,0,0,0.04);overflow:hidden;display:flex;flex-direction:column;">
+        <div style="padding:16px 20px;border-bottom:1px solid #f8fafc;flex-shrink:0;">
             <p style="font-size:14px;font-weight:600;color:#0f172a;">Produk Terlaris</p>
         </div>
-        <div>
+        <div style="flex:1;overflow-y:auto;max-height:440px;">
             @forelse($topProducts as $i => $p)
             <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-bottom:1px solid #f8fafc;">
                 <div style="display:flex;align-items:center;gap:12px;">
@@ -113,15 +113,15 @@
     </div>
 
     {{-- Semua Produk Terjual (periode) --}}
-    <div style="background:#fff;border-radius:16px;border:1px solid #f1f5f9;box-shadow:0 1px 3px rgba(0,0,0,0.04);overflow:hidden;">
-        <div style="padding:16px 20px;border-bottom:1px solid #f8fafc;display:flex;align-items:center;justify-content:space-between;">
+    <div style="background:#fff;border-radius:16px;border:1px solid #f1f5f9;box-shadow:0 1px 3px rgba(0,0,0,0.04);overflow:hidden;display:flex;flex-direction:column;">
+        <div style="padding:16px 20px;border-bottom:1px solid #f8fafc;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
             <p style="font-size:14px;font-weight:600;color:#0f172a;">Semua Produk Terjual</p>
             <span style="font-size:11.5px;color:#94a3b8;">{{ $allProducts->count() }} produk</span>
         </div>
-        <div class="table-responsive overflow-x-auto" style="max-height:420px;overflow-y:auto;">
+        <div class="table-responsive overflow-x-auto" style="flex:1;overflow-y:auto;max-height:440px;">
             <table style="width:100%;border-collapse:collapse;min-width:320px;">
                 <thead>
-                    <tr style="background:#f8fafc;border-bottom:1px solid #f1f5f9;position:sticky;top:0;">
+                    <tr style="background:#f8fafc;border-bottom:1px solid #f1f5f9;position:sticky;top:0;z-index:1;">
                         <th style="text-align:left;font-size:11px;font-weight:600;color:#64748b;padding:10px 20px;text-transform:uppercase;">Produk</th>
                         <th style="text-align:right;font-size:11px;font-weight:600;color:#64748b;padding:10px 16px;text-transform:uppercase;">Qty</th>
                         <th style="text-align:right;font-size:11px;font-weight:600;color:#64748b;padding:10px 20px;text-transform:uppercase;">Omzet</th>
