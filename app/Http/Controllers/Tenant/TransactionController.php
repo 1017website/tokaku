@@ -362,13 +362,42 @@ class TransactionController extends Controller {
         $topProducts = TransactionItem::select('product_name',DB::raw('SUM(quantity) as total_qty'),DB::raw('SUM(subtotal) as total_revenue'))
             ->whereHas('transaction',fn($q)=>$q->where('tenant_id',$tenantId)->where('status','!=','cancelled')->whereBetween('created_at',[$startDate.' 00:00:00',$endDate.' 23:59:59']))
             ->groupBy('product_name')->orderByDesc('total_qty')->limit(10)->get();
-        // Semua produk terjual pada periode (tanpa batas) — diurut abjad untuk rekap lengkap.
-        $allProducts = TransactionItem::select('product_name',DB::raw('SUM(quantity) as total_qty'),DB::raw('SUM(subtotal) as total_revenue'))
-            ->whereHas('transaction',fn($q)=>$q->where('tenant_id',$tenantId)->where('status','!=','cancelled')->whereBetween('created_at',[$startDate.' 00:00:00',$endDate.' 23:59:59']))
-            ->groupBy('product_name')->orderBy('product_name')->get();
+
+        // ---- Semua Produk Terjual (periode) + filter kategori & sort ----
+        $catFilter = $request->cat;                       // id kategori | '' (semua) | 'none' (tanpa kategori)
+        $sort      = $request->sort ?: 'qty_desc';        // qty_desc|qty_asc|omzet_desc|omzet_asc|name_asc
+        $sortMap   = [
+            'qty_desc'   => ['total_qty', 'desc'],
+            'qty_asc'    => ['total_qty', 'asc'],
+            'omzet_desc' => ['total_revenue', 'desc'],
+            'omzet_asc'  => ['total_revenue', 'asc'],
+            'name_asc'   => ['product_name', 'asc'],
+        ];
+        [$sortCol, $sortDir] = $sortMap[$sort] ?? $sortMap['qty_desc'];
+
+        $allQuery = TransactionItem::query()
+            ->leftJoin('products', 'transaction_items.product_id', '=', 'products.id')
+            ->whereHas('transaction', fn($q)=>$q->where('tenant_id',$tenantId)->where('status','!=','cancelled')->whereBetween('created_at',[$startDate.' 00:00:00',$endDate.' 23:59:59']))
+            ->select(
+                'transaction_items.product_name',
+                DB::raw('SUM(transaction_items.quantity) as total_qty'),
+                DB::raw('SUM(transaction_items.subtotal) as total_revenue'),
+                DB::raw('MAX(products.category_id) as category_id')
+            )
+            ->groupBy('transaction_items.product_name');
+
+        if ($catFilter === 'none') {
+            $allQuery->whereNull('products.category_id');
+        } elseif ($catFilter !== null && $catFilter !== '') {
+            $allQuery->where('products.category_id', $catFilter);
+        }
+
+        $allProducts  = $allQuery->orderBy($sortCol, $sortDir)->get();
+        $allCategories = Category::orderBy('name')->get(['id','name']);
+
         $dailyRevenue = (clone $valid)->selectRaw('DATE(created_at) as date, SUM(total) as total, COUNT(*) as count')->groupBy('date')->orderBy('date')->get();
 
-        return view('tenant.laporan.index', compact('transactions','totalRevenue','totalDiscount','totalTax','totalTransactions','totalDebt','byPayment','topProducts','allProducts','dailyRevenue','startDate','endDate','search'));
+        return view('tenant.laporan.index', compact('transactions','totalRevenue','totalDiscount','totalTax','totalTransactions','totalDebt','byPayment','topProducts','allProducts','allCategories','catFilter','sort','dailyRevenue','startDate','endDate','search'));
     }
 
     public function export(Request $request) {

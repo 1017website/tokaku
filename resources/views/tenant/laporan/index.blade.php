@@ -114,31 +114,48 @@
 
     {{-- Semua Produk Terjual (periode) --}}
     <div style="background:#fff;border-radius:16px;border:1px solid #f1f5f9;box-shadow:0 1px 3px rgba(0,0,0,0.04);overflow:hidden;display:flex;flex-direction:column;">
-        <div style="padding:16px 20px;border-bottom:1px solid #f8fafc;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
-            <p style="font-size:14px;font-weight:600;color:#0f172a;">Semua Produk Terjual</p>
-            <span style="font-size:11.5px;color:#94a3b8;">{{ $allProducts->count() }} produk</span>
+        <div style="padding:16px 20px;border-bottom:1px solid #f8fafc;flex-shrink:0;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+                <p style="font-size:14px;font-weight:600;color:#0f172a;">Semua Produk Terjual</p>
+                <span style="font-size:11.5px;color:#94a3b8;">{{ $allProducts->count() }} produk</span>
+            </div>
+            <form method="GET" style="display:flex;gap:8px;flex-wrap:wrap;">
+                <input type="hidden" name="start_date" value="{{ $startDate }}">
+                <input type="hidden" name="end_date" value="{{ $endDate }}">
+                @if($search !== '')<input type="hidden" name="q" value="{{ $search }}">@endif
+                <select name="cat" onchange="this.form.submit()" style="flex:1;min-width:130px;border:1.5px solid #e2e8f0;border-radius:9px;padding:7px 10px;font-size:12.5px;font-family:Inter,sans-serif;outline:none;background:#fafafa;color:#374151;">
+                    <option value="">Semua Kategori</option>
+                    @foreach($allCategories as $c)
+                        <option value="{{ $c->id }}" {{ (string)$catFilter === (string)$c->id ? 'selected' : '' }}>{{ $c->name }}</option>
+                    @endforeach
+                    <option value="none" {{ $catFilter === 'none' ? 'selected' : '' }}>Tanpa Kategori</option>
+                </select>
+                <select name="sort" onchange="this.form.submit()" style="flex:1;min-width:130px;border:1.5px solid #e2e8f0;border-radius:9px;padding:7px 10px;font-size:12.5px;font-family:Inter,sans-serif;outline:none;background:#fafafa;color:#374151;">
+                    <option value="qty_desc"   {{ $sort==='qty_desc'?'selected':'' }}>Qty Terbanyak</option>
+                    <option value="qty_asc"    {{ $sort==='qty_asc'?'selected':'' }}>Qty Tersedikit</option>
+                    <option value="omzet_desc" {{ $sort==='omzet_desc'?'selected':'' }}>Omzet Tertinggi</option>
+                    <option value="omzet_asc"  {{ $sort==='omzet_asc'?'selected':'' }}>Omzet Terendah</option>
+                    <option value="name_asc"   {{ $sort==='name_asc'?'selected':'' }}>Nama (A-Z)</option>
+                </select>
+            </form>
         </div>
-        <div class="table-responsive overflow-x-auto" style="flex:1;overflow-y:auto;max-height:440px;">
-            <table style="width:100%;border-collapse:collapse;min-width:320px;">
-                <thead>
-                    <tr style="background:#f8fafc;border-bottom:1px solid #f1f5f9;position:sticky;top:0;z-index:1;">
-                        <th style="text-align:left;font-size:11px;font-weight:600;color:#64748b;padding:10px 20px;text-transform:uppercase;">Produk</th>
-                        <th style="text-align:right;font-size:11px;font-weight:600;color:#64748b;padding:10px 16px;text-transform:uppercase;">Qty</th>
-                        <th style="text-align:right;font-size:11px;font-weight:600;color:#64748b;padding:10px 20px;text-transform:uppercase;">Omzet</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($allProducts as $p)
-                    <tr style="border-bottom:1px solid #f8fafc;">
-                        <td data-label="Produk" style="padding:11px 20px;font-size:13px;font-weight:500;color:#0f172a;">{{ $p->product_name }}</td>
-                        <td data-label="Qty" style="padding:11px 16px;text-align:right;font-size:13px;font-weight:700;color:#0f172a;">{{ number_format($p->total_qty) }}</td>
-                        <td data-label="Omzet" style="padding:11px 20px;text-align:right;font-size:12.5px;color:#64748b;">Rp {{ number_format($p->total_revenue,0,',','.') }}</td>
-                    </tr>
-                    @empty
-                    <tr><td data-empty colspan="3" style="padding:40px 20px;text-align:center;font-size:14px;color:#94a3b8;">Tidak ada data produk.</td></tr>
-                    @endforelse
-                </tbody>
-            </table>
+        <div style="flex:1;overflow-y:auto;max-height:440px;">
+            @forelse($allProducts as $i => $p)
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-bottom:1px solid #f8fafc;">
+                <div style="display:flex;align-items:center;gap:12px;">
+                    <div style="width:26px;height:26px;background:#f0fdf6;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                        <span style="font-size:12px;font-weight:700;color:#0F6E56;">{{ $i+1 }}</span>
+                    </div>
+                    <p style="font-size:13.5px;font-weight:500;color:#0f172a;">{{ $p->product_name }}</p>
+                </div>
+                <div style="text-align:right;">
+                    <p style="font-size:13px;font-weight:700;color:#0f172a;">{{ number_format($p->total_qty) }} pcs</p>
+                    <p style="font-size:11.5px;color:#64748b;">Rp {{ number_format($p->total_revenue,0,',','.') }}</p>
+                </div>
+            </div>
+            @empty
+            <div style="padding:40px 20px;text-align:center;font-size:14px;color:#94a3b8;">Tidak ada data produk.</div>
+            @endforelse
         </div>
     </div>
 </div>
