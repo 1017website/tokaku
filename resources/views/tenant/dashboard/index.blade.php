@@ -17,11 +17,24 @@
 @section('content')
 @php
 $dayLabel = $isToday ? 'hari ini' : \Carbon\Carbon::parse($selectedDateStr)->translatedFormat('d M Y');
+
+// Sub-teks profit: bila tidak ada pengeluaran, profit kotor = bersih,
+// jadi tampilkan margin terhadap omzet alih-alih mengulang angka yang sama.
+$dayMargin   = $dayRevenue   > 0 ? round($dayNetProfit   / $dayRevenue   * 100, 1) : 0;
+$monthMargin = $monthRevenue > 0 ? round($monthNetProfit / $monthRevenue * 100, 1) : 0;
+
+$daySub = $dayExpenses > 0
+    ? 'Kotor Rp '.number_format($dayGrossProfit,0,',','.').' − biaya Rp '.number_format($dayExpenses,0,',','.')
+    : 'Margin '.$dayMargin.'% dari omzet';
+$monthSub = $monthExpenses > 0
+    ? 'Pengeluaran Rp '.number_format($monthExpenses,0,',','.')
+    : 'Margin '.$monthMargin.'% dari omzet';
+
 $cards = [
     ['label'=>'Omzet '.$dayLabel,'value'=>'Rp '.number_format($dayRevenue,0,',','.'),'sub'=>$dayCount.' transaksi','color'=>'#16a34a','bg'=>'#f0fdf4'],
-    ['label'=>'Profit bersih '.$dayLabel,'value'=>'Rp '.number_format($dayNetProfit,0,',','.'),'sub'=>'Profit kotor Rp '.number_format($dayGrossProfit,0,',','.').' · Pengeluaran Rp '.number_format($dayExpenses,0,',','.'),'color'=>'#0F6E56','bg'=>'#f0fdf6'],
+    ['label'=>'Profit bersih '.$dayLabel,'value'=>'Rp '.number_format($dayNetProfit,0,',','.'),'sub'=>$daySub,'color'=>'#0F6E56','bg'=>'#f0fdf6'],
     ['label'=>'Omzet bulan ini','value'=>'Rp '.number_format($monthRevenue,0,',','.'),'sub'=>$monthCount.' transaksi','color'=>'#2563eb','bg'=>'#eff6ff'],
-    ['label'=>'Profit bersih bulan ini','value'=>'Rp '.number_format($monthNetProfit,0,',','.'),'sub'=>'Pengeluaran Rp '.number_format($monthExpenses,0,',','.'),'color'=>'#7c3aed','bg'=>'#f5f3ff'],
+    ['label'=>'Profit bersih bulan ini','value'=>'Rp '.number_format($monthNetProfit,0,',','.'),'sub'=>$monthSub,'color'=>'#7c3aed','bg'=>'#f5f3ff'],
 ];
 @endphp
 
