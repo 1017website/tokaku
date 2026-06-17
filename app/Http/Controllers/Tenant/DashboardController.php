@@ -8,11 +8,12 @@ use App\Models\Product;
 use App\Models\RawMaterialLog;
 use App\Models\Transaction;
 use App\Models\TransactionItem;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         if (!app()->has('currentTenant')) {
             abort(403, 'Akses tidak valid. Gunakan subdomain toko Anda.');
@@ -21,8 +22,24 @@ class DashboardController extends Controller
         $tenant = app('currentTenant');
         $tenantId = $tenant->id;
 
-        $todayRevenue = Transaction::notCancelled()->today()->sum('total');
-        $todayCount = Transaction::notCancelled()->today()->count();
+        // Tanggal terpilih untuk ringkasan harian. Default: hari ini.
+        // Divalidasi agar tidak melebihi hari ini & tidak salah format.
+        try {
+            $selectedDate = $request->filled('date')
+                ? \Carbon\Carbon::parse($request->date)->startOfDay()
+                : today();
+        } catch (\Exception $e) {
+            $selectedDate = today();
+        }
+        if ($selectedDate->isFuture()) {
+            $selectedDate = today();
+        }
+        $selectedDateStr = $selectedDate->toDateString();
+        $isToday = $selectedDate->isToday();
+
+        // Ringkasan tanggal terpilih (menggantikan "hari ini" yang statis).
+        $dayRevenue = Transaction::notCancelled()->whereDate('created_at', $selectedDateStr)->sum('total');
+        $dayCount   = Transaction::notCancelled()->whereDate('created_at', $selectedDateStr)->count();
         $monthRevenue = Transaction::notCancelled()->thisMonth()->sum('total');
         $monthCount = Transaction::notCancelled()->thisMonth()->count();
 
@@ -32,18 +49,24 @@ class DashboardController extends Controller
             ->where('transactions.tenant_id', $tenantId)
             ->where('transactions.status', '!=', 'cancelled');
 
-        $todayGrossProfit = (clone $profitQuery)
-            ->whereDate('transactions.created_at', today())
+        $dayGrossProfit = (clone $profitQuery)
+            ->whereDate('transactions.created_at', $selectedDateStr)
             ->sum(DB::raw('(transaction_items.unit_price - COALESCE(products.cost_price,0)) * transaction_items.quantity'));
         $monthGrossProfit = (clone $profitQuery)
             ->whereMonth('transactions.created_at', now()->month)
             ->whereYear('transactions.created_at', now()->year)
             ->sum(DB::raw('(transaction_items.unit_price - COALESCE(products.cost_price,0)) * transaction_items.quantity'));
 
-        $todayExpenses = Expense::whereDate('expense_date', today())->sum('amount');
+        $dayExpenses = Expense::whereDate('expense_date', $selectedDateStr)->sum('amount');
         $monthExpenses = Expense::whereMonth('expense_date', now()->month)->whereYear('expense_date', now()->year)->sum('amount');
-        $todayNetProfit = $todayGrossProfit - $todayExpenses;
+        $dayNetProfit = $dayGrossProfit - $dayExpenses;
         $monthNetProfit = $monthGrossProfit - $monthExpenses;
+
+        // Rincian metode bayar pada tanggal terpilih (ringkas, bukan detail transaksi).
+        $dayByPayment = Transaction::notCancelled()
+            ->whereDate('created_at', $selectedDateStr)
+            ->selectRaw('payment_method, COUNT(*) as count, SUM(total) as total')
+            ->groupBy('payment_method')->get();
 
         $weeklyData = collect(range(6,0))->map(function ($days) use ($tenantId) {
             $date = now()->subDays($days)->toDateString();
@@ -63,6 +86,16 @@ class DashboardController extends Controller
                 'profit' => (float) ($grossProfit - $expense),
             ];
         });
+
+        // Sebaran omzet per jam pada tanggal terpilih (untuk grafik harian).
+        $hourlyRaw = Transaction::notCancelled()
+            ->whereDate('created_at', $selectedDateStr)
+            ->selectRaw('HOUR(created_at) as h, SUM(total) as total, COUNT(*) as count')
+            ->groupBy('h')->pluck('total', 'h');
+        $hourlyData = collect(range(0, 23))->map(fn($h) => [
+            'label'   => sprintf('%02d:00', $h),
+            'revenue' => (float) ($hourlyRaw[$h] ?? 0),
+        ]);
 
         $allGrossProfit = (clone $profitQuery)->sum(DB::raw('(transaction_items.unit_price - COALESCE(products.cost_price,0)) * transaction_items.quantity'));
         $allExpenses = Expense::sum('amount');
@@ -92,7 +125,8 @@ class DashboardController extends Controller
         ];
 
         return view('tenant.dashboard.index', compact(
-            'tenant','todayRevenue','todayCount','monthRevenue','monthCount','todayGrossProfit','monthGrossProfit','todayNetProfit','monthNetProfit','monthExpenses','weeklyData','initialCapital','totalNetProfit','capitalProgress','lowStockProducts','recentTransactions','rawMaterialSummary'
+            'tenant','selectedDateStr','isToday','dayRevenue','dayCount','dayGrossProfit','dayNetProfit','dayExpenses','dayByPayment','hourlyData',
+            'monthRevenue','monthCount','monthGrossProfit','monthNetProfit','monthExpenses','weeklyData','initialCapital','totalNetProfit','capitalProgress','lowStockProducts','recentTransactions','rawMaterialSummary'
         ));
     }
 }

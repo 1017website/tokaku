@@ -4,14 +4,22 @@
 @section('page-subtitle','Selamat datang, ' . auth()->user()->name)
 
 @section('header-actions')
-<a href="{{ route('tenant.kasir.index') }}" class="btn-primary">Transaksi Baru</a>
+<form method="GET" action="{{ route('tenant.dashboard') }}" style="display:flex;align-items:center;gap:8px;">
+    <input type="date" name="date" value="{{ $selectedDateStr }}" max="{{ now()->toDateString() }}" onchange="this.form.submit()"
+        style="border:1px solid #e2e8f0;border-radius:10px;padding:7px 10px;font-size:13px;color:#0f172a;">
+    @if(!$isToday)
+        <a href="{{ route('tenant.dashboard') }}" style="font-size:12px;color:#64748b;text-decoration:none;font-weight:600;">Hari ini</a>
+    @endif
+    <a href="{{ route('tenant.kasir.index') }}" class="btn-primary">Transaksi Baru</a>
+</form>
 @endsection
 
 @section('content')
 @php
+$dayLabel = $isToday ? 'hari ini' : \Carbon\Carbon::parse($selectedDateStr)->translatedFormat('d M Y');
 $cards = [
-    ['label'=>'Omzet hari ini','value'=>'Rp '.number_format($todayRevenue,0,',','.'),'sub'=>$todayCount.' transaksi','color'=>'#16a34a','bg'=>'#f0fdf4'],
-    ['label'=>'Profit bersih hari ini','value'=>'Rp '.number_format($todayNetProfit,0,',','.'),'sub'=>'Profit kotor Rp '.number_format($todayGrossProfit,0,',','.'),'color'=>'#0F6E56','bg'=>'#f0fdf6'],
+    ['label'=>'Omzet '.$dayLabel,'value'=>'Rp '.number_format($dayRevenue,0,',','.'),'sub'=>$dayCount.' transaksi','color'=>'#16a34a','bg'=>'#f0fdf4'],
+    ['label'=>'Profit bersih '.$dayLabel,'value'=>'Rp '.number_format($dayNetProfit,0,',','.'),'sub'=>'Profit kotor Rp '.number_format($dayGrossProfit,0,',','.').' · Pengeluaran Rp '.number_format($dayExpenses,0,',','.'),'color'=>'#0F6E56','bg'=>'#f0fdf6'],
     ['label'=>'Omzet bulan ini','value'=>'Rp '.number_format($monthRevenue,0,',','.'),'sub'=>$monthCount.' transaksi','color'=>'#2563eb','bg'=>'#eff6ff'],
     ['label'=>'Profit bersih bulan ini','value'=>'Rp '.number_format($monthNetProfit,0,',','.'),'sub'=>'Pengeluaran Rp '.number_format($monthExpenses,0,',','.'),'color'=>'#7c3aed','bg'=>'#f5f3ff'],
 ];
@@ -51,11 +59,36 @@ $cards = [
 
     <div class="lg:col-span-2" style="background:#fff;border-radius:16px;border:1px solid #f1f5f9;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,.04);">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
-            <p style="font-size:14px;font-weight:700;color:#0f172a;">Omzet & Profit 7 Hari Terakhir</p>
-            <span style="font-size:12px;color:#94a3b8;">Mingguan</span>
+            <p style="font-size:14px;font-weight:700;color:#0f172a;">Omzet per Jam · {{ $isToday ? 'Hari ini' : \Carbon\Carbon::parse($selectedDateStr)->translatedFormat('d M Y') }}</p>
+            <span style="font-size:12px;color:#94a3b8;">{{ $dayCount }} transaksi</span>
         </div>
-        <canvas id="weeklyChart" height="95"></canvas>
+        @if($dayCount > 0)
+            <canvas id="hourlyChart" height="95"></canvas>
+        @else
+            <div style="padding:42px;text-align:center;color:#94a3b8;font-size:13px;">Belum ada transaksi pada tanggal ini</div>
+        @endif
+
+        @if($dayByPayment->count())
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;padding-top:14px;border-top:1px solid #f1f5f9;">
+            @foreach($dayByPayment as $p)
+            <div style="background:#f8fafc;border-radius:10px;padding:8px 12px;">
+                <span style="font-size:11px;color:#94a3b8;font-weight:700;">{{ strtoupper($p->payment_method) }}</span>
+                <span style="font-size:13px;font-weight:700;color:#0f172a;margin-left:6px;">Rp {{ number_format($p->total,0,',','.') }}</span>
+                <span style="font-size:11px;color:#94a3b8;">({{ $p->count }}x)</span>
+            </div>
+            @endforeach
+        </div>
+        @endif
     </div>
+</div>
+
+{{-- Tren mingguan tetap ditampilkan sebagai konteks --}}
+<div style="background:#fff;border-radius:16px;border:1px solid #f1f5f9;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,.04);margin-bottom:24px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+        <p style="font-size:14px;font-weight:700;color:#0f172a;">Omzet & Profit 7 Hari Terakhir</p>
+        <span style="font-size:12px;color:#94a3b8;">Mingguan</span>
+    </div>
+    <canvas id="weeklyChart" height="70"></canvas>
 </div>
 
 {{-- Ringkasan Gudang Bahan hari ini --}}
@@ -110,6 +143,19 @@ $cards = [
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
+@if($dayCount > 0)
+new Chart(document.getElementById('hourlyChart'), {
+    type: 'bar',
+    data: {
+        labels: @json($hourlyData->pluck('label')),
+        datasets: [
+            { label: 'Omzet', data: @json($hourlyData->pluck('revenue')), backgroundColor:'#0F6E56', borderRadius:4 }
+        ]
+    },
+    options: { responsive:true, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true}} }
+});
+@endif
+
 new Chart(document.getElementById('weeklyChart'), {
     type: 'line',
     data: {
