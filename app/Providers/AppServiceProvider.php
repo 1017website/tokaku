@@ -59,5 +59,24 @@ class AppServiceProvider extends ServiceProvider
 
             $view->with('appSettings', $appSettings);
         });
+
+        // Badge notifikasi sidebar super admin: jumlah tenant baru (pending)
+        // dan invoice pembayaran yang menunggu konfirmasi.
+        View::composer('superadmin.layout', function ($view) {
+            $pendingTenants = 0;
+            $waitingPayments = 0;
+            try {
+                if (Schema::hasTable('tenants')) {
+                    $pendingTenants = \App\Models\Tenant::where('status', 'pending')->count();
+                }
+                if (Schema::hasTable('payment_invoices')) {
+                    $waitingPayments = \App\Models\PaymentInvoice::where('status', 'waiting_confirmation')->count();
+                }
+            } catch (\Throwable $e) {
+                // Abaikan saat migrate/install awal.
+            }
+            $view->with('saPendingTenants', $pendingTenants);
+            $view->with('saWaitingPayments', $waitingPayments);
+        });
     }
 }

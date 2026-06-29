@@ -74,9 +74,28 @@ class Transaction extends Model
         return $this->status === 'cancelled';
     }
 
+    public function isDraft(): bool
+    {
+        return $this->status === 'draft';
+    }
+
+    /**
+     * Transaksi yang dihitung di laporan & omzet: HANYA yang sudah selesai (completed).
+     * Otomatis mengecualikan draft (pesan belum dibayar) maupun cancelled.
+     */
     public function scopeNotCancelled($query)
     {
-        return $query->where('status', '!=', 'cancelled');
+        return $query->where('status', 'completed');
+    }
+
+    public function scopeCompleted($query)
+    {
+        return $query->where('status', 'completed');
+    }
+
+    public function scopeDraft($query)
+    {
+        return $query->where('status', 'draft');
     }
 
     public function items()

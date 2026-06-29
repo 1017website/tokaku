@@ -3,6 +3,10 @@
 @section('page-title','Kategori')
 @section('page-subtitle','Kelola kategori produk')
 
+@php
+    $hariList = [1=>'Senin',2=>'Selasa',3=>'Rabu',4=>'Kamis',5=>'Jumat',6=>'Sabtu',7=>'Minggu'];
+@endphp
+
 @section('content')
 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
     <div>
@@ -15,7 +19,11 @@
                 @endif
                 <div>
                     <label class="form-label">Nama Kategori</label>
-                    <input type="text" name="name" value="{{ old('name') }}" required class="form-input" placeholder="contoh: Makanan">
+                    <input type="text" name="name" value="{{ old('name') }}" required class="form-input" placeholder="contoh: Menu Senin">
+                </div>
+                <div>
+                    <label class="form-label">Urutan Tampil <span style="color:#94a3b8;font-weight:400;">(kecil = duluan)</span></label>
+                    <input type="number" name="sort_order" value="{{ old('sort_order', 0) }}" min="0" max="9999" class="form-input" placeholder="0">
                 </div>
                 <div>
                     <label class="form-label">Tipe Kategori</label>
@@ -24,6 +32,32 @@
                         <option value="promo" {{ old('type')=='promo'?'selected':'' }}>Promo</option>
                         <option value="bundling" {{ old('type')=='bundling'?'selected':'' }}>Bundling</option>
                     </select>
+                </div>
+                <label style="display:flex;align-items:flex-start;gap:9px;background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:11px 12px;cursor:pointer;">
+                    <input type="checkbox" name="is_pinned" value="1" id="addPinned" {{ old('is_pinned') ? 'checked' : '' }} onchange="toggleAddSchedule()" style="margin-top:2px;">
+                    <span style="font-size:12.5px;color:#92400e;line-height:1.4;"><b>Menu Tetap</b><br><span style="color:#b45309;font-weight:400;">Produk kategori ini ikut tampil di tab kategori lain (mis. Nasi Putih). Mengabaikan jadwal hari.</span></span>
+                </label>
+                <div id="addPinnedTargets" style="display:none;background:#fff;border:1px solid #fde68a;border-radius:10px;padding:11px 12px;">
+                    <label class="form-label" style="font-size:11.5px;">Tampil di Kategori <span style="color:#94a3b8;font-weight:400;">(kosong = semua kategori)</span></label>
+                    <div style="display:flex;flex-wrap:wrap;gap:6px;">
+                        @forelse($targetOptions as $opt)
+                        <label style="font-size:12px;display:inline-flex;align-items:center;gap:5px;border:1.5px solid #e2e8f0;border-radius:8px;padding:6px 10px;cursor:pointer;">
+                            <input type="checkbox" name="pinned_targets[]" value="{{ $opt->id }}" {{ collect(old('pinned_targets',[]))->contains($opt->id) ? 'checked' : '' }}> {{ $opt->name }}
+                        </label>
+                        @empty
+                        <span style="font-size:12px;color:#94a3b8;">Belum ada kategori lain.</span>
+                        @endforelse
+                    </div>
+                </div>
+                <div id="addSchedule">
+                    <label class="form-label">Jadwal Hari Tampil <span style="color:#94a3b8;font-weight:400;">(kosongkan = setiap hari)</span></label>
+                    <div style="display:flex;flex-wrap:wrap;gap:6px;">
+                        @foreach($hariList as $num => $nama)
+                        <label style="font-size:12px;display:inline-flex;align-items:center;gap:5px;border:1.5px solid #e2e8f0;border-radius:8px;padding:6px 10px;cursor:pointer;">
+                            <input type="checkbox" name="schedule_days[]" value="{{ $num }}" {{ collect(old('schedule_days',[]))->contains($num) ? 'checked' : '' }}> {{ $nama }}
+                        </label>
+                        @endforeach
+                    </div>
                 </div>
                 <div id="addPeriod" style="display:none;flex-direction:column;gap:12px;">
                     <div>
@@ -61,8 +95,12 @@
                     {{-- Tampilan baca --}}
                     <div id="cat-view-{{ $cat->id }}" style="display:flex;align-items:center;justify-content:space-between;">
                         <div>
-                            <div style="display:flex;align-items:center;gap:8px;">
+                            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                                <span style="font-size:11px;font-weight:700;color:#64748b;background:#f1f5f9;border-radius:6px;padding:2px 7px;">#{{ $cat->sort_order }}</span>
                                 <p style="font-size:14px;font-weight:500;color:#0f172a;">{{ $cat->name }}</p>
+                                @if($cat->is_pinned)
+                                <span style="font-size:10.5px;font-weight:700;background:#fffbeb;color:#b45309;border:1px solid #fde68a;padding:2px 8px;border-radius:99px;">Menu Tetap</span>
+                                @endif
                                 @if($cat->type === 'promo')
                                 <span style="font-size:10.5px;font-weight:600;background:#fef3f2;color:#be123c;padding:2px 8px;border-radius:99px;">Promo</span>
                                 @elseif($cat->type === 'bundling')
@@ -75,8 +113,16 @@
                                 <span style="font-size:10.5px;font-weight:600;background:#fef2f2;color:#b91c1c;padding:2px 8px;border-radius:99px;">Nonaktif</span>
                                 @endunless
                             </div>
-                            <div style="display:flex;align-items:center;gap:10px;margin-top:3px;">
+                            <div style="display:flex;align-items:center;gap:10px;margin-top:3px;flex-wrap:wrap;">
                                 <p style="font-size:12px;color:#94a3b8;">{{ $cat->products_count }} produk</p>
+                                @if(!$cat->is_pinned && !empty($cat->schedule_days))
+                                <span style="font-size:12px;color:#0F6E56;font-weight:600;">{{ collect($cat->schedule_days)->map(fn($d)=>$hariList[$d] ?? $d)->join(', ') }}</span>
+                                @elseif(!$cat->is_pinned)
+                                <span style="font-size:12px;color:#94a3b8;">Setiap hari</span>
+                                @endif
+                                @if($cat->is_pinned)
+                                <span style="font-size:12px;color:#b45309;font-weight:600;">Tampil di: {{ empty($cat->pinned_targets) ? 'Semua kategori' : $targetOptions->whereIn('id', $cat->pinned_targets)->pluck('name')->join(', ') }}</span>
+                                @endif
                                 @if($cat->type !== 'regular' && ($cat->starts_at || $cat->ends_at))
                                 <span style="font-size:12px;color:#94a3b8;">{{ $cat->starts_at?->format('d M Y') ?? '∞' }} — {{ $cat->ends_at?->format('d M Y') ?? '∞' }}</span>
                                 @endif
@@ -98,14 +144,49 @@
                         </div>
                     </div>
                     {{-- Form edit (tersembunyi) --}}
-                    <form id="cat-edit-{{ $cat->id }}" method="POST" action="{{ route('tenant.categories.update',$cat) }}" style="display:none;flex-direction:column;gap:10px;margin-top:4px;">
+                    <form id="cat-edit-{{ $cat->id }}" method="POST" action="{{ route('tenant.categories.update',$cat) }}" style="display:none;flex-direction:column;gap:10px;margin-top:8px;">
                         @csrf @method('PUT')
                         <input type="text" name="name" value="{{ $cat->name }}" required class="form-input" placeholder="Nama kategori">
-                        <select name="type" id="edit-type-{{ $cat->id }}" class="form-input" style="cursor:pointer;" onchange="toggleEditPeriod({{ $cat->id }})">
-                            <option value="regular" {{ $cat->type=='regular'?'selected':'' }}>Regular</option>
-                            <option value="promo" {{ $cat->type=='promo'?'selected':'' }}>Promo</option>
-                            <option value="bundling" {{ $cat->type=='bundling'?'selected':'' }}>Bundling</option>
-                        </select>
+                        <div style="display:flex;gap:10px;">
+                            <div style="flex:1;">
+                                <label class="form-label" style="font-size:11px;">Urutan</label>
+                                <input type="number" name="sort_order" value="{{ $cat->sort_order }}" min="0" max="9999" class="form-input">
+                            </div>
+                            <div style="flex:1;">
+                                <label class="form-label" style="font-size:11px;">Tipe</label>
+                                <select name="type" id="edit-type-{{ $cat->id }}" class="form-input" style="cursor:pointer;" onchange="toggleEditPeriod({{ $cat->id }})">
+                                    <option value="regular" {{ $cat->type=='regular'?'selected':'' }}>Regular</option>
+                                    <option value="promo" {{ $cat->type=='promo'?'selected':'' }}>Promo</option>
+                                    <option value="bundling" {{ $cat->type=='bundling'?'selected':'' }}>Bundling</option>
+                                </select>
+                            </div>
+                        </div>
+                        <label style="display:flex;align-items:flex-start;gap:9px;background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:10px 12px;cursor:pointer;">
+                            <input type="checkbox" name="is_pinned" value="1" id="edit-pinned-{{ $cat->id }}" {{ $cat->is_pinned ? 'checked' : '' }} onchange="toggleEditSchedule({{ $cat->id }})" style="margin-top:2px;">
+                            <span style="font-size:12.5px;color:#92400e;line-height:1.4;"><b>Menu Tetap</b> <span style="color:#b45309;font-weight:400;">— tampil di kategori lain, abaikan jadwal hari.</span></span>
+                        </label>
+                        <div id="edit-targets-{{ $cat->id }}" style="display:{{ $cat->is_pinned ? 'block' : 'none' }};background:#fff;border:1px solid #fde68a;border-radius:10px;padding:10px 12px;">
+                            <label class="form-label" style="font-size:11px;">Tampil di Kategori <span style="color:#94a3b8;font-weight:400;">(kosong = semua)</span></label>
+                            <div style="display:flex;flex-wrap:wrap;gap:6px;">
+                                @forelse($targetOptions->where('id','!=',$cat->id) as $opt)
+                                <label style="font-size:12px;display:inline-flex;align-items:center;gap:5px;border:1.5px solid #e2e8f0;border-radius:8px;padding:6px 10px;cursor:pointer;">
+                                    <input type="checkbox" name="pinned_targets[]" value="{{ $opt->id }}" {{ collect($cat->pinned_targets ?? [])->contains($opt->id) ? 'checked' : '' }}> {{ $opt->name }}
+                                </label>
+                                @empty
+                                <span style="font-size:12px;color:#94a3b8;">Belum ada kategori lain.</span>
+                                @endforelse
+                            </div>
+                        </div>
+                        <div id="edit-schedule-{{ $cat->id }}" style="display:{{ $cat->is_pinned ? 'none' : 'none' }};">
+                            <label class="form-label" style="font-size:11px;">Jadwal Hari <span style="color:#94a3b8;font-weight:400;">(kosong = setiap hari)</span></label>
+                            <div style="display:flex;flex-wrap:wrap;gap:6px;">
+                                @foreach($hariList as $num => $nama)
+                                <label style="font-size:12px;display:inline-flex;align-items:center;gap:5px;border:1.5px solid #e2e8f0;border-radius:8px;padding:6px 10px;cursor:pointer;">
+                                    <input type="checkbox" name="schedule_days[]" value="{{ $num }}" {{ collect($cat->schedule_days ?? [])->contains($num) ? 'checked' : '' }}> {{ $nama }}
+                                </label>
+                                @endforeach
+                            </div>
+                        </div>
                         <div id="edit-period-{{ $cat->id }}" style="display:{{ $cat->type=='regular'?'none':'flex' }};flex-direction:column;gap:10px;">
                             <input type="datetime-local" name="starts_at" value="{{ $cat->starts_at?->format('Y-m-d\TH:i') }}" class="form-input" placeholder="Berlaku dari">
                             <input type="datetime-local" name="ends_at" value="{{ $cat->ends_at?->format('Y-m-d\TH:i') }}" class="form-input" placeholder="Berlaku sampai">
@@ -129,9 +210,20 @@ function toggleAddPeriod() {
     var t = document.getElementById('addType').value;
     document.getElementById('addPeriod').style.display = t === 'regular' ? 'none' : 'flex';
 }
+function toggleAddSchedule() {
+    var pinned = document.getElementById('addPinned').checked;
+    document.getElementById('addSchedule').style.display = pinned ? 'none' : 'none';
+    document.getElementById('addPinnedTargets').style.display = pinned ? 'block' : 'none';
+}
 function toggleEditPeriod(id) {
     var t = document.getElementById('edit-type-' + id).value;
     document.getElementById('edit-period-' + id).style.display = t === 'regular' ? 'none' : 'flex';
+}
+function toggleEditSchedule(id) {
+    var pinned = document.getElementById('edit-pinned-' + id).checked;
+    document.getElementById('edit-schedule-' + id).style.display = pinned ? 'none' : 'none';
+    var t = document.getElementById('edit-targets-' + id);
+    if (t) t.style.display = pinned ? 'block' : 'none';
 }
 function toggleCatEdit(id) {
     var view = document.getElementById('cat-view-' + id);
@@ -141,6 +233,6 @@ function toggleCatEdit(id) {
     edit.style.display = isEditing ? 'none' : 'flex';
     if (!isEditing) edit.querySelector('input[name="name"]').focus();
 }
-document.addEventListener('DOMContentLoaded', toggleAddPeriod);
+document.addEventListener('DOMContentLoaded', function(){ toggleAddPeriod(); toggleAddSchedule(); });
 </script>
 @endsection

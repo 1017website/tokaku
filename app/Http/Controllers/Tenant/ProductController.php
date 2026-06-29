@@ -21,8 +21,8 @@ class ProductController extends Controller
             ->orderBy('name')
             ->get();
 
-        $categories = Category::whereHas('products')
-            ->orderBy('name')
+        $categories = Category::active()
+            ->ordered()
             ->get();
 
         return view('tenant.products.index', compact('products', 'categories', 'status'));
@@ -30,7 +30,7 @@ class ProductController extends Controller
 
     public function create()
     {
-        $categories = Category::active()->orderBy('name')->get();
+        $categories = Category::active()->ordered()->get();
 
         return view('tenant.products.create', compact('categories'));
     }
@@ -89,7 +89,7 @@ class ProductController extends Controller
     public function edit(Product $product)
     {
         abort_if($product->tenant_id != app('currentTenant')->id, 403);
-        $categories = Category::active()->orderBy('name')->get();
+        $categories = Category::active()->ordered()->get();
 
         return view('tenant.products.edit', compact('product', 'categories'));
     }

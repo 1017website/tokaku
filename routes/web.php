@@ -54,6 +54,13 @@ Route::middleware(['auth', 'tenant', 'subscription'])->group(function () {
     Route::prefix('kasir')->name('tenant.kasir.')->middleware('permission:kasir')->group(function () {
         Route::get('/',               [TransactionController::class, 'index'])->name('index');
         Route::post('/proses',        [TransactionController::class, 'proses'])->name('proses');
+
+        // Draft (pesan dulu, bayar nanti — per nomor meja)
+        Route::post('/draft',                  [TransactionController::class, 'draftStore'])->name('draft.store');
+        Route::get('/draft/{id}',              [TransactionController::class, 'draftShow'])->name('draft.show');
+        Route::post('/draft/{id}/checkout',    [TransactionController::class, 'draftCheckout'])->name('draft.checkout');
+        Route::delete('/draft/{id}',           [TransactionController::class, 'draftDestroy'])->name('draft.destroy');
+
         Route::get('/{id}/struk',     [TransactionController::class, 'struk'])->name('struk');
         Route::get('/{id}/struk-pdf', [TransactionController::class, 'strukPdf'])->name('struk.pdf');
         Route::get('/{id}/escpos',    [TransactionController::class, 'escpos'])->name('escpos');

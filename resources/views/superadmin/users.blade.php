@@ -77,10 +77,18 @@
                     <span style="font-size:12px;font-weight:500;padding:3px 10px;border-radius:99px;{{ $g['owner']->role==='owner'?'background:#f0fdf4;color:#15803d;':'background:#f8fafc;color:#475569;' }}">{{ ucfirst($g['owner']->role) }}</span>
                 </td>
                 <td style="padding:13px 18px;text-align:center;">
-                    @if($g['owner']->is_active)
-                    <span style="font-size:12px;font-weight:500;background:#f0fdf4;color:#15803d;padding:3px 10px;border-radius:99px;">Aktif</span>
+                    @if($g['tenant'])
+                        @php $sb = $g['tenant']->statusBadge(); @endphp
+                        <span style="font-size:12px;font-weight:500;padding:3px 10px;border-radius:99px;background:{{ $sb[1] }};color:{{ $sb[2] }};">{{ $sb[0] }}</span>
+                        @unless($g['owner']->is_active)
+                        <span style="display:inline-block;margin-top:4px;font-size:11px;font-weight:500;background:#fff1f2;color:#be123c;padding:2px 9px;border-radius:99px;">Akun nonaktif</span>
+                        @endunless
                     @else
-                    <span style="font-size:12px;font-weight:500;background:#fff1f2;color:#be123c;padding:3px 10px;border-radius:99px;">Nonaktif</span>
+                        @if($g['owner']->is_active)
+                        <span style="font-size:12px;font-weight:500;background:#f0fdf4;color:#15803d;padding:3px 10px;border-radius:99px;">Aktif</span>
+                        @else
+                        <span style="font-size:12px;font-weight:500;background:#fff1f2;color:#be123c;padding:3px 10px;border-radius:99px;">Nonaktif</span>
+                        @endif
                     @endif
                 </td>
                 <td style="padding:13px 18px;font-size:13px;color:#64748b;">{{ $g['owner']->created_at->format('d M Y') }}</td>

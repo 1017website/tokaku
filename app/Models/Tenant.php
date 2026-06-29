@@ -108,4 +108,21 @@ class Tenant extends Model
             ? 'Berakhir hari ini'
             : $days . ' hari lagi';
     }
+
+    /**
+     * Badge status langganan tenant untuk ditampilkan di panel super admin.
+     * Mengembalikan ['label', 'bg', 'color'] yang konsisten dengan halaman Kelola Tenant.
+     */
+    public function statusBadge(): array
+    {
+        return match (true) {
+            $this->status === 'active'    => ['Aktif', '#f0fdf4', '#15803d'],
+            $this->status === 'trial' && $this->isTrialExpired() => ['Trial habis', '#fff1f2', '#be123c'],
+            $this->status === 'trial'     => ['Trial · ' . $this->trialLabel(), '#fffbeb', '#b45309'],
+            $this->status === 'pending'   => ['Menunggu', '#fffbeb', '#92400e'],
+            $this->status === 'rejected'  => ['Ditolak', '#f8fafc', '#64748b'],
+            $this->status === 'suspended' => ['Suspended', '#fff1f2', '#be123c'],
+            default                       => [ucfirst((string) $this->status), '#f8fafc', '#475569'],
+        };
+    }
 }

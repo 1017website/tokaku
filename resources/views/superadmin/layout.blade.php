@@ -83,9 +83,12 @@
 
         <p style="font-size:10.5px;font-weight:600;color:#9ca3af;letter-spacing:0.8px;text-transform:uppercase;padding:4px 14px 6px;margin-top:8px;">Manajemen</p>
 
-        <a href="{{ route('superadmin.tenants') }}" class="sa-link {{ request()->routeIs('superadmin.tenants')?'active':'' }}">
+        <a href="{{ route('superadmin.tenants') }}" class="sa-link {{ request()->routeIs('superadmin.tenants')?'active':'' }}" style="position:relative;">
             <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
             Kelola Tenant
+            @if(($saPendingTenants ?? 0) > 0)
+            <span style="margin-left:auto;background:#ef4444;color:#fff;font-size:10.5px;font-weight:800;min-width:18px;height:18px;display:inline-flex;align-items:center;justify-content:center;padding:0 5px;border-radius:99px;line-height:1;">{{ $saPendingTenants > 99 ? '99+' : $saPendingTenants }}</span>
+            @endif
         </a>
 
         <a href="{{ route('superadmin.laporan') }}" class="sa-link {{ request()->routeIs('superadmin.laporan')?'active':'' }}">
@@ -93,9 +96,12 @@
             Laporan Global
         </a>
 
-        <a href="{{ route('superadmin.payments') }}" class="sa-link {{ request()->routeIs('superadmin.payments')?'active':'' }}">
+        <a href="{{ route('superadmin.payments') }}" class="sa-link {{ request()->routeIs('superadmin.payments')?'active':'' }}" style="position:relative;">
             <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
             Verifikasi Pembayaran
+            @if(($saWaitingPayments ?? 0) > 0)
+            <span style="margin-left:auto;background:#ef4444;color:#fff;font-size:10.5px;font-weight:800;min-width:18px;height:18px;display:inline-flex;align-items:center;justify-content:center;padding:0 5px;border-radius:99px;line-height:1;">{{ $saWaitingPayments > 99 ? '99+' : $saWaitingPayments }}</span>
+            @endif
         </a>
 
         <a href="{{ route('superadmin.pricing.index') }}" class="sa-link {{ request()->routeIs('superadmin.pricing.*')?'active':'' }}">

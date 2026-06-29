@@ -15,10 +15,13 @@ class CategoryController extends Controller
         $categories = Category::withCount('products')
             ->when($status === 'active',   fn($q) => $q->where('is_active', true))
             ->when($status === 'inactive', fn($q) => $q->where('is_active', false))
-            ->orderBy('name')
+            ->ordered()
             ->get();
 
-        return view('tenant.categories.index', compact('categories', 'status'));
+        // Daftar kategori non-pinned & aktif sebagai opsi target "Menu Tetap".
+        $targetOptions = Category::active()->where('is_pinned', false)->ordered()->get();
+
+        return view('tenant.categories.index', compact('categories', 'status', 'targetOptions'));
     }
 
     public function store(Request $request)
@@ -69,10 +72,16 @@ class CategoryController extends Controller
     protected function validateData(Request $request): array
     {
         $validated = $request->validate([
-            'name'      => 'required|string|max:100',
-            'type'      => 'required|in:regular,promo,bundling',
-            'starts_at' => 'nullable|date',
-            'ends_at'   => 'nullable|date|after_or_equal:starts_at',
+            'name'              => 'required|string|max:100',
+            'type'              => 'required|in:regular,promo,bundling',
+            'starts_at'         => 'nullable|date',
+            'ends_at'           => 'nullable|date|after_or_equal:starts_at',
+            'sort_order'        => 'nullable|integer|min:0|max:9999',
+            'is_pinned'         => 'nullable|boolean',
+            'schedule_days'     => 'nullable|array',
+            'schedule_days.*'   => 'integer|min:1|max:7',
+            'pinned_targets'    => 'nullable|array',
+            'pinned_targets.*'  => 'integer|exists:categories,id',
         ], [
             'ends_at.after_or_equal' => 'Tanggal berakhir tidak boleh sebelum tanggal mulai.',
         ]);
@@ -80,6 +89,23 @@ class CategoryController extends Controller
         if ($validated['type'] === 'regular') {
             $validated['starts_at'] = null;
             $validated['ends_at'] = null;
+        }
+
+        $validated['sort_order'] = $validated['sort_order'] ?? 0;
+        $validated['is_pinned']  = $request->boolean('is_pinned');
+
+        // Normalisasi jadwal hari: unik, terurut, dan kosong = null (tampil tiap hari).
+        $days = array_values(array_unique(array_map('intval', $validated['schedule_days'] ?? [])));
+        sort($days);
+        $validated['schedule_days'] = empty($days) ? null : $days;
+
+        // pinned_targets hanya relevan untuk kategori Menu Tetap.
+        // Kosong = tampil di semua kategori (perilaku lama).
+        if ($validated['is_pinned']) {
+            $targets = array_values(array_unique(array_map('intval', $validated['pinned_targets'] ?? [])));
+            $validated['pinned_targets'] = empty($targets) ? null : $targets;
+        } else {
+            $validated['pinned_targets'] = null;
         }
 
         return $validated;
